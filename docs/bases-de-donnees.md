@@ -56,6 +56,32 @@ Exemples d'adresses :
 | MySQL | `mysql://sges:***@hote:3306/sges` |
 | SQLite | `file:./sges.db` |
 
+## Supabase (base partagée avec l'outil de scoring Project Finance)
+
+L'outil est installé dans le projet Supabase **ProjectFinanceScoring**, dans un schéma dédié
+**`sges`** : ses 30 tables `sges_*` y sont isolées des schémas `public`, `corp_scoring` et
+`suivi_reco` des autres applications. Le script de création est conservé dans
+`prisma/sql/supabase-schema-sges.sql`.
+
+- **Isolation** : les droits des rôles `anon` et `authenticated` sur le schéma `sges` sont
+  retirés et la sécurité par ligne (RLS) est activée sur chaque table, sans politique. L'API REST
+  de Supabase n'y donne donc aucun accès. Seule l'application, connectée côté serveur avec le
+  compte `postgres`, lit et écrit les données. L'alerte « RLS Enabled No Policy » du conseiller
+  Supabase est attendue.
+- **Adresse de connexion** : la même que l'outil PF (même mot de passe), avec `schema=sges` :
+  - application (Vercel, serveur) : pooler transactionnel, port 6543, suffixe
+    `?schema=sges&pgbouncer=true&connection_limit=1` ;
+  - commandes `db:schema`, `db:importer`, `db:verifier` : pooler de session, port 5432,
+    suffixe `?schema=sges`.
+- **Contenu initial** : référentiels complets (langues, devises et cours, rôles, 12 entités,
+  listes de valeurs, 45 secteurs, 16 régions, liste d'exclusion, 25 éléments de catégorisation,
+  questionnaires et actions types) et un compte `admin@sges.local` dont le mot de passe
+  provisoire doit être changé à la première connexion. Aucune donnée de démonstration.
+- **Évolution du schéma** : modifier `prisma/schema.prisma` puis `npm run db:schema` avec
+  l'adresse du pooler de session : Prisma n'agit que sur le schéma `sges`. **Ne jamais lancer
+  `db:schema` sans `schema=sges`** : sur `public`, Prisma proposerait de supprimer les tables
+  des autres applications (il s'arrête sans `--accept-data-loss`, option à ne pas utiliser ici).
+
 L'adresse de la base reste un **secret de déploiement** : elle n'est jamais modifiable depuis
 l'écran (un compte administrateur compromis ne doit pas pouvoir rediriger les données). L'écran
 Paramétrage › Base de données affiche le moteur en service, le temps de réponse et les volumes,

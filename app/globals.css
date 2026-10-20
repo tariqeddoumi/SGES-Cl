@@ -1,0 +1,229 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-success-subtle: var(--success-subtle);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Thème clair (défaut) — direction « Clarté institutionnelle » de l'outil de scoring PF :
+   fonds neutres, un seul accent vert profond, menu latéral sombre. */
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(0.978 0.002 146);
+  --foreground: oklch(0.235 0.019 167);
+
+  --surface: oklch(0.962 0.003 165);
+  --surface-foreground: oklch(0.235 0.019 167);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.235 0.019 167);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.235 0.019 167);
+
+  --primary: oklch(0.415 0.078 168);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.962 0.003 165);
+  --secondary-foreground: oklch(0.486 0.020 164);
+
+  --muted: oklch(0.962 0.003 165);
+  --muted-foreground: oklch(0.621 0.018 166);
+  --accent: oklch(0.944 0.012 162);
+  --accent-foreground: oklch(0.415 0.078 168);
+
+  --destructive: oklch(0.478 0.157 29);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.532 0.106 163);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.592 0.121 74);
+  --warning-foreground: oklch(1 0 0);
+
+  /* Fonds pâles des puces d'état : le texte reprend la couleur pleine ci-dessus. */
+  --destructive-subtle: oklch(0.938 0.020 29);
+  --success-subtle: oklch(0.946 0.017 163);
+  --warning-subtle: oklch(0.958 0.029 83);
+
+  --border: oklch(0.908 0.007 160);
+  --input: oklch(0.908 0.007 160);
+  --ring: oklch(0.415 0.078 168);
+
+  /* Séries de graphiques : nuances du même vert, puis couleurs d'appoint. */
+  --chart-1: oklch(0.415 0.078 168);
+  --chart-2: oklch(0.493 0.077 166);
+  --chart-3: oklch(0.592 0.121 74);
+  --chart-4: oklch(0.621 0.018 166);
+  --chart-5: oklch(0.478 0.157 29);
+
+  --sidebar: oklch(0.242 0.028 167);
+  --sidebar-foreground: oklch(0.863 0.018 165);
+  --sidebar-primary: oklch(0.325 0.041 168);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.325 0.041 168);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.325 0.041 168);
+  --sidebar-ring: oklch(0.638 0.107 166);
+}
+
+/* THÈME SOMBRE — même direction, transposée sur une ardoise profonde. */
+.dark {
+  --background: oklch(0.204 0.010 220);
+  --foreground: oklch(0.946 0.008 169);
+
+  --surface: oklch(0.285 0.016 224);
+  --surface-foreground: oklch(0.946 0.008 169);
+
+  --card: oklch(0.245 0.013 223);
+  --card-foreground: oklch(0.946 0.008 169);
+  --popover: oklch(0.245 0.013 223);
+  --popover-foreground: oklch(0.946 0.008 169);
+
+  --primary: oklch(0.638 0.107 166);
+  --primary-foreground: oklch(0.181 0.010 220);
+  --secondary: oklch(0.285 0.016 224);
+  --secondary-foreground: oklch(0.725 0.018 174);
+
+  --muted: oklch(0.285 0.016 224);
+  --muted-foreground: oklch(0.725 0.018 174);
+  --accent: oklch(0.321 0.041 173);
+  --accent-foreground: oklch(0.946 0.008 169);
+
+  --destructive: oklch(0.663 0.155 28);
+  --destructive-foreground: oklch(0.181 0.010 220);
+  --success: oklch(0.709 0.117 165);
+  --success-foreground: oklch(0.181 0.010 220);
+  --warning: oklch(0.751 0.130 80);
+  --warning-foreground: oklch(0.181 0.010 220);
+
+  --destructive-subtle: oklch(0.300 0.055 28);
+  --success-subtle: oklch(0.300 0.048 165);
+  --warning-subtle: oklch(0.300 0.048 80);
+
+  --border: oklch(0.331 0.017 220);
+  --input: oklch(0.331 0.017 220);
+  --ring: oklch(0.638 0.107 166);
+
+  --chart-1: oklch(0.638 0.107 166);
+  --chart-2: oklch(0.709 0.117 165);
+  --chart-3: oklch(0.751 0.130 80);
+  --chart-4: oklch(0.725 0.018 174);
+  --chart-5: oklch(0.663 0.155 28);
+
+  --sidebar: oklch(0.181 0.010 220);
+  --sidebar-foreground: oklch(0.725 0.018 174);
+  --sidebar-primary: oklch(0.321 0.041 173);
+  --sidebar-primary-foreground: oklch(0.946 0.008 169);
+  --sidebar-accent: oklch(0.321 0.041 173);
+  --sidebar-accent-foreground: oklch(0.946 0.008 169);
+  --sidebar-border: oklch(0.331 0.017 220);
+  --sidebar-ring: oklch(0.638 0.107 166);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11";
+  }
+  /* Les nombres s'alignent en colonne : montants, scores, émissions. */
+  table,
+  .tabulaire {
+    font-variant-numeric: tabular-nums;
+  }
+  /* L'arabe se lit mieux un peu plus grand et plus aéré. */
+  [dir="rtl"] body {
+    font-size: 15px;
+    line-height: 1.65;
+  }
+}
+
+/* Tableau plus large que l'écran : une ombre au bord signale les colonnes cachées. */
+.defilement-x {
+  background:
+    linear-gradient(to right, var(--card) 30%, transparent) left / 24px 100% no-repeat local,
+    linear-gradient(to left, var(--card) 30%, transparent) right / 24px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.18), transparent) left / 10px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.18), transparent) right / 10px 100% no-repeat scroll;
+}
+
+/* Impression (fiche d'évaluation E&S, plan d'actions) : sans cadre ni navigation. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+  .no-print,
+  aside,
+  header {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11px;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .print-break {
+    break-before: page;
+  }
+  .print-avoid {
+    break-inside: avoid;
+  }
+  section,
+  .carte {
+    box-shadow: none !important;
+  }
+}

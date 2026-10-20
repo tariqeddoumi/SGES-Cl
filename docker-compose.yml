@@ -1,0 +1,28 @@
+# Démarrage complet : PostgreSQL + SGES.  docker compose up -d
+# Puis, une fois : docker compose exec app npx tsx prisma/seed.ts   (ajouter -- --demo pour une démonstration)
+services:
+  base:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: sges
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changer-ce-mot-de-passe}
+      POSTGRES_DB: sges
+    volumes:
+      - donnees:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sges"]
+      interval: 5s
+      retries: 10
+  app:
+    build: .
+    depends_on:
+      base:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://sges:${POSTGRES_PASSWORD:-changer-ce-mot-de-passe}@base:5432/sges?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Définir JWT_SECRET (32 caractères minimum)}
+      COOKIE_NON_SECURISE: ${COOKIE_NON_SECURISE:-false}
+    ports:
+      - "3000:3000"
+volumes:
+  donnees:

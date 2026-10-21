@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sges
+          POSTGRES_PASSWORD: sges
+          POSTGRES_DB: sges
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U sges" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://sges:sges@localhost:5432/sges?schema=public
+      JWT_SECRET: integration-continue-cle-de-signature-0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run type-check
+      - run: npm test
+      - name: Schéma et référentiels sur une base réelle
+        run: |
+          npm run db:schema
+          npm run db:seed -- --demo
+          npm run db:verifier
+      - run: npm run build

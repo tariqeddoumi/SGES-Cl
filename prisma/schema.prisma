@@ -1,0 +1,761 @@
+// ============================================================================
+// SGES — Système de Gestion Environnementale, Sociale et Climatique
+// ============================================================================
+//
+// Schéma PORTABLE : le même fichier sert PostgreSQL, SQL Server, MySQL et SQLite.
+// Règles d'écriture qui le garantissent (à respecter pour toute évolution) :
+//   - aucune énumération Prisma : les valeurs codées sont des chaînes contrôlées
+//     par l'application (lib/domaine/*) ;
+//   - aucun type Json : les structures sont sérialisées en texte (@db.Text) ;
+//   - les textes longs portent l'annotation db.Text : `npm run db:fournisseur` la traduit en
+//     NVarChar(Max) pour SQL Server et la retire pour SQLite ;
+//   - toutes les relations déclarent onUpdate: NoAction (SQL Server refuse les
+//     chemins de cascade multiples) ; seules les dépendances d'un dossier sont en
+//     suppression en cascade ;
+//   - pas d'unicité sur une colonne facultative (SQL Server tient deux NULL pour égaux).
+//
+// Les libellés multilingues (référentiels) sont des objets {"fr": "...", "en": "...",
+// "ar": "..."} sérialisés : voir lib/i18n/libelle.ts.
+// Toutes les tables portent le préfixe sges_ pour cohabiter dans une base partagée.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Organisation ──────────────────────────────────────────────────────────
+
+/// Arbre de l'organisation : groupe › banque › banque régionale › filiale › centre d'affaires / agence.
+model Entite {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  nom             String
+  /// groupe | banque | banque_regionale | filiale | direction | centre_affaires | agence
+  type            String
+  parentId        String?
+  /// Chemin matérialisé /racine/…/id/ : la descendance se lit en une comparaison.
+  chemin          String
+  niveau          Int      @default(0)
+  pays            String   @default("MA")
+  deviseCode      String   @default("MAD")
+  langueDefaut    String   @default("fr")
+  /// Seuil de déclenchement propre à l'entité (en devise de l'entité) ; vide = paramètre général.
+  seuilDeclenchement Float?
+  nomOutil        String?
+  logoUrl         String?
+  couleurPrimaire String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  parent       Entite?       @relation("Arbre", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enfants      Entite[]      @relation("Arbre")
+  utilisateurs Utilisateur[]
+  clients      Client[]
+  dossiers     Dossier[]
+  clesApi      CleApi[]
+
+  @@index([parentId])
+  @@map("sges_entites")
+}
+
+/// Rôles paramétrables : la liste des permissions est éditable depuis l'administration.
+model Role {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  libelle     String   @db.Text
+  description String?  @db.Text
+  /// Liste JSON des permissions (voir lib/permissions.ts).
+  permissions String   @db.Text
+  /// Rôle livré avec l'outil : renommable, non supprimable.
+  systeme     Boolean  @default(false)
+  ordre       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  utilisateurs Utilisateur[]
+
+  @@map("sges_roles")
+}
+
+model Utilisateur {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  nom               String
+  prenom            String
+  /// Matricule / N° du chargé du dossier (fiche d'évaluation).
+  matricule         String?
+  fonction          String?
+  telephone         String?
+  motDePasseHash    String?
+  roleId            String
+  entiteId          String?
+  /// entite : écrit sur sa seule entité ; groupe : sur toute sa descendance.
+  porteeEcriture    String    @default("entite")
+  langue            String    @default("fr")
+  deviseAffichage   String?
+  theme             String?
+  isActive          Boolean   @default(true)
+  doitChangerMdp    Boolean   @default(true)
+  tentativesEchouees Int      @default(0)
+  verrouilleJusqua  DateTime?
+  derniereConnexion DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  role   Role    @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  entite Entite? @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  dossiersCharges Dossier[]      @relation("ChargeDossier")
+  dossiersValides Dossier[]      @relation("ValidateurDossier")
+  notifications   Notification[]
+  visites         Visite[]
+  journal         Journal[]
+
+  @@index([entiteId])
+  @@map("sges_utilisateurs")
+}
+
+// ─── Paramétrage général ───────────────────────────────────────────────────
+
+model Langue {
+  code   String  @id
+  nom    String
+  /// Nom de la langue dans la langue elle-même (العربية, English…).
+  nomNatif String
+  rtl    Boolean @default(false)
+  active Boolean @default(true)
+  ordre  Int     @default(0)
+
+  @@map("sges_langues")
+}
+
+model Devise {
+  code      String  @id
+  libelle   String  @db.Text
+  symbole   String
+  decimales Int     @default(2)
+  active    Boolean @default(true)
+  ordre     Int     @default(0)
+
+  taux TauxChange[]
+
+  @@map("sges_devises")
+}
+
+/// Cours : 1 unité de la devise = `taux` unités de la devise de référence (MAD par défaut).
+model TauxChange {
+  id         String   @id @default(cuid())
+  deviseCode String
+  date       DateTime
+  taux       Float
+  source     String?
+  createdAt  DateTime @default(now())
+
+  devise Devise @relation(fields: [deviseCode], references: [code], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([deviseCode, date])
+  @@map("sges_taux_change")
+}
+
+/// Paramètres clé/valeur (seuils, règles, habillage, fonctionnalités). Voir lib/parametres.ts.
+model Parametre {
+  cle         String   @id
+  valeur      String   @db.Text
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  @@map("sges_parametres")
+}
+
+/// Listes de valeurs paramétrables (formes juridiques, natures de projet, types de zone,
+/// types de crédit, comités, motifs de rejet E&S, types de document, types de visite…).
+model ListeValeur {
+  id      String  @id @default(cuid())
+  liste   String
+  code    String
+  libelle String  @db.Text
+  /// Données complémentaires propres à la liste (JSON).
+  extra   String? @db.Text
+  ordre   Int     @default(0)
+  actif   Boolean @default(true)
+
+  @@unique([liste, code])
+  @@map("sges_listes_valeurs")
+}
+
+/// Secteurs d'activité (nomenclature CITI / NMAE) avec leur profil E&S et climat.
+model Secteur {
+  id                   String  @id @default(cuid())
+  code                 String  @unique
+  libelle              String  @db.Text
+  /// Catégorie E&S indicative (A, B, C, FI) : aide à la catégorisation, jamais imposée.
+  categorieIndicative  String?
+  /// Sensibilité au risque de transition (0 à 4).
+  risqueTransition     Int     @default(1)
+  /// Sensibilité de l'activité aux aléas physiques (0 à 4).
+  sensibilitePhysique  Int     @default(1)
+  /// Facteur d'émission indicatif : tCO2e par million de MAD investi (estimation PCAF score 5).
+  facteurEmission      Float   @default(0)
+  /// Activité couverte par le Mécanisme d'ajustement carbone aux frontières de l'UE.
+  exposeCBAM           Boolean @default(false)
+  /// Activité éligible à la taxonomie verte (atténuation ou adaptation).
+  eligibleTaxonomie    Boolean @default(false)
+  actif                Boolean @default(true)
+  ordre                Int     @default(0)
+
+  clients  Client[]
+  dossiers Dossier[]
+
+  @@map("sges_secteurs")
+}
+
+/// Régions (Maroc et pays des filiales) avec leur exposition aux aléas climatiques (0 à 4).
+model Region {
+  id               String  @id @default(cuid())
+  code             String  @unique
+  pays             String  @default("MA")
+  libelle          String  @db.Text
+  stressHydrique   Int     @default(0)
+  secheresse       Int     @default(0)
+  inondation       Int     @default(0)
+  chaleurExtreme   Int     @default(0)
+  submersionMarine Int     @default(0)
+  incendie         Int     @default(0)
+  seisme           Int     @default(0)
+  source           String? @db.Text
+  actif            Boolean @default(true)
+  ordre            Int     @default(0)
+
+  dossiers Dossier[]
+
+  @@map("sges_regions")
+}
+
+// ─── Référentiel d'évaluation E&S ──────────────────────────────────────────
+
+/// Liste d'exclusion (SFI + ajouts propres au groupe).
+model CritereExclusion {
+  id       String  @id @default(cuid())
+  code     String  @unique
+  libelle  String  @db.Text
+  source   String  @default("SFI")
+  /// true : un « oui » bloque la soumission du dossier (sinon : notification RSE et justification).
+  bloquant Boolean @default(false)
+  ordre    Int     @default(0)
+  actif    Boolean @default(true)
+
+  reponses ReponseExclusion[]
+
+  @@map("sges_criteres_exclusion")
+}
+
+/// Formulaire de catégorisation (25 éléments dans la procédure CFD12340876/0217).
+model QuestionCategorisation {
+  id        String  @id @default(cuid())
+  numero    Int
+  code      String  @unique
+  libelle   String  @db.Text
+  /// A, B, C ou FI.
+  categorie String
+  aide      String? @db.Text
+  ordre     Int     @default(0)
+  actif     Boolean @default(true)
+
+  reponses ReponseCategorisation[]
+
+  @@map("sges_questions_categorisation")
+}
+
+/// Thématiques de la fiche d'évaluation (gestion environnementale, hygiène et sécurité,
+/// ressources humaines, normes de performance SFI, engagement stratégique, climat…).
+model Thematique {
+  id      String  @id @default(cuid())
+  code    String  @unique
+  libelle String  @db.Text
+  /// Référence normative principale (ex. « SFI NP1, NP3 »).
+  normes  String? @db.Text
+  ordre   Int     @default(0)
+  actif   Boolean @default(true)
+
+  blocs   Bloc[]
+
+  @@map("sges_thematiques")
+}
+
+/// Bloc d'un questionnaire (effluents liquides, déchets solides, émissions gazeuses…).
+model Bloc {
+  id           String  @id @default(cuid())
+  code         String  @unique
+  libelle      String  @db.Text
+  thematiqueId String
+  ordre        Int     @default(0)
+  actif        Boolean @default(true)
+
+  thematique Thematique @relation(fields: [thematiqueId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  questions  Question[]
+
+  @@map("sges_blocs")
+}
+
+/// Question d'une check-list E&S.
+model Question {
+  id            String  @id @default(cuid())
+  code          String  @unique
+  libelle       String  @db.Text
+  aide          String? @db.Text
+  blocId        String
+  /// Catégories concernées, séparées par des virgules : "A,B" ; "A,B,C,FI".
+  categories    String
+  /// oui_non | oui_non_na | choix | nombre | texte
+  type          String  @default("oui_non")
+  /// Options d'une question à choix (JSON [{code, libelle}]).
+  options       String? @db.Text
+  /// Réponse(s) qui signalent un risque non maîtrisé, séparées par des virgules.
+  reponseRisque String?
+  /// Gravité du risque non maîtrisé : 1 faible, 2 moyenne, 3 élevée, 4 critique.
+  gravite       Int     @default(2)
+  /// Références normatives (SFI NP, Principes de l'Équateur, loi marocaine…).
+  references    String? @db.Text
+  /// Codes secteurs ciblés (vide : tous secteurs), séparés par des virgules.
+  secteurs      String? @db.Text
+  obligatoire   Boolean @default(true)
+  ordre         Int     @default(0)
+  actif         Boolean @default(true)
+
+  bloc     Bloc              @relation(fields: [blocId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  actions  ModeleAction[]
+  reponses ReponseQuestion[]
+
+  @@map("sges_questions")
+}
+
+/// Action corrective proposée automatiquement quand la réponse signale un risque.
+model ModeleAction {
+  id         String  @id @default(cuid())
+  questionId String
+  /// court | moyen | long
+  horizon    String  @default("court")
+  libelle    String  @db.Text
+  /// Délai indicatif de mise en œuvre (mois).
+  delaiMois  Int?
+  ordre      Int     @default(0)
+  actif      Boolean @default(true)
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("sges_modeles_actions")
+}
+
+// ─── Dossiers ──────────────────────────────────────────────────────────────
+
+model Client {
+  id                 String   @id @default(cuid())
+  entiteId           String
+  /// Compte courant sur 20 positions (clé d'import de la signalétique).
+  compteCourant      String?
+  codeClient         String?
+  raisonSociale      String
+  formeJuridique     String?
+  comptePortefeuille String?
+  identifiantFiscal  String?
+  registreCommerce   String?
+  ice                String?
+  secteurId          String?
+  /// TPE | PME | GE
+  segment            String?
+  pays               String   @default("MA")
+  ville              String?
+  adresse            String?  @db.Text
+  contactNom         String?
+  contactPoste       String?
+  contactTelephone   String?
+  contactEmail       String?
+  /// saisie | simulation | api
+  sourceSignaletique String   @default("saisie")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  entite   Entite    @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  secteur  Secteur?  @relation(fields: [secteurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dossiers Dossier[]
+
+  @@index([entiteId])
+  @@index([compteCourant])
+  @@map("sges_clients")
+}
+
+/// Dossier SGES : une évaluation E&S distincte par demande de crédit (CDC, règles obligatoires).
+model Dossier {
+  id                     String    @id @default(cuid())
+  reference              String    @unique
+  entiteId               String
+  clientId               String
+  chargeId               String?
+  dateDossier            DateTime  @default(now())
+  /// brouillon | soumis | valide | decide | en_suivi | cloture | annule
+  statut                 String    @default("brouillon")
+  /// Étape la plus avancée atteinte (1 à 9) : sert l'avancement affiché.
+  etape                  Int       @default(1)
+  verrouille             Boolean   @default(false)
+
+  // Demande de crédit
+  typeCredit             String?
+  natureProjet           String?
+  objet                  String?   @db.Text
+  descriptionProcessus   String?   @db.Text
+  projetDeveloppementDurable Boolean @default(false)
+  secteurId              String?
+  deviseCode             String    @default("MAD")
+  montantDemande         Float
+  montantInvestissement  Float?
+  /// Cours appliqué à la création (devise du dossier → devise de référence).
+  tauxReference          Float     @default(1)
+  montantDemandeRef      Float     @default(0)
+  montantInvestissementRef Float?
+  dureeMois              Int?
+
+  // Lieu
+  adresseSite            String?   @db.Text
+  localite               String?
+  regionId               String?
+  typeZone               String?
+  latitude               Float?
+  longitude              Float?
+
+  // Déclenchement (circulaire CFD-537/01-24, chapitre II)
+  evaluationObligatoire  Boolean   @default(false)
+  motifDeclenchement     String?   @db.Text
+
+  // Liste d'exclusion
+  exclusionVerifiee      Boolean   @default(false)
+  exclu                  Boolean   @default(false)
+  motifExclusion         String?   @db.Text
+
+  // Catégorisation
+  categorieCalculee      String?
+  categorie              String?
+  sousCategorieFI        String?
+  justificationCategorie String?   @db.Text
+  eieRequise             Boolean   @default(false)
+  dateCategorisation     DateTime?
+
+  // Évaluation des risques
+  evaluationTerminee     Boolean   @default(false)
+  scoreRisque            Float?
+  niveauRisque           String?
+  nbRisquesNonMaitrises  Int       @default(0)
+  commentaireEvaluation  String?   @db.Text
+  planActionPropose      Boolean   @default(false)
+
+  // Validation (Directeur centre d'affaires / succursale)
+  soumisLe               DateTime?
+  valideurId             String?
+  valideLe               DateTime?
+  commentaireValidation  String?   @db.Text
+
+  // Décision du comité de crédit
+  comite                 String?
+  dateComite             DateTime?
+  /// accorde | rejete | ajourne
+  decision               String?
+  montantAccorde         Float?
+  motifRejetCode         String?
+  motifRejetES           String?   @db.Text
+  reservesComite         String?   @db.Text
+  commentaireComite      String?   @db.Text
+
+  dossierPrecedentId     String?
+  creeParId              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  entite     Entite       @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  client     Client       @relation(fields: [clientId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  charge     Utilisateur? @relation("ChargeDossier", fields: [chargeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  valideur   Utilisateur? @relation("ValidateurDossier", fields: [valideurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  secteur    Secteur?     @relation(fields: [secteurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  region     Region?      @relation(fields: [regionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  precedent  Dossier?     @relation("Renouvellement", fields: [dossierPrecedentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  suivants   Dossier[]    @relation("Renouvellement")
+
+  reponsesExclusion     ReponseExclusion[]
+  reponsesCategorisation ReponseCategorisation[]
+  reponses              ReponseQuestion[]
+  actions               Action[]
+  visites               Visite[]
+  climat                EvaluationClimat?
+  documents             Document[]
+  historique            HistoriqueDossier[]
+  notifications         Notification[]
+
+  @@index([entiteId])
+  @@index([clientId])
+  @@index([statut])
+  @@index([categorie])
+  @@map("sges_dossiers")
+}
+
+model ReponseExclusion {
+  id          String   @id @default(cuid())
+  dossierId   String
+  critereId   String
+  reponse     Boolean
+  commentaire String?  @db.Text
+  updatedAt   DateTime @updatedAt
+
+  dossier Dossier          @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  critere CritereExclusion @relation(fields: [critereId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([dossierId, critereId])
+  @@map("sges_reponses_exclusion")
+}
+
+model ReponseCategorisation {
+  id         String   @id @default(cuid())
+  dossierId  String
+  questionId String
+  reponse    Boolean
+  updatedAt  DateTime @updatedAt
+
+  dossier  Dossier                @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  question QuestionCategorisation @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([dossierId, questionId])
+  @@map("sges_reponses_categorisation")
+}
+
+model ReponseQuestion {
+  id          String   @id @default(cuid())
+  dossierId   String
+  questionId  String
+  valeur      String?
+  commentaire String?  @db.Text
+  /// Calculé : la réponse signale un risque non maîtrisé.
+  risque      Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  dossier  Dossier  @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([dossierId, questionId])
+  @@map("sges_reponses")
+}
+
+/// Action du plan d'actions correctives (proposée par le système, issue de l'EIE/PGES,
+/// demandée par le comité ou ajoutée par le chargé).
+model Action {
+  id           String    @id @default(cuid())
+  dossierId    String
+  questionId   String?
+  modeleId     String?
+  /// systeme | eie | comite | visite | manuelle
+  origine      String    @default("systeme")
+  thematique   String?
+  libelle      String    @db.Text
+  /// court | moyen | long
+  horizon      String    @default("court")
+  /// Les actions issues de l'EIE (catégorie A) ne sont pas négociables.
+  negociable   Boolean   @default(true)
+  /// null : non encore négociée ; true : retenue ; false : écartée.
+  retenue      Boolean?
+  reserveClient String?  @db.Text
+  responsable  String?
+  dateDebut    DateTime?
+  dateEcheance DateTime?
+  periode      String?
+  avancement   Int       @default(0)
+  /// a_faire | en_cours | realisee | abandonnee
+  statut       String    @default("a_faire")
+  budget       Float?
+  deviseCode   String?
+  commentaire  String?   @db.Text
+  ordre        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  dossier Dossier       @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  suivis  SuiviAction[]
+
+  @@index([dossierId])
+  @@map("sges_actions")
+}
+
+model SuiviAction {
+  id          String   @id @default(cuid())
+  actionId    String
+  date        DateTime @default(now())
+  avancement  Int
+  statut      String
+  commentaire String?  @db.Text
+  auteurId    String?
+  visiteId    String?
+
+  action Action @relation(fields: [actionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([actionId])
+  @@map("sges_suivis_actions")
+}
+
+model Visite {
+  id               String    @id @default(cuid())
+  dossierId        String
+  date             DateTime
+  /// pre_octroi | suivi | cloture | inopinee
+  type             String    @default("suivi")
+  visiteurId       String?
+  participants     String?   @db.Text
+  constats         String?   @db.Text
+  /// conforme | partielle | non_conforme
+  conformite       String?
+  recommandations  String?   @db.Text
+  prochaineVisite  DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  dossier  Dossier      @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  visiteur Utilisateur? @relation(fields: [visiteurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([dossierId])
+  @@map("sges_visites")
+}
+
+/// Volet climat : risques physiques et de transition (BAM Directive 5/W/2021, TCFD/ISSB S2),
+/// émissions financées (PCAF) et alignement taxonomique.
+model EvaluationClimat {
+  id                  String   @id @default(cuid())
+  dossierId           String   @unique
+  /// Aléas retenus (0 à 4), JSON {stressHydrique, secheresse, inondation, chaleurExtreme,
+  /// submersionMarine, incendie, seisme} : repris de la région, ajustables.
+  aleas               String   @db.Text
+  sensibilite         Int      @default(1)
+  capaciteAdaptation  Int      @default(1)
+  mesuresAdaptation   String?  @db.Text
+  /// Facteurs de transition (0 à 4), JSON {reglementaire, technologique, marche, reputation}.
+  transition          String   @db.Text
+  expositionCBAM      Boolean  @default(false)
+  partExportUE        Float?
+  scope1              Float?
+  scope2              Float?
+  scope3              Float?
+  /// declaree | estimee_activite | estimee_secteur
+  methodeEmissions    String   @default("estimee_secteur")
+  /// Score de qualité des données PCAF (1 meilleur à 5).
+  qualitePCAF         Int      @default(5)
+  emissionsFinancees  Float?
+  emissionsEvitees    Float?
+  partRenouvelable    Float?
+  /// vert | transition | non_aligne | non_eligible
+  alignementTaxonomie String   @default("non_eligible")
+  objectifTaxonomie   String?
+  scorePhysique       Float?
+  scoreTransition     Float?
+  scoreClimat         Float?
+  niveauClimat        String?
+  commentaire         String?  @db.Text
+  updatedAt           DateTime @updatedAt
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("sges_evaluations_climat")
+}
+
+/// Pièces du dossier (EIES, PGES, autorisations, plan d'actions signé, photos de visite).
+/// Le contenu est stocké en base : aucun stockage externe à configurer, quel que soit le moteur.
+model Document {
+  id         String   @id @default(cuid())
+  dossierId  String
+  type       String
+  nom        String
+  mime       String
+  taille     Int
+  contenu    Bytes
+  /// Texte extrait (PDF) pour l'analyse par l'assistant.
+  texte      String?  @db.Text
+  deposeParId String?
+  createdAt  DateTime @default(now())
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([dossierId])
+  @@map("sges_documents")
+}
+
+model HistoriqueDossier {
+  id          String   @id @default(cuid())
+  dossierId   String
+  date        DateTime @default(now())
+  auteurId    String?
+  auteurNom   String?
+  evenement   String
+  deStatut    String?
+  versStatut  String?
+  commentaire String?  @db.Text
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([dossierId])
+  @@map("sges_historique_dossiers")
+}
+
+// ─── Transverse ────────────────────────────────────────────────────────────
+
+/// Notifications internes (Responsable RSE : exclusion, catégorie A, changement de catégorie…).
+model Notification {
+  id            String   @id @default(cuid())
+  destinataireId String
+  type          String
+  titre         String
+  message       String   @db.Text
+  dossierId     String?
+  lien          String?
+  lu            Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  destinataire Utilisateur @relation(fields: [destinataireId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  dossier      Dossier?    @relation(fields: [dossierId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([destinataireId, lu])
+  @@map("sges_notifications")
+}
+
+/// Journal d'audit : qui a fait quoi, quand, sur quel objet.
+model Journal {
+  id            String   @id @default(cuid())
+  date          DateTime @default(now())
+  utilisateurId String?
+  utilisateurNom String?
+  action        String
+  objet         String
+  objetId       String?
+  details       String?  @db.Text
+  ip            String?
+
+  utilisateur Utilisateur? @relation(fields: [utilisateurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([date])
+  @@index([objet, objetId])
+  @@map("sges_journal")
+}
+
+/// Clés d'accès de la plateforme d'octroi de crédit (import de la fiche d'évaluation E&S).
+model CleApi {
+  id               String    @id @default(cuid())
+  nom              String
+  /// Premiers caractères affichés pour reconnaître la clé ; la clé complète n'est jamais stockée.
+  prefixe          String
+  empreinte        String    @unique
+  entiteId         String?
+  actif            Boolean   @default(true)
+  derniereUtilisation DateTime?
+  expireLe         DateTime?
+  createdAt        DateTime  @default(now())
+
+  entite Entite? @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("sges_cles_api")
+}

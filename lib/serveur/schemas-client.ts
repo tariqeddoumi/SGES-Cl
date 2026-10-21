@@ -20,7 +20,14 @@ export const SchemaClient = z.object({
   ice: texte(40),
   secteurId: texte(40),
   segment: texte(20),
-  pays: z.string().trim().max(3).optional(),
+  // Champ vidé dans le formulaire : on garde la valeur existante (ou « MA » à la création).
+  pays: z
+    .string()
+    .trim()
+    .max(3)
+    .nullable()
+    .optional()
+    .transform((v) => v || undefined),
   ville: texte(120),
   adresse: texte(1000),
   contactNom: texte(200),

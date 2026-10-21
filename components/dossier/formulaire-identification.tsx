@@ -100,7 +100,7 @@ export function FormulaireIdentification({
   return (
     <div className="space-y-6">
       <fieldset className="grid gap-4 md:grid-cols-2" disabled={desactive}>
-        <legend className="mb-2 text-[13px] font-semibold text-foreground md:col-span-2">{t("fiche.partie2")}</legend>
+        <legend className="mb-2 text-[13px] font-semibold text-foreground md:col-span-2">{t("dossier.descriptionProjet")}</legend>
         <Selecteur id="typeCredit" libelle={t("dossier.typeCredit")} valeur={valeurs.typeCredit} onChange={(v) => maj("typeCredit", v)} options={options("type_credit")} obligatoire erreur={erreurs.typeCredit} desactive={desactive} />
         <Selecteur id="natureProjet" libelle={t("dossier.natureProjet")} valeur={valeurs.natureProjet} onChange={(v) => maj("natureProjet", v)} options={options("nature_projet")} desactive={desactive} />
         <Selecteur id="secteurId" libelle={t("dossier.secteur")} valeur={valeurs.secteurId} onChange={(v) => maj("secteurId", v)} options={secteurs} obligatoire erreur={erreurs.secteurId} desactive={desactive} className="md:col-span-2" />

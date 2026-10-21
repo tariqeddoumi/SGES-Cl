@@ -1,8 +1,7 @@
 import { nombre } from "@/lib/parametres";
 import { route } from "@/lib/serveur/api";
 import { chargerParametres } from "@/lib/serveur/parametres";
-import { filtreLecture } from "@/lib/serveur/perimetre";
-import { compter, dossiersPerimetre } from "@/lib/serveur/portefeuille";
+import { compter, dossiersPerimetre, echeancesVisites, filtreActionsEnRetard } from "@/lib/serveur/portefeuille";
 import { prisma } from "@/lib/serveur/prisma";
 
 export const GET = route(async (_req, ctx) => {
@@ -12,28 +11,9 @@ export const GET = route(async (_req, ctx) => {
   const dossiers = await dossiersPerimetre(ctx);
   const maintenant = Date.now();
   const delaiDecision = nombre(p, "DELAI_DECISION_JOURS", 60) * 86400000;
-  const delaiVisite = nombre(p, "DELAI_VISITE_MOIS", 12) * 30 * 86400000;
 
-  const actionsEnRetard = await prisma.action.count({
-    where: {
-      dossier: { ...filtreLecture(ctx.perimetre), statut: { in: ["decide", "en_suivi"] } },
-      retenue: true,
-      statut: { in: ["a_faire", "en_cours"] },
-      dateEcheance: { lt: new Date() },
-    },
-  });
-  const enSuivi = dossiers.filter((d) => d.statut === "en_suivi");
-  const visites = await prisma.visite.findMany({
-    where: { dossierId: { in: enSuivi.map((d) => d.id) } },
-    select: { dossierId: true, date: true, prochaineVisite: true },
-    orderBy: { date: "desc" },
-  });
-  const visitesAPlanifier = enSuivi.filter((d) => {
-    const v = visites.find((x) => x.dossierId === d.id);
-    if (!v) return true;
-    if (v.prochaineVisite) return v.prochaineVisite.getTime() < maintenant;
-    return maintenant - v.date.getTime() > delaiVisite;
-  }).length;
+  const actionsEnRetard = await prisma.action.count({ where: filtreActionsEnRetard(ctx.perimetre) });
+  const visitesAPlanifier = (await echeancesVisites(ctx.perimetre, nombre(p, "DELAI_VISITE_MOIS", 12))).filter((v) => v.enRetard).length;
 
   const parMois: Record<string, number> = {};
   for (let i = 11; i >= 0; i--) {

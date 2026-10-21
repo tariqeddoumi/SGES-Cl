@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, Download, Search, UserPlus } from "lucide-react";
-import { api, ErreurApi } from "@/lib/client/api";
+import { api } from "@/lib/client/api";
 import { useReferentiels } from "@/lib/client/referentiels";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
@@ -124,7 +124,7 @@ function Contenu() {
       toast(t("dossier.dossierCree", { reference: d.reference }));
       router.push(`/dossiers/${d.id}?etape=exclusion`);
     } catch (err) {
-      setErreur(err instanceof ErreurApi ? `${t(`erreurs.${err.code}`)} ${err.message}` : String(err));
+      setErreur(err instanceof Error ? err.message : String(err));
       setEnCours(false);
     }
   };

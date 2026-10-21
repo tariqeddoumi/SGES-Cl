@@ -67,7 +67,7 @@ export function Carte({
             {titre && <h2 className="text-[14.5px] font-semibold text-foreground">{titre}</h2>}
             {description && <p className="mt-0.5 text-[12px] text-muted-foreground">{description}</p>}
           </div>
-          {actions && <div className="no-print flex shrink-0 flex-wrap gap-2">{actions}</div>}
+          {actions && <div className="no-print flex max-w-full flex-wrap gap-2">{actions}</div>}
         </div>
       )}
       <div className={sansMarge ? "defilement-x overflow-x-auto" : "p-4"}>{children}</div>

@@ -171,7 +171,7 @@ function Espace({ id }: { id: string }) {
         {d.verrouille && <Bandeau ton="info">{t("dossier.verrouilleMessage")}</Bandeau>}
         {!droits.ecriture && <Bandeau ton="info">{t("dossier.perimetreMessage")}</Bandeau>}
 
-        <div className="grid gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
           <nav aria-label={t("dossier.avancement")} className="no-print">
             <ol className="flex gap-1 overflow-x-auto pb-1 lg:sticky lg:top-20 lg:flex-col lg:overflow-visible">
               {volets.map((v, i) => {

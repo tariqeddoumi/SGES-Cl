@@ -62,7 +62,7 @@ export default function PageParametres() {
       // Habillage, langue, thème : la mise en page serveur doit être relue.
       window.location.reload();
     } catch (e) {
-      setErreur(e instanceof ErreurApi && Array.isArray(e.details) ? (e.details as { champ: string }[]).map((d) => d.champ).join(", ") + " : " + t("admin.valeurInvalide") : String(e));
+      setErreur(e instanceof ErreurApi && Array.isArray(e.details) ? (e.details as { champ: string }[]).map((d) => d.champ).join(", ") + " : " + t("admin.valeurInvalide") : (e as Error).message);
     } finally {
       setEnCours(false);
     }

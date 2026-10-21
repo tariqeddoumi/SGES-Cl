@@ -58,7 +58,7 @@ export default function PageClimat() {
                 <Th>{t("dossier.region")}</Th>
                 {ALEAS.map((a) => <Th key={a} className="min-w-[78px] whitespace-normal text-center leading-tight">{t(`climat.${a}`)}</Th>)}
                 <Th alignFin>{t("tableau.dossiers")}</Th>
-                <Th alignFin>{t("commun.montant")}</Th>
+                <Th alignFin>{t("climat.montantFinance")}</Th>
                 <Th alignFin>{t("climat.physique")}</Th>
               </tr>
             </thead>
@@ -72,7 +72,7 @@ export default function PageClimat() {
                     </Td>
                   ))}
                   <Td alignFin>{r.nb}</Td>
-                  <Td alignFin>{fmt.ref(r.montant)}</Td>
+                  <Td alignFin className="whitespace-nowrap">{fmt.ref(r.montant)}</Td>
                   <Td alignFin>{fmt.nombre(r.physique, 0)}</Td>
                 </Tr>
               ))}
@@ -83,11 +83,11 @@ export default function PageClimat() {
       <Carte titre={t("climat.transitionSecteur")} sansMarge>
         {donnees.secteurs.length === 0 ? <Vide titre={t("commun.aucuneDonnee")} /> : (
           <Tableau>
-            <thead><tr><Th>{t("dossier.secteur")}</Th><Th alignFin>{t("tableau.dossiers")}</Th><Th alignFin>{t("commun.montant")}</Th><Th alignFin>{t("climat.transitionTitre")}</Th><Th alignFin>{t("climat.emissionsFinancees")}</Th><Th alignFin>CBAM</Th></tr></thead>
+            <thead><tr><Th>{t("dossier.secteur")}</Th><Th alignFin>{t("tableau.dossiers")}</Th><Th alignFin>{t("climat.montantFinance")}</Th><Th alignFin>{t("climat.transitionTitre")}</Th><Th alignFin>{t("climat.emissionsFinancees")}</Th><Th alignFin>CBAM</Th></tr></thead>
             <tbody>
               {donnees.secteurs.map((s) => (
                 <Tr key={s.secteur}>
-                  <Td className="font-medium">{s.secteur}</Td><Td alignFin>{s.nb}</Td><Td alignFin>{fmt.ref(s.montant)}</Td>
+                  <Td className="font-medium">{s.secteur}</Td><Td alignFin>{s.nb}</Td><Td alignFin className="whitespace-nowrap">{fmt.ref(s.montant)}</Td>
                   <Td alignFin>{fmt.nombre(s.transition, 0)}</Td><Td alignFin>{fmt.nombre(s.emissions, 0)}</Td><Td alignFin>{s.cbam ? fmt.ref(s.cbam) : "—"}</Td>
                 </Tr>
               ))}
@@ -102,7 +102,7 @@ export default function PageClimat() {
             <tbody>
               {donnees.dossiers.map((d) => (
                 <Tr key={d.id}>
-                  <Td><Link href={`/dossiers/${d.id}?etape=climat`} className="font-medium hover:underline">{d.client}</Link><span className="ms-2 text-[11.5px] text-muted-foreground" dir="ltr">{d.reference}</span></Td>
+                  <Td><Link href={`/dossiers/${d.id}?etape=climat`} className="font-medium hover:underline">{d.client}</Link><span className="ms-2 text-[11.5px] text-muted-foreground"><span dir="ltr">{d.reference}</span></span></Td>
                   <Td><PuceNiveau niveau={d.niveau} score={d.score} /></Td>
                   <Td alignFin>{fmt.nombre(d.physique, 0)}</Td><Td alignFin>{fmt.nombre(d.transition, 0)}</Td><Td alignFin>{fmt.nombre(d.emissions, 0)}</Td>
                 </Tr>

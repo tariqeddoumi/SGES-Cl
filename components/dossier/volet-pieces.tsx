@@ -62,7 +62,7 @@ export function VoletPieces() {
         {droits.pieces && (
           <div className="flex flex-wrap items-end gap-3 border-b border-border p-4">
             <Selecteur id="type-piece" className="min-w-[260px]" libelle={t("pieces.typePiece")} valeur={type} onChange={setType} options={(ref?.listes.type_document ?? []).map((x) => ({ valeur: x.code, libelle: lib(x.libelle) }))} sansVide />
-            <input ref={input} type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.doc,.xls,.txt" onChange={(e) => e.target.files?.[0] && deposer(e.target.files[0])} />
+            <input ref={input} type="file" className="hidden" aria-label={t("pieces.deposer")} accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.doc,.xls,.txt" onChange={(e) => e.target.files?.[0] && deposer(e.target.files[0])} />
             <Bouton onClick={() => input.current?.click()} disabled={enCours}>
               {enCours ? <Sablier /> : <Upload />} {t("pieces.deposer")}
             </Bouton>

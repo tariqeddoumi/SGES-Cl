@@ -176,6 +176,11 @@
     @apply bg-background text-foreground;
     font-feature-settings: "cv11";
   }
+  /* Un élément de grille peut rétrécir sous la largeur de son contenu : sans cela, un texte
+     tronqué ou un tableau défilant élargit la colonne et la page déborde sur mobile. */
+  .grid > * {
+    min-width: 0;
+  }
   /* Les nombres s'alignent en colonne : montants, scores, émissions. */
   table,
   .tabulaire {

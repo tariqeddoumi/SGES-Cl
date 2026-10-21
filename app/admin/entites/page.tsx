@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { api, ErreurApi, useDonnees } from "@/lib/client/api";
+import { api, useDonnees } from "@/lib/client/api";
 import { oublierReferentiels } from "@/lib/client/referentiels";
 import { TYPES_ENTITE } from "@/lib/domaine/constantes";
 import { useApp } from "@/components/providers/application";
@@ -42,7 +42,7 @@ export default function PageEntites() {
       toast(t("commun.enregistre"));
       await recharger();
     } catch (x) {
-      setErreur(x instanceof ErreurApi && Array.isArray(x.details) ? JSON.stringify(x.details) : String((x as Error).message));
+      setErreur((x as Error).message);
     }
   };
   const supprimer = async (x: Entite) => {

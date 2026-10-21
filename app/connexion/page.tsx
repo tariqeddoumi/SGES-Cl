@@ -31,7 +31,7 @@ function Formulaire() {
       if (err instanceof ErreurApi && err.code === "compte_verrouille") {
         setErreur(t("auth.compteVerrouille", { minutes: (err.details as { minutes?: number })?.minutes ?? 15 }));
       } else if (err instanceof ErreurApi && err.code === "identifiants") setErreur(t("auth.erreurIdentifiants"));
-      else setErreur(err instanceof ErreurApi ? t(`erreurs.${err.code}`) : String(err));
+      else setErreur(err instanceof Error ? err.message : String(err));
       setEnCours(false);
     }
   };

@@ -128,7 +128,7 @@ export default function PageReporting() {
                   {donnees.sansDecision.map((d) => (
                     <li key={d.id} className="px-4 py-2.5 text-[13px]">
                       <Link href={`/dossiers/${d.id}`} className="font-medium hover:underline">{d.client}</Link>
-                      <span className="ms-2 text-muted-foreground" dir="ltr">{d.reference}</span>
+                      <span className="ms-2 text-muted-foreground"><span dir="ltr">{d.reference}</span></span>
                       <p className="text-[12px] text-muted-foreground">{d.entite} · {t("validation.valideLe")} {fmt.date(d.valideLe)} · {d.charge}</p>
                     </li>
                   ))}
@@ -139,16 +139,16 @@ export default function PageReporting() {
           <Carte titre={t("reporting.listeMensuelle")} sansMarge>
             {donnees.dossiers.length === 0 ? <Vide titre={t("commun.aucuneDonnee")} /> : (
               <Tableau>
-                <thead><tr><Th>{t("commun.date")}</Th><Th>{t("dossier.reference")}</Th><Th>{t("dossier.client")}</Th><Th>{t("commun.entite")}</Th><Th>{t("dossier.categorie")}</Th><Th>{t("dossier.niveauRisque")}</Th><Th alignFin>{t("commun.montant")}</Th><Th>{t("commun.statut")}</Th></tr></thead>
+                <thead><tr><Th>{t("commun.date")}</Th><Th>{t("dossier.reference")}</Th><Th>{t("dossier.client")}</Th><Th>{t("dossier.categorie")}</Th><Th>{t("dossier.niveauRisque")}</Th><Th alignFin>{t("commun.montant")}</Th><Th>{t("commun.statut")}</Th></tr></thead>
                 <tbody>
                   {donnees.dossiers.map((d) => (
                     <Tr key={d.id}>
                       <Td className="whitespace-nowrap">{fmt.date(d.date)}</Td>
-                      <Td><Link href={`/dossiers/${d.id}`} className="hover:underline" dir="ltr">{d.reference}</Link></Td>
-                      <Td>{d.client}</Td><Td className="text-muted-foreground">{d.entite}</Td>
+                      <Td className="whitespace-nowrap"><Link href={`/dossiers/${d.id}`} className="hover:underline" dir="ltr">{d.reference}</Link></Td>
+                      <Td><span className="block">{d.client}</span><span className="block text-[11.5px] text-muted-foreground">{d.entite}</span></Td>
                       <Td><PuceCategorie categorie={d.categorie} /></Td><Td><PuceNiveau niveau={d.niveauRisque} /></Td>
-                      <Td alignFin>{fmt.compact(d.montantDemande, d.deviseCode)}</Td>
-                      <Td><span className="flex gap-1"><PuceStatut statut={d.statut} /><PuceDecision decision={d.decision} /></span></Td>
+                      <Td alignFin className="whitespace-nowrap">{fmt.compact(d.montantDemande, d.deviseCode)}</Td>
+                      <Td><span className="flex flex-col items-start gap-1"><PuceStatut statut={d.statut} /><PuceDecision decision={d.decision} /></span></Td>
                     </Tr>
                   ))}
                 </tbody>

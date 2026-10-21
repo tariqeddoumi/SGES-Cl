@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { dictionnaire, traduire } from "@/lib/i18n";
 
 /**
  * Appels à l'API depuis le navigateur. La session est portée par un cookie httpOnly :
@@ -16,6 +17,18 @@ export class ErreurApi extends Error {
   ) {
     super(message);
   }
+}
+
+/**
+ * Les messages d'erreur du serveur sont rédigés en français (souvent plus précis que le code) :
+ * en français on les garde, dans les autres langues on affiche la traduction du code d'erreur.
+ */
+function messageLocalise(code: string | undefined, message: string): string {
+  const langue = typeof document !== "undefined" ? document.documentElement.lang : "fr";
+  if (!code || !langue || langue === "fr") return message;
+  const cle = `erreurs.${code}`;
+  const traduit = traduire(dictionnaire(langue), cle);
+  return traduit === cle ? message : traduit;
 }
 
 export async function api<T = unknown>(url: string, options: { method?: string; body?: unknown; formData?: FormData } = {}): Promise<T> {
@@ -40,7 +53,15 @@ export async function api<T = unknown>(url: string, options: { method?: string; 
   } catch {
     /* réponse non JSON */
   }
-  if (!r.ok) throw new ErreurApi(json.error ?? `Erreur ${r.status}`, r.status, json.code ?? "interne", json.details);
+  if (!r.ok) {
+    // Erreur de validation : le message nomme les champs refusés, sur tous les écrans.
+    const champs =
+      json.code === "validation" && Array.isArray(json.details)
+        ? [...new Set((json.details as { champ?: string }[]).map((d) => d.champ).filter(Boolean))].join(", ")
+        : "";
+    const message = messageLocalise(json.code, json.error ?? `Erreur ${r.status}`) + (champs ? ` (${champs})` : "");
+    throw new ErreurApi(message, r.status, json.code ?? "interne", json.details);
+  }
   return json.data as T;
 }
 

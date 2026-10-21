@@ -9,7 +9,7 @@ import { Tableau, Td, Th, Tr } from "@/components/ui/tableau";
 
 interface Donnees {
   realisees: { id: string; date: string; type: string; conformite: string | null; constats: string | null; visiteur: { prenom: string; nom: string } | null; dossier: { id: string; reference: string; client: { raisonSociale: string } } }[];
-  aPlanifier: { id: string; reference: string; client: string; derniere: string | null; echeance: string }[];
+  aPlanifier: { id: string; reference: string; client: string; derniere: string | null; echeance: string; enRetard: boolean }[];
 }
 
 export default function PageVisites() {
@@ -23,16 +23,15 @@ export default function PageVisites() {
       <Carte titre={t("suivi.aPlanifier")} sansMarge>
         {donnees.aPlanifier.length === 0 ? <Vide titre={t("commun.aucuneDonnee")} /> : (
           <Tableau>
-            <thead><tr><Th>{t("dossier.client")}</Th><Th>{t("dossier.reference")}</Th><Th>{t("suivi.realisees")}</Th><Th>{t("suivi.prochaineVisite")}</Th></tr></thead>
+            <thead><tr><Th>{t("dossier.client")}</Th><Th>{t("dossier.reference")}</Th><Th>{t("suivi.derniereVisite")}</Th><Th>{t("suivi.prochaineVisite")}</Th></tr></thead>
             <tbody>
               {donnees.aPlanifier.map((d) => {
-                const retard = new Date(d.echeance) < new Date();
                 return (
                   <Tr key={d.id}>
                     <Td className="font-medium"><Link href={`/dossiers/${d.id}?etape=suivi`} className="hover:underline">{d.client}</Link></Td>
-                    <Td dir="ltr" className="text-muted-foreground">{d.reference}</Td>
+                    <Td dir="ltr" className="whitespace-nowrap text-muted-foreground">{d.reference}</Td>
                     <Td>{d.derniere ? fmt.date(d.derniere) : "—"}</Td>
-                    <Td>{fmt.date(d.echeance)} {retard && <Puce ton="alerte">{t("suivi.enRetard")}</Puce>}</Td>
+                    <Td>{fmt.date(d.echeance)} {d.enRetard && <Puce ton="alerte">{t("suivi.enRetard")}</Puce>}</Td>
                   </Tr>
                 );
               })}

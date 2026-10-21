@@ -158,57 +158,85 @@ function Liste() {
         ) : !donnees?.lignes.length ? (
           <Vide icone={<FolderOpen size={28} />} titre={t("dossier.aucunDossier")} />
         ) : (
-          <Tableau>
-            <thead>
-              <tr>
-                <Th>{t("dossier.reference")}</Th>
-                <Th>{t("dossier.client")}</Th>
-                <Th>{t("dossier.categorie")}</Th>
-                <Th>{t("dossier.niveauRisque")}</Th>
-                <Th>{t("climat.niveau")}</Th>
-                <Th alignFin>{t("dossier.montantDemande")}</Th>
-                <Th>{t("commun.statut")}</Th>
-                <Th>{t("dossier.charge")}</Th>
-                <Th>{t("dossier.derniereMaj")}</Th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Mobile : une carte par dossier ; le tableau prend le relais à partir de 768 px. */}
+            <ul className="divide-y divide-border md:hidden">
               {donnees.lignes.map((d) => (
-                <Tr key={d.id} onClick={() => router.push(`/dossiers/${d.id}`)}>
-                  <Td className="whitespace-nowrap font-medium">
-                    <Link href={`/dossiers/${d.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()} dir="ltr">
-                      {d.reference}
-                    </Link>
-                    {d.exclu && <span className="ms-2 rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">EXCL</span>}
-                  </Td>
-                  <Td>
-                    <span className="block max-w-[260px] truncate font-medium">{d.client.raisonSociale}</span>
-                    <span className="block max-w-[260px] truncate text-[11.5px] text-muted-foreground">{d.objet ?? d.entite.nom}</span>
-                  </Td>
-                  <Td>
-                    <PuceCategorie categorie={d.categorie} sous={d.sousCategorieFI} />
-                  </Td>
-                  <Td>
-                    <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
-                  </Td>
-                  <Td>
-                    <PuceNiveau niveau={d.climat?.niveauClimat} />
-                  </Td>
-                  <Td alignFin className="whitespace-nowrap">
-                    <span title={fmt.montant(d.montantDemande, d.deviseCode)}>{fmt.compact(d.montantDemande, d.deviseCode)}</span>
-                  </Td>
-                  <Td>
-                    <div className="flex flex-wrap gap-1">
+                <li key={d.id}>
+                  <Link href={`/dossiers/${d.id}`} className="block space-y-1.5 px-4 py-3 hover:bg-accent/50">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium" dir="auto">{d.client.raisonSociale}</span>
+                        <span className="block text-[11.5px] text-muted-foreground" dir="ltr">{d.reference}</span>
+                      </span>
+                      <span className="shrink-0 text-[13px] font-semibold tabulaire">{fmt.compact(d.montantDemande, d.deviseCode)}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <PuceCategorie categorie={d.categorie} sous={d.sousCategorieFI} />
+                      <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
                       <PuceStatut statut={d.statut} />
                       <PuceDecision decision={d.decision} />
+                      {d.exclu && <span className="rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">EXCL</span>}
                     </div>
-                  </Td>
-                  <Td className="whitespace-nowrap text-muted-foreground">{d.charge ? `${d.charge.prenom} ${d.charge.nom}` : "—"}</Td>
-                  <Td className="whitespace-nowrap text-muted-foreground">{fmt.date(d.updatedAt)}</Td>
-                </Tr>
+                  </Link>
+                </li>
               ))}
-            </tbody>
-          </Tableau>
+            </ul>
+            <div className="hidden md:block">
+              <Tableau>
+                <thead>
+                  <tr>
+                    <Th>{t("dossier.reference")}</Th>
+                    <Th>{t("dossier.client")}</Th>
+                    <Th>{t("dossier.categorie")}</Th>
+                    <Th>{t("dossier.niveauRisque")}</Th>
+                    <Th className="hidden 2xl:table-cell">{t("climat.niveau")}</Th>
+                    <Th alignFin>{t("dossier.montantDemande")}</Th>
+                    <Th>{t("commun.statut")}</Th>
+                    <Th className="hidden 2xl:table-cell">{t("dossier.charge")}</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {donnees.lignes.map((d) => (
+                    <Tr key={d.id} onClick={() => router.push(`/dossiers/${d.id}`)}>
+                      <Td className="whitespace-nowrap font-medium">
+                        <Link href={`/dossiers/${d.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()} dir="ltr">
+                          {d.reference}
+                        </Link>
+                        {d.exclu && <span className="ms-2 rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">EXCL</span>}
+                      </Td>
+                      <Td>
+                        <span className="block max-w-[240px] truncate font-medium" dir="auto">{d.client.raisonSociale}</span>
+                        <span className="block max-w-[240px] truncate text-[11.5px] text-muted-foreground" dir="auto">{d.objet ?? d.entite.nom}</span>
+                      </Td>
+                      <Td>
+                        <PuceCategorie categorie={d.categorie} sous={d.sousCategorieFI} />
+                      </Td>
+                      <Td>
+                        <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
+                      </Td>
+                      <Td className="hidden 2xl:table-cell">
+                        <PuceNiveau niveau={d.climat?.niveauClimat} />
+                      </Td>
+                      <Td alignFin className="whitespace-nowrap">
+                        <span title={fmt.montant(d.montantDemande, d.deviseCode)}>{fmt.compact(d.montantDemande, d.deviseCode)}</span>
+                      </Td>
+                      <Td>
+                        <div className="flex flex-col items-start gap-1">
+                          <PuceStatut statut={d.statut} />
+                          <PuceDecision decision={d.decision} />
+                        </div>
+                      </Td>
+                      <Td className="hidden whitespace-nowrap text-muted-foreground 2xl:table-cell">
+                        <span className="block">{d.charge ? `${d.charge.prenom} ${d.charge.nom}` : "—"}</span>
+                        <span className="block text-[11.5px]" title={t("dossier.derniereMaj")}>{fmt.date(d.updatedAt)}</span>
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </Tableau>
+            </div>
+          </>
         )}
       </Carte>
       {donnees && donnees.total > donnees.taille && (

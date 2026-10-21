@@ -1,12 +1,11 @@
-import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { corps, route } from "@/lib/serveur/api";
 import { SchemaIdentification } from "@/lib/serveur/schemas";
-import { variantesRecherche } from "@/lib/utils";
 import { ErreurMetier, interdit, introuvable } from "@/lib/serveur/contexte";
 import { genererReference, historiser, recalculer } from "@/lib/serveur/dossiers";
+import { filtreDossiers } from "@/lib/serveur/filtre-dossiers";
 import { journaliser } from "@/lib/serveur/journal";
-import { chargerArbre, filtreLecture, peutEcrire, peutLire } from "@/lib/serveur/perimetre";
+import { peutEcrire, peutLire } from "@/lib/serveur/perimetre";
 import { prisma } from "@/lib/serveur/prisma";
 
 const SchemaCreation = SchemaIdentification.extend({
@@ -20,32 +19,7 @@ const SchemaCreation = SchemaIdentification.extend({
 export const GET = route(
   async (req, ctx) => {
     const p = req.nextUrl.searchParams;
-    const where: Prisma.DossierWhereInput = { ...filtreLecture(ctx.perimetre) };
-    if (p.get("statut")) where.statut = { in: p.get("statut")!.split(",") };
-    else if (p.get("tous") !== "1") where.statut = { not: "annule" };
-    if (p.get("categorie")) where.categorie = { in: p.get("categorie")!.split(",") };
-    if (p.get("niveau")) where.niveauRisque = { in: p.get("niveau")!.split(",") };
-    if (p.get("decision")) where.decision = p.get("decision");
-    if (p.get("clientId")) where.clientId = p.get("clientId")!;
-    if (p.get("mes") === "1") where.chargeId = ctx.utilisateur.id;
-    if (p.get("entite")) {
-      // Une entité et toute sa descendance, dans la limite du périmètre.
-      const arbre = await chargerArbre();
-      const racine = arbre.find((e) => e.id === p.get("entite"));
-      if (racine) {
-        const ids = arbre.filter((e) => e.chemin.startsWith(racine.chemin) && peutLire(ctx.perimetre, e.id)).map((e) => e.id);
-        where.entiteId = { in: ids };
-      }
-    }
-    const q = p.get("q")?.trim();
-    if (q) {
-      where.OR = variantesRecherche(q).flatMap((v) => [
-        { reference: { contains: v } },
-        { objet: { contains: v } },
-        { client: { raisonSociale: { contains: v } } },
-        { client: { compteCourant: { contains: v } } },
-      ]);
-    }
+    const where = await filtreDossiers(ctx, p);
     const taille = Math.min(200, Math.max(1, Number(p.get("taille")) || 50));
     const page = Math.max(1, Number(p.get("page")) || 1);
     const [total, lignes] = await Promise.all([

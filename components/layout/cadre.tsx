@@ -18,6 +18,7 @@ import {
   Plus,
   ScrollText,
   Settings,
+  ShieldAlert,
   ThermometerSun,
   User,
   Users,
@@ -25,9 +26,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/client/api";
-import type { Permission } from "@/lib/permissions";
+import { ecranAutorise, type Permission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
+import { Bouton } from "@/components/ui/bouton";
+import { Carte, Vide } from "@/components/ui/mise-en-page";
 
 interface Entree {
   icone: LucideIcon;
@@ -76,6 +79,7 @@ const SANS_CADRE = ["/connexion", "/changer-mot-de-passe"];
 /** Cadre : menu latéral pleine hauteur (collant), barre supérieure, contenu. */
 export function CadreApplication({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
+  const { t, session } = useApp();
   const [ouvert, setOuvert] = useState(false);
   const fermer = useCallback(() => setOuvert(false), []);
   useEffect(() => setOuvert(false), [pathname]);
@@ -86,7 +90,19 @@ export function CadreApplication({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <BarreSuperieure onOuvrirMenu={() => setOuvert(true)} />
         <main className="flex-1 px-4 py-5 md:px-6 md:py-6">
-          <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+          <div className="mx-auto w-full max-w-[1400px]">
+            {!session || ecranAutorise(pathname, session.permissions) ? (
+              children
+            ) : (
+              <Carte>
+                <Vide
+                  icone={<ShieldAlert size={28} />}
+                  titre={t("erreurs.interdit")}
+                  action={<Bouton variante="contour" asChild><Link href="/tableau-de-bord">{t("nav.tableauDeBord")}</Link></Bouton>}
+                />
+              </Carte>
+            )}
+          </div>
         </main>
       </div>
     </div>

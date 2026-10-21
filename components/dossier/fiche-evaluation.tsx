@@ -131,74 +131,78 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
         </div>
 
         <h4 className="mt-5 text-[13px] font-semibold">{t("fiche.problematiques")}</h4>
-        <table className="mt-2 w-full border-collapse text-[12.5px]">
-          <thead>
-            <tr className="bg-surface">
-              <th className="border border-border px-2 py-1.5 text-start">{t("plan.thematique")}</th>
-              <th className="border border-border px-2 py-1.5 text-center" colSpan={2}>
-                {t("fiche.mesuresControle")}
-              </th>
-              <th className="border border-border px-2 py-1.5 text-center">{t("evaluation.nonConcerne")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {f.problematiques.map((p) => (
-              <tr key={p.code}>
-                <td className="border border-border px-2 py-1.5">
-                  <span className="font-medium">{p.libelle}</span>
-                  {p.risques.length > 0 && (
-                    <ul className="mt-1 list-disc ps-4 text-[12px] text-muted-foreground">
-                      {p.risques.map((r) => (
-                        <li key={r.code}>{r.question}</li>
-                      ))}
-                    </ul>
-                  )}
-                </td>
-                <td className="border border-border px-2 py-1.5 text-center">
-                  <Case coche={p.etat === "maitrise"} libelle={t("commun.oui")} />
-                </td>
-                <td className="border border-border px-2 py-1.5 text-center">
-                  <Case coche={p.etat === "non_maitrise"} libelle={t("commun.non")} />
-                </td>
-                <td className="border border-border px-2 py-1.5 text-center">
-                  <Case coche={p.etat === "non_concerne"} libelle="" />
-                </td>
+        <div className="overflow-x-auto">
+          <table className="mt-2 w-full border-collapse text-[12.5px]">
+            <thead>
+              <tr className="bg-surface">
+                <th className="border border-border px-2 py-1.5 text-start">{t("plan.thematique")}</th>
+                <th className="border border-border px-2 py-1.5 text-center" colSpan={2}>
+                  {t("fiche.mesuresControle")}
+                </th>
+                <th className="border border-border px-2 py-1.5 text-center">{t("evaluation.nonConcerne")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {f.problematiques.map((p) => (
+                <tr key={p.code}>
+                  <td className="border border-border px-2 py-1.5">
+                    <span className="font-medium">{p.libelle}</span>
+                    {p.risques.length > 0 && (
+                      <ul className="mt-1 list-disc ps-4 text-[12px] text-muted-foreground">
+                        {p.risques.map((r) => (
+                          <li key={r.code}>{r.question}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
+                  <td className="border border-border px-2 py-1.5 text-center">
+                    <Case coche={p.etat === "maitrise"} libelle={t("commun.oui")} />
+                  </td>
+                  <td className="border border-border px-2 py-1.5 text-center">
+                    <Case coche={p.etat === "non_maitrise"} libelle={t("commun.non")} />
+                  </td>
+                  <td className="border border-border px-2 py-1.5 text-center">
+                    <Case coche={p.etat === "non_concerne"} libelle="" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {f.expositionNonMaitrisee.length > 0 && (
           <>
             <h4 className="mt-5 text-[13px] font-semibold">{t("fiche.expositionNonMaitrisee")}</h4>
-            <table className="mt-2 w-full border-collapse text-[12.5px]">
-              <thead>
-                <tr className="bg-surface">
-                  <th className="w-1/2 border border-border px-2 py-1.5 text-start">{t("evaluation.risque")}</th>
-                  <th className="border border-border px-2 py-1.5 text-start">{t("fiche.mesuresCorrectives")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {f.expositionNonMaitrisee.map((e, i) => (
-                  <tr key={i}>
-                    <td className="border border-border px-2 py-1.5 align-top">
-                      <span className="text-[11px] text-muted-foreground">{e.thematique}</span>
-                      <br />
-                      {e.risque}
-                    </td>
-                    <td className="border border-border px-2 py-1.5 align-top">
-                      <ul className="list-disc ps-4">
-                        {e.mesures.map((m, k) => (
-                          <li key={k}>
-                            {m.libelle} <span className="text-muted-foreground">({t(`horizon.${m.horizon}`)})</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="mt-2 w-full border-collapse text-[12.5px]">
+                <thead>
+                  <tr className="bg-surface">
+                    <th className="w-1/2 border border-border px-2 py-1.5 text-start">{t("evaluation.risque")}</th>
+                    <th className="border border-border px-2 py-1.5 text-start">{t("fiche.mesuresCorrectives")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {f.expositionNonMaitrisee.map((e, i) => (
+                    <tr key={i}>
+                      <td className="border border-border px-2 py-1.5 align-top">
+                        <span className="text-[11px] text-muted-foreground">{e.thematique}</span>
+                        <br />
+                        {e.risque}
+                      </td>
+                      <td className="border border-border px-2 py-1.5 align-top">
+                        <ul className="list-disc ps-4">
+                          {e.mesures.map((m, k) => (
+                            <li key={k}>
+                              {m.libelle} <span className="text-muted-foreground">({t(`horizon.${m.horizon}`)})</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
         {f.conclusions.commentaireEvaluation && (
@@ -230,34 +234,36 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
           {f.planActions.propose && ` — ${f.planActions.nbRetenues} / ${f.planActions.nbActions} ${t("plan.retenues").toLowerCase()}`}
         </p>
         {f.planActions.actions.length > 0 && (
-          <table className="w-full border-collapse text-[12px]">
-            <thead>
-              <tr className="bg-surface">
-                <th className="border border-border px-2 py-1.5 text-start">{t("plan.action")}</th>
-                <th className="border border-border px-2 py-1.5 text-start">{t("plan.horizon")}</th>
-                <th className="border border-border px-2 py-1.5 text-start">{t("plan.retenue")}</th>
-                <th className="border border-border px-2 py-1.5 text-start">{t("plan.dateEcheance")}</th>
-                <th className="border border-border px-2 py-1.5 text-end">{t("plan.budget")}</th>
-                <th className="border border-border px-2 py-1.5 text-end">{t("plan.avancement")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {f.planActions.actions.map((a) => (
-                <tr key={a.id}>
-                  <td className="border border-border px-2 py-1.5">
-                    {a.libelle}
-                    {a.origine !== "systeme" && <span className="text-muted-foreground"> — {t(`origine.${a.origine}`)}</span>}
-                    {a.reserveClient && <span className="block text-[11px] italic text-muted-foreground">{a.reserveClient}</span>}
-                  </td>
-                  <td className="border border-border px-2 py-1.5">{t(`horizon.${a.horizon}`)}</td>
-                  <td className="border border-border px-2 py-1.5">{retenue(a.retenue)}</td>
-                  <td className="border border-border px-2 py-1.5">{fmt.date(a.dateEcheance)}</td>
-                  <td className="border border-border px-2 py-1.5 text-end tabulaire">{a.budget ? fmt.montant(a.budget, a.deviseCode ?? f.description.devise) : "—"}</td>
-                  <td className="border border-border px-2 py-1.5 text-end tabulaire">{a.avancement} %</td>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-[12px]">
+              <thead>
+                <tr className="bg-surface">
+                  <th className="border border-border px-2 py-1.5 text-start">{t("plan.action")}</th>
+                  <th className="border border-border px-2 py-1.5 text-start">{t("plan.horizon")}</th>
+                  <th className="border border-border px-2 py-1.5 text-start">{t("plan.retenue")}</th>
+                  <th className="border border-border px-2 py-1.5 text-start">{t("plan.dateEcheance")}</th>
+                  <th className="border border-border px-2 py-1.5 text-end">{t("plan.budget")}</th>
+                  <th className="border border-border px-2 py-1.5 text-end">{t("plan.avancement")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {f.planActions.actions.map((a) => (
+                  <tr key={a.id}>
+                    <td className="border border-border px-2 py-1.5">
+                      {a.libelle}
+                      {a.origine !== "systeme" && <span className="text-muted-foreground"> — {t(`origine.${a.origine}`)}</span>}
+                      {a.reserveClient && <span className="block text-[11px] italic text-muted-foreground">{a.reserveClient}</span>}
+                    </td>
+                    <td className="border border-border px-2 py-1.5">{t(`horizon.${a.horizon}`)}</td>
+                    <td className="border border-border px-2 py-1.5">{retenue(a.retenue)}</td>
+                    <td className="border border-border px-2 py-1.5">{fmt.date(a.dateEcheance)}</td>
+                    <td className="border border-border px-2 py-1.5 text-end tabulaire">{a.budget ? fmt.montant(a.budget, a.deviseCode ?? f.description.devise) : "—"}</td>
+                    <td className="border border-border px-2 py-1.5 text-end tabulaire">{a.avancement} %</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Section>
 

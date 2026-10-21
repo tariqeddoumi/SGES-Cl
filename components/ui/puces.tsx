@@ -55,6 +55,7 @@ export function PuceCategorie({ categorie, sous, grande }: { categorie: string |
   return (
     <span
       title={t(`categorie.desc${categorie}`)}
+      dir="ltr"
       className={cn(
         "inline-flex items-center rounded-md border font-bold tabulaire",
         CLASSE_CATEGORIE[categorie] ?? CLASSE_CATEGORIE.FI,

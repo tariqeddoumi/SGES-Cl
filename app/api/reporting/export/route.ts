@@ -1,10 +1,9 @@
-import type { Prisma } from "@prisma/client";
 import ExcelJS from "exceljs";
 import { libelle } from "@/lib/i18n/libelle";
 import { dictionnaire, traduire } from "@/lib/i18n";
 import { route } from "@/lib/serveur/api";
+import { filtreDossiers } from "@/lib/serveur/filtre-dossiers";
 import { journaliser } from "@/lib/serveur/journal";
-import { chargerArbre, filtreLecture, peutLire } from "@/lib/serveur/perimetre";
 import { prisma } from "@/lib/serveur/prisma";
 
 /**
@@ -16,17 +15,7 @@ export const GET = route(
     const sp = req.nextUrl.searchParams;
     const m = dictionnaire(ctx.langue);
     const t = (c: string) => traduire(m, c);
-    const where: Prisma.DossierWhereInput = { ...filtreLecture(ctx.perimetre), statut: { not: "annule" } };
-    if (sp.get("du") || sp.get("au")) where.dateDossier = { gte: sp.get("du") ? new Date(sp.get("du")!) : undefined, lte: sp.get("au") ? new Date(`${sp.get("au")}T23:59:59`) : undefined };
-    if (sp.get("statut")) where.statut = { in: sp.get("statut")!.split(",") };
-    if (sp.get("categorie")) where.categorie = { in: sp.get("categorie")!.split(",") };
-    if (sp.get("niveau")) where.niveauRisque = { in: sp.get("niveau")!.split(",") };
-    if (sp.get("mes") === "1") where.chargeId = ctx.utilisateur.id;
-    if (sp.get("entite")) {
-      const arbre = await chargerArbre();
-      const r = arbre.find((e) => e.id === sp.get("entite"));
-      if (r) where.entiteId = { in: arbre.filter((e) => e.chemin.startsWith(r.chemin) && peutLire(ctx.perimetre, e.id)).map((e) => e.id) };
-    }
+    const where = await filtreDossiers(ctx, sp);
     const dossiers = await prisma.dossier.findMany({
       where,
       orderBy: { dateDossier: "desc" },

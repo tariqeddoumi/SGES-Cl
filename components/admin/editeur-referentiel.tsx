@@ -153,14 +153,14 @@ export function EditeurReferentiel({ def, filtreFixe }: { def: DefReferentiel; f
           <Tableau>
             <thead>
               <tr>
-                {colonnes.map((c) => <Th key={c.nom}>{t(c.cle)}</Th>)}
+                {colonnes.map((c) => <Th key={c.nom} className={c.type === "echelle" ? "whitespace-normal text-center" : undefined}>{t(c.cle)}</Th>)}
                 <Th />
               </tr>
             </thead>
             <tbody>
               {lignes.map((x) => (
                 <Tr key={String(x[idChamp])} className={def.actif && x[def.actif] === false ? "opacity-50" : undefined}>
-                  {colonnes.map((c) => <Td key={c.nom} className={c.type === "libelleLong" ? "max-w-[520px]" : undefined}>{valeurAffichee(c, x[c.nom], lib, t, fmt)}</Td>)}
+                  {colonnes.map((c) => <Td key={c.nom} className={c.type === "libelleLong" ? "max-w-[520px]" : c.type === "echelle" ? "text-center" : undefined}>{valeurAffichee(c, x[c.nom], lib, t, fmt)}</Td>)}
                   <Td alignFin>
                     <span className="inline-flex gap-1">
                       <Bouton variante="fantome" taille="iconePetite" onClick={() => ouvrir(x)} aria-label={t("commun.modifier")}><Pencil /></Bouton>

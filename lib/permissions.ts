@@ -161,3 +161,36 @@ export const ROLES_DEFAUT: { code: string; libelle: Record<string, string>; perm
     permissions: ["dossier:lire"],
   },
 ];
+
+/**
+ * Permission exigée pour ouvrir un écran : la même que celle de l'API qui l'alimente. Le menu
+ * masque déjà ces écrans ; ce contrôle couvre l'accès par l'adresse (lien, favori) avec un
+ * message clair plutôt qu'un écran vide. L'API reste le contrôle de sécurité.
+ * Le préfixe le plus long l'emporte.
+ */
+const PERMISSIONS_ECRANS: [string, Permission | "admin:*"][] = [
+  ["/dossiers", "dossier:lire"],
+  ["/dossiers/nouveau", "dossier:creer"],
+  ["/clients", "dossier:lire"],
+  ["/plans-action", "dossier:lire"],
+  ["/visites", "dossier:lire"],
+  ["/reporting", "reporting:lire"],
+  ["/climat", "climat:lire"],
+  ["/audit", "audit:lire"],
+  ["/admin", "admin:*"],
+  ["/admin/parametres", "admin:parametres"],
+  ["/admin/entites", "admin:entites"],
+  ["/admin/utilisateurs", "admin:utilisateurs"],
+  ["/admin/roles", "admin:utilisateurs"],
+  ["/admin/questionnaires", "admin:referentiels"],
+  ["/admin/referentiels", "admin:referentiels"],
+  ["/admin/api", "admin:api"],
+  ["/admin/base", "admin:base"],
+];
+
+export function ecranAutorise(chemin: string, permissions: readonly string[] | undefined): boolean {
+  const regle = PERMISSIONS_ECRANS.filter(([prefixe]) => chemin === prefixe || chemin.startsWith(prefixe + "/")).sort((a, b) => b[0].length - a[0].length)[0];
+  if (!regle) return true;
+  if (regle[1] === "admin:*") return !!permissions?.some((p) => p.startsWith("admin:"));
+  return aPermission(permissions, regle[1]);
+}

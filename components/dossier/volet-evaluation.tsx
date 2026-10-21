@@ -272,9 +272,9 @@ export function VoletEvaluation() {
               {synthese.parThematique.map((s) => {
                 const th = donnees.thematiques.find((x) => x.code === s.thematique);
                 return (
-                  <li key={s.thematique} className="flex items-center justify-between gap-2 px-4 py-2 text-[12.5px]">
-                    <span className="min-w-0 truncate">{th ? lib(th.libelle) : s.thematique}</span>
-                    <Puce ton={s.etat === "non_maitrise" ? "alerte" : s.etat === "maitrise" ? "favorable" : "neutre"}>
+                  <li key={s.thematique} className="flex items-start justify-between gap-2 px-4 py-2 text-[12.5px]">
+                    <span className="min-w-0 leading-snug">{th ? lib(th.libelle) : s.thematique}</span>
+                    <Puce className="shrink-0" ton={s.etat === "non_maitrise" ? "alerte" : s.etat === "maitrise" ? "favorable" : "neutre"}>
                       {s.etat === "non_maitrise" ? t("evaluation.nbRisques", { n: s.risques }) : s.etat === "maitrise" ? t("evaluation.maitrise") : t("evaluation.nonConcerne")}
                     </Puce>
                   </li>

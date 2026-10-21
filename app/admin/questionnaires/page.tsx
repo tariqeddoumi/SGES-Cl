@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Plus, Trash2 } from "lucide-react";
-import { api, ErreurApi, useDonnees } from "@/lib/client/api";
+import { ChevronDown, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { api, useDonnees } from "@/lib/client/api";
 import { CATEGORIES, HORIZONS, TYPES_QUESTION } from "@/lib/domaine/constantes";
 import { lireLibelle } from "@/lib/i18n/libelle";
 import { cn, lireJson } from "@/lib/utils";
@@ -45,7 +45,7 @@ export default function PageQuestionnaires() {
   const [f, setF] = useState<Formulaire | null>(null);
   const [ouverts, setOuverts] = useState<Set<string>>(new Set());
   const [categorie, setCategorie] = useState("");
-  const [bloc, setBloc] = useState<{ thematiqueId: string; code: string; libelle: Record<string, string> } | null>(null);
+  const [bloc, setBloc] = useState<{ id?: string; thematiqueId: string; code: string; libelle: Record<string, string>; actif: boolean } | null>(null);
   const [erreur, setErreur] = useState("");
 
   const blocs = useMemo(() => (donnees ?? []).flatMap((th) => th.blocs.map((b) => ({ ...b, thematique: th }))), [donnees]);
@@ -70,16 +70,25 @@ export default function PageQuestionnaires() {
       setF(null);
       await recharger();
     } catch (e) {
-      setErreur(e instanceof ErreurApi && Array.isArray(e.details) ? (e.details as { champ: string }[]).map((d) => d.champ).join(", ") : (e as Error).message);
+      setErreur((e as Error).message);
     }
   };
   const supprimer = async () => {
     if (!f?.id || !confirm(t("commun.confirmerSuppression"))) return;
     try { await api(`/api/admin/questionnaires/questions/${f.id}`, { method: "DELETE" }); setF(null); await recharger(); } catch (e) { toast((e as Error).message, "erreur"); }
   };
-  const creerBloc = async () => {
+  const enregistrerBloc = async () => {
     if (!bloc) return;
-    try { await api("/api/admin/questionnaires/blocs", { body: bloc }); setBloc(null); await recharger(); } catch (e) { toast((e as Error).message, "erreur"); }
+    const { id, ...corps } = bloc;
+    try {
+      if (id) await api(`/api/admin/questionnaires/blocs/${id}`, { method: "PATCH", body: corps });
+      else await api("/api/admin/questionnaires/blocs", { body: corps });
+      setBloc(null);
+      toast(t("commun.enregistre"));
+      await recharger();
+    } catch (e) {
+      toast((e as Error).message, "erreur");
+    }
   };
   const basculer = (id: string) => setOuverts((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const filtre = (q: Question) => !categorie || q.categories.split(",").includes(categorie);
@@ -103,18 +112,21 @@ export default function PageQuestionnaires() {
               <li key={th.id}>
                 <div className={cn("flex items-center gap-2 bg-surface px-4 py-2 text-[13px] font-semibold", !th.actif && "opacity-50")}>
                   {lib(th.libelle)}
-                  <Bouton variante="fantome" taille="iconePetite" className="ms-auto" aria-label={t("admin.bloc")} title={t("admin.bloc")} onClick={() => setBloc({ thematiqueId: th.id, code: "", libelle: {} })}><Plus /></Bouton>
+                  <Bouton variante="fantome" taille="iconePetite" className="ms-auto" aria-label={t("admin.bloc")} title={t("admin.bloc")} onClick={() => setBloc({ thematiqueId: th.id, code: "", libelle: {}, actif: true })}><Plus /></Bouton>
                 </div>
                 {th.blocs.map((b) => {
                   const qs = b.questions.filter(filtre);
                   const ouvert = ouverts.has(b.id);
                   return (
                     <div key={b.id}>
-                      <button onClick={() => basculer(b.id)} className={cn("flex w-full items-center gap-2 px-4 py-2 text-start text-[13px] hover:bg-accent/50", !b.actif && "opacity-50")}>
-                        {ouvert ? <ChevronDown size={14} /> : <ChevronRight size={14} className="rtl:rotate-180" />}
-                        <span className="flex-1">{lib(b.libelle)}</span>
-                        <Puce>{qs.length}</Puce>
-                      </button>
+                      <div className="flex items-center pe-2 hover:bg-accent/50">
+                        <button onClick={() => basculer(b.id)} className={cn("flex min-w-0 flex-1 items-center gap-2 px-4 py-2 text-start text-[13px]", !b.actif && "opacity-50")}>
+                          {ouvert ? <ChevronDown size={14} /> : <ChevronRight size={14} className="rtl:rotate-180" />}
+                          <span className="flex-1">{lib(b.libelle)}</span>
+                          <Puce>{qs.length}</Puce>
+                        </button>
+                        <Bouton variante="fantome" taille="iconePetite" aria-label={t("commun.modifier")} title={t("commun.modifier")} onClick={() => setBloc({ id: b.id, thematiqueId: th.id, code: b.code, libelle: lireLibelle(b.libelle), actif: b.actif })}><Pencil /></Bouton>
+                      </div>
                       {ouvert && (
                         <ul className="pb-2">
                           {qs.map((q) => (
@@ -218,11 +230,12 @@ export default function PageQuestionnaires() {
           )}
         </div>
       </div>
-      <Dialogue ouvert={!!bloc} onFermer={() => setBloc(null)} titre={t("admin.bloc")} pied={<><Bouton variante="contour" onClick={() => setBloc(null)}>{t("commun.annuler")}</Bouton><Bouton onClick={creerBloc}>{t("commun.creer")}</Bouton></>}>
+      <Dialogue ouvert={!!bloc} onFermer={() => setBloc(null)} titre={t("admin.bloc")} pied={<><Bouton variante="contour" onClick={() => setBloc(null)}>{t("commun.annuler")}</Bouton><Bouton onClick={enregistrerBloc}>{t(bloc?.id ? "commun.enregistrer" : "commun.creer")}</Bouton></>}>
         {bloc && (
           <div className="space-y-3">
-            <Champ id="bcode" libelle={t("commun.code")} valeur={bloc.code} onChange={(v) => setBloc({ ...bloc, code: v.toUpperCase() })} obligatoire dir="ltr" />
+            <Champ id="bcode" libelle={t("commun.code")} valeur={bloc.code} onChange={(v) => setBloc({ ...bloc, code: v.toUpperCase() })} obligatoire dir="ltr" desactive={!!bloc.id} />
             <ChampMultilingue id="blib" libelle={t("commun.libelle")} valeur={bloc.libelle} onChange={(v) => setBloc({ ...bloc, libelle: v })} obligatoire />
+            {bloc.id && <Interrupteur id="bactif" libelle={t("commun.actif")} valeur={bloc.actif} onChange={(v) => setBloc({ ...bloc, actif: v })} />}
           </div>
         )}
       </Dialogue>

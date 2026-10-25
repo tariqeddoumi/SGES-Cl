@@ -492,6 +492,21 @@ CREATE TABLE "sges_documents" (
 );
 
 -- CreateTable
+CREATE TABLE "sges_snapshots_dossiers" (
+    "id" TEXT NOT NULL,
+    "dossierId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "version" INTEGER NOT NULL,
+    "empreinte" TEXT NOT NULL,
+    "contenu" TEXT NOT NULL,
+    "auteurId" TEXT,
+    "auteurNom" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "sges_snapshots_dossiers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "sges_historique_dossiers" (
     "id" TEXT NOT NULL,
     "dossierId" TEXT NOT NULL,
@@ -639,6 +654,12 @@ CREATE UNIQUE INDEX "sges_evaluations_climat_dossierId_key" ON "sges_evaluations
 CREATE INDEX "sges_documents_dossierId_idx" ON "sges_documents"("dossierId");
 
 -- CreateIndex
+CREATE INDEX "sges_snapshots_dossiers_dossierId_idx" ON "sges_snapshots_dossiers"("dossierId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sges_snapshots_dossiers_dossierId_version_key" ON "sges_snapshots_dossiers"("dossierId", "version");
+
+-- CreateIndex
 CREATE INDEX "sges_historique_dossiers_dossierId_idx" ON "sges_historique_dossiers"("dossierId");
 
 -- CreateIndex
@@ -739,6 +760,9 @@ ALTER TABLE "sges_documents" ADD CONSTRAINT "sges_documents_dossierId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "sges_historique_dossiers" ADD CONSTRAINT "sges_historique_dossiers_dossierId_fkey" FOREIGN KEY ("dossierId") REFERENCES "sges_dossiers"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "sges_snapshots_dossiers" ADD CONSTRAINT "sges_snapshots_dossiers_dossierId_fkey" FOREIGN KEY ("dossierId") REFERENCES "sges_dossiers"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "sges_notifications" ADD CONSTRAINT "sges_notifications_destinataireId_fkey" FOREIGN KEY ("destinataireId") REFERENCES "sges_utilisateurs"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

@@ -271,6 +271,7 @@ export const en: Messages = {
     blocage_exclusion: "Answer the whole exclusion list",
     blocage_exclusion_bloquante: "A blocking exclusion criterion is ticked: the file cannot be presented",
     blocage_categorisation: "Categorise the project (and specify the FI sub-category)",
+    blocage_categorisation_incomplete: "Answer all 25 categorisation elements (a “yes” in category A does not waive the other answers)",
     blocage_evaluation: "Answer all mandatory questions and write the assessment comment",
     blocage_climat: "Complete the climate section",
     blocage_plan: "Negotiate every proposed action (retained or dismissed)",
@@ -320,6 +321,7 @@ export const en: Messages = {
     toutNon: "Answer 'No' to all criteria",
   },
   categorisation: {
+    provisoireA: "Provisional category A: answer the other elements to be able to submit the file.",
     titre: "Categorisation form",
     description: "Each of the 25 items must be checked. A 'Yes' to any A item classifies the project as category A (procedure §3.3).",
     calculee: "Computed category",

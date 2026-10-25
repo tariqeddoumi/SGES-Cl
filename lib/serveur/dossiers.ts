@@ -8,7 +8,7 @@ import { motifsBlocageSoumission, type ControleSoumission } from "../domaine/wor
 import { libelle } from "../i18n/libelle";
 import { booleen, nombre } from "../parametres";
 import { lireJson } from "../utils";
-import { introuvable, interdit, type Contexte } from "./contexte";
+import { ErreurMetier, introuvable, interdit, type Contexte } from "./contexte";
 import { versReference } from "./devises";
 import { chargerParametres } from "./parametres";
 import { ascendance, chargerArbre, peutEcrire, peutLire, seuilHerite } from "./perimetre";
@@ -296,8 +296,13 @@ export async function controleSoumission(dossierId: string) {
   const p = await chargerParametres();
   const d = await prisma.dossier.findUniqueOrThrow({
     where: { id: dossierId },
-    include: { climat: true, actions: true, documents: { select: { type: true } }, reponsesExclusion: { include: { critere: true } } },
+    include: { climat: true, actions: true, documents: { select: { type: true } }, reponsesExclusion: { include: { critere: true } }, reponsesCategorisation: { select: { questionId: true } } },
   });
+  // Procédure : les 25 éléments de catégorisation sont à vérifier. Un « oui » A pré-classe le projet
+  // immédiatement (EIES exigée, RSE notifié) mais ne dispense pas de répondre aux autres éléments.
+  const elementsActifs = await prisma.questionCategorisation.findMany({ where: { actif: true }, select: { id: true } });
+  const repondus = new Set(d.reponsesCategorisation.map((r) => r.questionId));
+  const categorisationComplete = elementsActifs.length > 0 && elementsActifs.every((q) => repondus.has(q.id));
   const identification = !!(d.clientId && d.montantDemande > 0 && d.typeCredit && d.secteurId && (d.regionId || d.localite));
   const plan =
     d.actions.length === 0 ||
@@ -307,6 +312,7 @@ export async function controleSoumission(dossierId: string) {
     exclusion: d.exclusionVerifiee,
     exclusionBloquante: d.reponsesExclusion.some((r) => r.reponse && r.critere.bloquant && r.critere.actif),
     categorisation: !!d.categorie && (d.categorie !== "FI" || !!d.sousCategorieFI),
+    categorisationComplete,
     evaluation:
       d.evaluationTerminee && (!booleen(p, "COMMENTAIRE_EVALUATION_OBLIGATOIRE") || !!d.commentaireEvaluation?.trim()),
     climat: !booleen(p, "VOLET_CLIMAT_ACTIF") || !!d.climat,
@@ -324,9 +330,10 @@ export async function historiser(
   dossierId: string,
   ctx: Contexte | null,
   evenement: string,
-  extra: { deStatut?: string; versStatut?: string; commentaire?: string | null } = {}
+  extra: { deStatut?: string; versStatut?: string; commentaire?: string | null } = {},
+  db: Prisma.TransactionClient = prisma
 ) {
-  await prisma.historiqueDossier.create({
+  await db.historiqueDossier.create({
     data: {
       dossierId,
       auteurId: ctx?.utilisateur.id ?? null,
@@ -350,3 +357,14 @@ export const INCLUSION_DOSSIER = {
   climat: true,
   precedent: { select: { id: true, reference: true } },
 } satisfies Prisma.DossierInclude;
+
+/**
+ * Précondition de version (écritures concurrentes) : si le client indique la version du dossier
+ * qu'il a lue et que le dossier a changé depuis, l'enregistrement est refusé plutôt que d'écraser.
+ */
+export function exigerVersion(d: { updatedAt: Date }, version: string | null | undefined) {
+  if (!version) return;
+  if (new Date(version).getTime() !== d.updatedAt.getTime()) {
+    throw new ErreurMetier("Le dossier a été modifié par un autre utilisateur depuis son affichage : rechargez la page avant d'enregistrer.", 409, "conflit");
+  }
+}

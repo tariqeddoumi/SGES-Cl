@@ -63,6 +63,8 @@ export interface ControleSoumission {
   identification: boolean;
   exclusion: boolean;
   categorisation: boolean;
+  /** Les 25 éléments actifs ont tous une réponse (un « oui » A suffit à pré-classer, pas à soumettre). */
+  categorisationComplete: boolean;
   evaluation: boolean;
   climat: boolean;
   plan: boolean;
@@ -79,6 +81,7 @@ export function motifsBlocageSoumission(c: ControleSoumission, options: { climat
   if (!c.exclusion) motifs.push("exclusion");
   if (c.exclusionBloquante) motifs.push("exclusion_bloquante");
   if (!c.categorisation) motifs.push("categorisation");
+  else if (!c.categorisationComplete) motifs.push("categorisation_incomplete");
   if (!c.evaluation) motifs.push("evaluation");
   if (options.climatObligatoire && !c.climat) motifs.push("climat");
   if (!c.plan) motifs.push("plan");

@@ -4,8 +4,9 @@ import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
 import { dossierAutorise, historiser, notifierRSE, notifierUtilisateur } from "@/lib/serveur/dossiers";
 import { droitsDossier } from "@/lib/serveur/etat-dossier";
-import { journaliser } from "@/lib/serveur/journal";
+import { journaliserCritique } from "@/lib/serveur/journal";
 import { prisma } from "@/lib/serveur/prisma";
+import { figerSnapshot } from "@/lib/serveur/snapshot";
 
 const Schema = z.object({
   comite: z.string().max(40).nullable().optional(),
@@ -30,29 +31,42 @@ export const POST = route(
     }
     // Ajournement : le dossier retourne en évaluation pour être complété.
     const statut = s.decision === "ajourne" ? "brouillon" : "decide";
-    await prisma.dossier.update({
-      where: { id },
-      data: {
-        comite: s.comite ?? null,
-        dateComite: new Date(s.dateComite),
-        decision: s.decision,
-        montantAccorde: s.decision === "accorde" ? s.montantAccorde : null,
-        motifRejetCode: s.decision === "rejete" ? (s.motifRejetCode ?? null) : null,
-        motifRejetES: s.decision === "rejete" ? (s.motifRejetES ?? null) : null,
-        reservesComite: s.reservesComite ?? null,
-        commentaireComite: s.commentaireComite ?? null,
-        statut,
-        verrouille: false,
+    // Décision : changement de statut, réserves du comité, historique, journal et instantané en une transaction.
+    await prisma.$transaction(
+      async (tx) => {
+        const r = await tx.dossier.updateMany({
+          where: { id, statut: "valide" },
+          data: {
+            comite: s.comite ?? null,
+            dateComite: new Date(s.dateComite),
+            decision: s.decision,
+            montantAccorde: s.decision === "accorde" ? s.montantAccorde : null,
+            motifRejetCode: s.decision === "rejete" ? (s.motifRejetCode ?? null) : null,
+            motifRejetES: s.decision === "rejete" ? (s.motifRejetES ?? null) : null,
+            reservesComite: s.reservesComite ?? null,
+            commentaireComite: s.commentaireComite ?? null,
+            statut,
+            verrouille: false,
+          },
+        });
+        if (r.count !== 1) throw new ErreurMetier("Le dossier n'est plus au statut « validé » : rechargez la page.", 409, "conflit");
+        if (s.decision === "accorde" && s.reservesComite?.trim()) {
+          const ordre = await tx.action.count({ where: { dossierId: id } });
+          await tx.action.create({
+            data: { dossierId: id, origine: "comite", libelle: s.reservesComite.trim(), horizon: "court", negociable: false, retenue: true, deviseCode: d.deviseCode, ordre },
+          });
+        }
+        const snap = await figerSnapshot(tx, id, "decision", ctx);
+        await historiser(id, ctx, "decision", { deStatut: d.statut, versStatut: statut, commentaire: `${s.decision}${s.motifRejetES ? ` — ${s.motifRejetES}` : ""}` }, tx);
+        await journaliserCritique(tx, ctx, "decision", "dossier", id, {
+          reference: d.reference,
+          avant: { statut: d.statut, decision: d.decision, montantAccorde: d.montantAccorde },
+          apres: { statut, decision: s.decision, montantAccorde: s.decision === "accorde" ? s.montantAccorde : null, comite: s.comite ?? null, dateComite: s.dateComite },
+          snapshot: snap,
+        });
       },
-    });
-    if (s.decision === "accorde" && s.reservesComite?.trim()) {
-      const ordre = await prisma.action.count({ where: { dossierId: id } });
-      await prisma.action.create({
-        data: { dossierId: id, origine: "comite", libelle: s.reservesComite.trim(), horizon: "court", negociable: false, retenue: true, deviseCode: d.deviseCode, ordre },
-      });
-    }
-    await historiser(id, ctx, "decision", { deStatut: d.statut, versStatut: statut, commentaire: `${s.decision}${s.motifRejetES ? ` — ${s.motifRejetES}` : ""}` });
-    await journaliser(ctx, "decision", "dossier", id, { reference: d.reference, decision: s.decision, montant: s.montantAccorde });
+      { timeout: 60_000, maxWait: 10_000 }
+    );
     await notifierUtilisateur(d.chargeId !== ctx.utilisateur.id ? d.chargeId : null, id, "decision", `${d.reference} — ${s.decision}`, s.commentaireComite ?? "");
     if (s.decision === "rejete" && s.motifRejetCode) await notifierRSE(id, "decision", `${d.reference} — rejet pour motif E&S`, s.motifRejetES ?? "");
     return { statut };

@@ -74,6 +74,7 @@ export function VoletCategorisation() {
     setErreur("");
     try {
       const corps: Record<string, unknown> = {
+        version: dossier.updatedAt,
         reponses: Object.entries(reponses)
           .filter(([, v]) => v !== undefined)
           .map(([questionId, reponse]) => ({ questionId, reponse })),
@@ -100,6 +101,7 @@ export function VoletCategorisation() {
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           <Bandeau ton="info">{t("categorisation.description")}</Bandeau>
+          {calcul.categorie === "A" && !calcul.complet && <Bandeau ton="vigilance">{t("categorisation.provisoireA")}</Bandeau>}
           {groupes.map((g) => (
             <Carte key={g.c} titre={t(`categorie.${g.c}`)} description={t(`categorie.desc${g.c}`)} sansMarge>
               <ol className="divide-y divide-border">

@@ -490,6 +490,7 @@ model Dossier {
   visites               Visite[]
   climat                EvaluationClimat?
   documents             Document[]
+  snapshots             SnapshotDossier[]
   historique            HistoriqueDossier[]
   notifications         Notification[]
 
@@ -702,6 +703,30 @@ model HistoriqueDossier {
 
   @@index([dossierId])
   @@map("sges_historique_dossiers")
+}
+
+/// Instantané immuable du dossier (réponses, plan, pièces avec empreinte, questionnaire posé, paramètres)
+/// figé à la soumission, à la validation et à la décision : la décision du comité reste reproductible
+/// même si le référentiel, le plan ou les pièces évoluent ensuite.
+model SnapshotDossier {
+  id        String   @id @default(cuid())
+  dossierId String
+  /// soumission | validation | decision
+  type      String
+  /// Numéro d'ordre par dossier (1, 2, 3…) : un dossier retourné puis revalidé a plusieurs instantanés.
+  version   Int
+  /// SHA-256 du contenu.
+  empreinte String
+  contenu   String   @db.Text
+  auteurId  String?
+  auteurNom String?
+  createdAt DateTime @default(now())
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([dossierId, version])
+  @@index([dossierId])
+  @@map("sges_snapshots_dossiers")
 }
 
 // ─── Transverse ────────────────────────────────────────────────────────────

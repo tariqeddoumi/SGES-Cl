@@ -86,7 +86,8 @@ export const DELETE = route(
   async (_req, ctx, { id, actionId }) => {
     const { d, a } = await charger(ctx, id, actionId);
     if (a.origine === "systeme") throw new ErreurMetier("Une action proposée par le système s'écarte (non retenue) ; elle ne se supprime pas.", 400, "validation");
-    if (d.statut !== "brouillon" && a.avancement > 0) throw new ErreurMetier("Action déjà suivie : passez-la au statut « abandonnée ».", 400, "validation");
+    // Une fois le dossier présenté à la validation puis au comité, le plan ne se supprime plus : l'action est abandonnée (traçable).
+    if (d.statut !== "brouillon") throw new ErreurMetier("Le plan d'actions est figé : passez l'action au statut « abandonnée » (la suppression n'est possible qu'en cours d'évaluation).", 409, "verrouille");
     await prisma.action.delete({ where: { id: actionId } });
     await historiser(id, ctx, "plan", { commentaire: `− ${a.libelle.slice(0, 120)}` });
     return { ok: true };

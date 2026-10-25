@@ -4,9 +4,10 @@ import { booleen } from "@/lib/parametres";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier, interdit } from "@/lib/serveur/contexte";
 import { controleSoumission, dossierAutorise, historiser, notifierPermission, notifierUtilisateur } from "@/lib/serveur/dossiers";
-import { journaliser } from "@/lib/serveur/journal";
+import { journaliserCritique } from "@/lib/serveur/journal";
 import { chargerParametres } from "@/lib/serveur/parametres";
 import { prisma } from "@/lib/serveur/prisma";
+import { figerSnapshot, type TypeSnapshot } from "@/lib/serveur/snapshot";
 
 const Schema = z.object({
   transition: z.enum(Object.keys(TRANSITIONS) as [Transition, ...Transition[]]),
@@ -52,9 +53,27 @@ export const POST = route(
         break;
     }
 
-    await prisma.dossier.update({ where: { id }, data });
-    await historiser(id, ctx, "transition", { deStatut: d.statut, versStatut: def.vers, commentaire });
-    await journaliser(ctx, transition, "dossier", id, { reference: d.reference, de: d.statut, vers: def.vers });
+    // Opération critique : changement de statut, historique, journal d'audit et instantané dans UNE transaction.
+    // Si l'une des écritures échoue (journal compris), rien n'est validé.
+    const snapshotType: TypeSnapshot | null = transition === "soumettre" ? "soumission" : transition === "valider" ? "validation" : null;
+    const empreinte = await prisma.$transaction(
+      async (tx) => {
+        const r = await tx.dossier.updateMany({ where: { id, statut: d.statut }, data });
+        if (r.count !== 1) throw new ErreurMetier("Le statut du dossier a changé entre-temps : rechargez la page.", 409, "conflit");
+        const snap = snapshotType ? await figerSnapshot(tx, id, snapshotType, ctx) : null;
+        await historiser(id, ctx, "transition", { deStatut: d.statut, versStatut: def.vers, commentaire }, tx);
+        await journaliserCritique(tx, ctx, transition, "dossier", id, {
+          reference: d.reference,
+          de: d.statut,
+          vers: def.vers,
+          commentaire: commentaire ?? null,
+          snapshot: snap,
+        });
+        return snap?.empreinte ?? null;
+      },
+      { timeout: 60_000, maxWait: 10_000 }
+    );
+    void empreinte;
 
     if (transition === "soumettre") await notifierPermission(id, "dossier:valider", "a_valider", `${d.reference} — à valider`, commentaire ?? "", ctx.utilisateur.id);
     if (transition === "retourner") await notifierUtilisateur(d.chargeId, id, "retourne", `${d.reference} — retourné`, commentaire ?? "");

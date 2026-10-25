@@ -273,6 +273,7 @@ export const fr = {
     blocage_exclusion: "Répondre à toute la liste d'exclusion",
     blocage_exclusion_bloquante: "Un critère d'exclusion bloquant est coché : le dossier ne peut pas être présenté",
     blocage_categorisation: "Catégoriser le projet (et préciser la sous-catégorie FI)",
+    blocage_categorisation_incomplete: "Répondre aux 25 éléments de catégorisation (un « oui » en catégorie A ne dispense pas des autres réponses)",
     blocage_evaluation: "Répondre à toutes les questions obligatoires et rédiger le commentaire d'évaluation",
     blocage_climat: "Renseigner le volet climat",
     blocage_plan: "Négocier chaque action proposée (retenue ou écartée)",
@@ -322,6 +323,7 @@ export const fr = {
     toutNon: "Répondre « Non » à tous les critères",
   },
   categorisation: {
+    provisoireA: "Classement A provisoire : répondez aux autres éléments pour pouvoir soumettre le dossier.",
     titre: "Formulaire de catégorisation",
     description: "Chacun des 25 éléments doit être vérifié. Un « Oui » à un élément A suffit à classer le projet en catégorie A (procédure §3.3).",
     calculee: "Catégorie calculée",

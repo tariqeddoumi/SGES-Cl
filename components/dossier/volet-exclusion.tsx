@@ -61,6 +61,7 @@ export function VoletExclusion() {
             .filter(([, v]) => v !== undefined)
             .map(([critereId, reponse]) => ({ critereId, reponse })),
           motifExclusion: motif || null,
+          version: dossier.updatedAt,
         },
       });
       toast(t("commun.enregistre"));

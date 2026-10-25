@@ -46,7 +46,7 @@ export async function etatEtapes(dossierId: string) {
     etapes: {
       identification: controles.identification,
       exclusion: controles.exclusion,
-      categorisation: controles.categorisation,
+      categorisation: controles.categorisation && controles.categorisationComplete,
       evaluation: controles.evaluation,
       climat: !booleen(p, "VOLET_CLIMAT_ACTIF") || controles.climat,
       plan: controles.evaluation && controles.plan,

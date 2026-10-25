@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { analyseDepuisCanevas, definition, nettoyerReponses, rendreCanevas } from "@/lib/domaine/pieces";
+import { evaluationModifiable } from "@/lib/domaine/workflow";
 import { DICTIONNAIRES, traduire } from "@/lib/i18n";
 import { libelle } from "@/lib/i18n/libelle";
 import { corps, route } from "@/lib/serveur/api";
@@ -20,6 +21,7 @@ export const PUT = route(
   async (req, ctx, { id }) => {
     const d = await dossierAutorise(ctx, id, "ecriture");
     exigerVolet(ctx, d, "pieces");
+    if (!evaluationModifiable(d.statut)) throw new ErreurMetier("Le canevas ne peut plus être modifié une fois le dossier soumis.", 409, "verrouille");
     const { piece, reponses } = Schema.parse(await corps(req));
     const def = definition(piece);
     if (!def) throw new ErreurMetier("Pièce inconnue.", 400, "validation");

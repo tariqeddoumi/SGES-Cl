@@ -104,6 +104,7 @@ export function VoletEvaluation() {
         body: {
           reponses: modifies.map((id) => ({ questionId: id, valeur: saisie[id]?.valeur || null, commentaire: saisie[id]?.commentaire || null })),
           commentaireEvaluation: commentaire,
+          version: dossier.updatedAt,
         },
       });
       toast(`${t("commun.enregistre")} — ${t("plan.generees", { ajoutees: r.plan.ajoutees, retirees: r.plan.retirees })}`);

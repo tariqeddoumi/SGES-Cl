@@ -676,6 +676,8 @@ model Document {
   contenu    Bytes
   /// Texte extrait (PDF) pour l'analyse par l'assistant.
   texte      String?  @db.Text
+  /// Analyse documentaire (JSON) : type reconnu, état de chaque information attendue ; pour un canevas, les réponses saisies.
+  analyse    String?  @db.Text
   deposeParId String?
   createdAt  DateTime @default(now())
 

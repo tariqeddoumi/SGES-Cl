@@ -101,6 +101,7 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
     { code: "CLIMAT", libelle: { fr: "Risque climatique jugé excessif", en: "Excessive climate risk", ar: "مخاطر مناخية مفرطة" } },
   ],
   type_document: [
+    { code: "PRESENTATION", libelle: { fr: "Note de présentation du projet / étude de faisabilité", en: "Project presentation note / feasibility study", ar: "مذكرة تقديم المشروع / دراسة الجدوى" } },
     { code: "EIES", libelle: { fr: "Étude d'impact environnemental et social (EIES)", en: "Environmental & social impact assessment (ESIA)", ar: "دراسة التأثير البيئي والاجتماعي" } },
     { code: "PGES", libelle: { fr: "Plan de gestion environnementale et sociale (PGES)", en: "Environmental & social management plan (ESMP)", ar: "مخطط التدبير البيئي والاجتماعي" } },
     { code: "ACCEPTABILITE", libelle: { fr: "Décision d'acceptabilité environnementale", en: "Environmental acceptability decision", ar: "قرار القبول البيئي" } },
@@ -109,6 +110,7 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
     { code: "ENGAGEMENT", libelle: { fr: "Lettre d'engagement de conformité E&S", en: "E&S compliance commitment letter", ar: "رسالة الالتزام بالمطابقة البيئية والاجتماعية" } },
     { code: "RAPPORT_SUIVI", libelle: { fr: "Rapport de suivi / avancement", en: "Monitoring / progress report", ar: "تقرير التتبع" } },
     { code: "PHOTO", libelle: { fr: "Photo de visite", en: "Site visit photo", ar: "صورة الزيارة" } },
+    { code: "CANEVAS", libelle: { fr: "Canevas rempli avec le client", en: "Template completed with the client", ar: "نموذج مملوء مع الزبون" } },
     { code: "AUTRE", libelle: { fr: "Autre", en: "Other", ar: "أخرى" } },
   ],
   forme_juridique: [

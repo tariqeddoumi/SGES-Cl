@@ -9,6 +9,10 @@ import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
 import { Selecteur } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, Sablier, Vide } from "@/components/ui/mise-en-page";
+import type { Checklist } from "@/lib/domaine/pieces";
+import { AssistantIA } from "./assistant-ia";
+import { CanevasDialogue } from "./canevas-dialogue";
+import { ChecklistPieces } from "./checklist-pieces";
 import { Tableau, Td, Th, Tr } from "@/components/ui/tableau";
 import { useDossier } from "./contexte";
 
@@ -22,7 +26,7 @@ interface Piece {
 }
 
 export function VoletPieces() {
-  const { t, lib, fmt } = useApp();
+  const { t, lib, fmt, parametres } = useApp();
   const { dossier, droits, recharger } = useDossier();
   const ref = useReferentiels();
   const toast = useToast();
@@ -30,6 +34,9 @@ export function VoletPieces() {
   const [type, setType] = useState(dossier.categorie === "A" ? "EIES" : "AUTRE");
   const [enCours, setEnCours] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const { donnees: checklist, recharger: rechargerChecklist } = useDonnees<Checklist>(`/api/dossiers/${dossier.id}/checklist`);
+  const [canevas, setCanevas] = useState<string | null>(null);
+  const [assistant, setAssistant] = useState(false);
 
   const deposer = async (f: File) => {
     if (f.size > 10 * 1024 * 1024) return toast(t("pieces.tropGros"), "erreur");
@@ -40,7 +47,7 @@ export function VoletPieces() {
     try {
       await api(`/api/dossiers/${dossier.id}/documents`, { formData: fd });
       toast(t("commun.enregistre"));
-      await Promise.all([rechargerPieces(), recharger()]);
+      await Promise.all([rechargerPieces(), rechargerChecklist(), recharger()]);
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e), "erreur");
     } finally {
@@ -51,13 +58,28 @@ export function VoletPieces() {
   const supprimer = async (id: string) => {
     if (!confirm(t("commun.confirmerSuppression"))) return;
     await api(`/api/dossiers/${dossier.id}/documents/${id}`, { method: "DELETE" });
-    await Promise.all([rechargerPieces(), recharger()]);
+    await Promise.all([rechargerPieces(), rechargerChecklist(), recharger()]);
   };
   const libType = (code: string) => lib(ref?.listes.type_document?.find((x) => x.code === code)?.libelle) || code;
 
   return (
     <div className="space-y-4">
       {dossier.eieRequise && !(donnees ?? []).some((p) => p.type === "EIES") && <Bandeau ton="vigilance">{t("dossier.blocage_eie")}</Bandeau>}
+      {checklist && (
+        <ChecklistPieces
+          checklist={checklist}
+          categorie={dossier.categorie}
+          droits={droits.pieces}
+          iaActive={parametres.IA_ACTIVE === "true"}
+          libType={libType}
+          onDeposer={(code) => {
+            setType(code);
+            input.current?.click();
+          }}
+          onCanevas={setCanevas}
+          onAnalyser={() => setAssistant(true)}
+        />
+      )}
       <Carte titre={t("pieces.titre")} description={t("pieces.description")} sansMarge>
         {droits.pieces && (
           <div className="flex flex-wrap items-end gap-3 border-b border-border p-4">
@@ -99,7 +121,7 @@ export function VoletPieces() {
                           <Download />
                         </a>
                       </Bouton>
-                      {droits.pieces && (
+                      {droits.pieces && droits.evaluation && (
                         <Bouton variante="fantome" taille="iconePetite" onClick={() => supprimer(p.id)} aria-label={t("commun.supprimer")}>
                           <Trash2 className="text-destructive" />
                         </Bouton>
@@ -112,6 +134,28 @@ export function VoletPieces() {
           </Tableau>
         )}
       </Carte>
+      {canevas && (
+        <CanevasDialogue
+          piece={canevas}
+          titre={`${t("pieces.canevas.titre")} — ${libType(canevas)}`}
+          initial={checklist?.lignes.find((l) => l.code === canevas)?.canevas?.reponses ?? {}}
+          onFermer={() => setCanevas(null)}
+          onEnregistre={() => {
+            rechargerChecklist();
+            rechargerPieces();
+            setCanevas(null);
+          }}
+        />
+      )}
+      {assistant && (
+        <AssistantIA
+          onFermer={() => {
+            setAssistant(false);
+            rechargerChecklist();
+            rechargerPieces();
+          }}
+        />
+      )}
     </div>
   );
 }

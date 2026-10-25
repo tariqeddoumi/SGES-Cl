@@ -38,7 +38,8 @@ const LIBELLES: Record<string, { fr: string; en: string; ar: string }> = {
   TENTATIVES_MAX: { fr: "Tentatives de connexion avant verrouillage", en: "Login attempts before lockout", ar: "محاولات الدخول قبل القفل" },
   VERROUILLAGE_MINUTES: { fr: "Durée du verrouillage (minutes)", en: "Lockout duration (minutes)", ar: "مدة القفل (دقائق)" },
   SIGNALETIQUE_MODE: { fr: "Connecteur signalétique client", en: "Customer data connector", ar: "موصل معطيات الزبناء" },
-  IA_ACTIVE: { fr: "Assistant IA d'analyse des EIES", en: "AI ESIA analysis assistant", ar: "المساعد الذكي لتحليل دراسات التأثير" },
+  IA_ACTIVE: { fr: "Assistant IA d'analyse des pièces et de pré-remplissage", en: "AI document analysis and pre-fill assistant", ar: "المساعد الذكي لتحليل الوثائق والملء المسبق" },
+  IA_ANONYMISER: { fr: "Masquer les données personnelles avant envoi à l'IA (e-mail, téléphone, ICE, RIB, CIN)", en: "Mask personal data before sending to the AI (email, phone, ICE, bank account, ID)", ar: "إخفاء المعطيات الشخصية قبل الإرسال إلى الذكاء الاصطناعي" },
   IA_MODELE: { fr: "Modèle d'IA", en: "AI model", ar: "نموذج الذكاء الاصطناعي" },
 };
 

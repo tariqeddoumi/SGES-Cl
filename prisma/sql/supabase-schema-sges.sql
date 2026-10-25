@@ -484,6 +484,7 @@ CREATE TABLE "sges_documents" (
     "taille" INTEGER NOT NULL,
     "contenu" BYTEA NOT NULL,
     "texte" TEXT,
+    "analyse" TEXT,
     "deposeParId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

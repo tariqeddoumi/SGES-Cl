@@ -22,7 +22,7 @@ interface Donnees {
 
 export function VoletExclusion() {
   const { t, lib } = useApp();
-  const { dossier, droits, recharger } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/exclusion`);
   const [reponses, setReponses] = useState<Record<string, boolean | undefined>>({});
@@ -35,6 +35,13 @@ export function VoletExclusion() {
     setReponses(initiales);
     setMotif(donnees?.motifExclusion ?? "");
   }, [initiales, donnees]);
+
+  useEffect(() => {
+    if (!donnees || !prefill.exclusion) return;
+    const propositions = prefill.exclusion;
+    setReponses((r) => ({ ...r, ...Object.fromEntries(propositions.map((x) => [x.critereId, x.valeur === "oui"])) }));
+    consommer("exclusion");
+  }, [prefill.exclusion, donnees, consommer]);
 
   if (!donnees) return <Chargement lignes={6} />;
   const criteres = donnees.criteres;

@@ -57,6 +57,7 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   // Intégration
   { cle: "SIGNALETIQUE_MODE", groupe: "integration", type: "choix", defaut: "simulation", choix: ["simulation", "api", "desactive"] },
   { cle: "IA_ACTIVE", groupe: "integration", type: "booleen", defaut: "false", public: true },
+  { cle: "IA_ANONYMISER", groupe: "integration", type: "booleen", defaut: "true", public: true },
   { cle: "IA_MODELE", groupe: "integration", type: "texte", defaut: "claude-opus-5-5" },
 ];
 

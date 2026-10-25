@@ -92,7 +92,22 @@ export interface EtatDossier {
   seuil: number;
 }
 
-export const ContexteDossier = createContext<(EtatDossier & { recharger: () => Promise<void> }) | null>(null);
+/** Propositions de l'assistant IA acceptées par le chargé : chaque volet les reprend dans sa saisie (rien n'est enregistré avant « Enregistrer »). */
+export interface Prefill {
+  identification?: { champ: string; valeur: string }[];
+  exclusion?: { critereId: string; valeur: string }[];
+  categorisation?: { questionId: string; valeur: string }[];
+  evaluation?: { questionId: string; valeur: string; justification: string }[];
+}
+
+export type ValeurContexte = EtatDossier & {
+  recharger: () => Promise<void>;
+  prefill: Prefill;
+  setPrefill: (p: Prefill) => void;
+  consommer: (section: keyof Prefill) => void;
+};
+
+export const ContexteDossier = createContext<ValeurContexte | null>(null);
 
 export function useDossier() {
   const c = useContext(ContexteDossier);

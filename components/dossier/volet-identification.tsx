@@ -14,13 +14,19 @@ import { BarreVolet } from "./barre-volet";
 
 export function VoletIdentification() {
   const { t, fmt, lib, deviseReference } = useApp();
-  const { dossier: d, droits, recharger, seuil } = useDossier();
+  const { dossier: d, droits, recharger, seuil, prefill, consommer } = useDossier();
   const ref = useReferentiels();
   const toast = useToast();
   const [valeurs, setValeurs] = useState<ValeursIdentification>(valeursInitiales(d as never));
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
   useEffect(() => setValeurs(valeursInitiales(d as never)), [d]);
+  useEffect(() => {
+    if (!prefill.identification) return;
+    const propositions = prefill.identification;
+    setValeurs((v) => ({ ...v, ...Object.fromEntries(propositions.map((x) => [x.champ, x.valeur])) }));
+    consommer("identification");
+  }, [prefill.identification, consommer]);
 
   const modifie = JSON.stringify(valeurs) !== JSON.stringify(valeursInitiales(d as never));
   const enregistrer = async () => {

@@ -27,7 +27,7 @@ interface Donnees {
 
 export function VoletCategorisation() {
   const { t, lib, parametres } = useApp();
-  const { dossier, droits, recharger } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/categorisation`);
   const [reponses, setReponses] = useState<Record<string, boolean | undefined>>({});
@@ -47,6 +47,13 @@ export function VoletCategorisation() {
     setCategorieRetenue(donnees.justificationCategorie ? (donnees.categorie ?? "") : "");
     setJustification(donnees.justificationCategorie ?? "");
   }, [donnees, initiales]);
+
+  useEffect(() => {
+    if (!donnees || !prefill.categorisation) return;
+    const propositions = prefill.categorisation;
+    setReponses((r) => ({ ...r, ...Object.fromEntries(propositions.map((x) => [x.questionId, x.valeur === "oui"])) }));
+    consommer("categorisation");
+  }, [prefill.categorisation, donnees, consommer]);
 
   // Calcul immédiat, avec la même règle que le serveur (lib/domaine/categorisation).
   const calcul = useMemo(

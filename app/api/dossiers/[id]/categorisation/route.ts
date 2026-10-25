@@ -37,9 +37,10 @@ const Schema = z.object({
 
 export const PUT = route(
   async (req, ctx, { id }) => {
-    const d = await dossierAutorise(ctx, id, "ecriture");
     const data = Schema.parse(await corps(req));
     const reclassement = data.categorieRetenue !== undefined;
+    // Le reclassement est un acte de contrôle du Responsable RSE (groupe) : la consultation suffit.
+    const d = await dossierAutorise(ctx, id, reclassement ? "lecture" : "ecriture");
 
     // 1. Contrôles AVANT toute écriture : un rejet ne laisse aucune réponse enregistrée.
     if (reclassement) {

@@ -63,11 +63,36 @@ export function VoletSuivi() {
     await rechargerVisites();
   };
 
+  const [encours, setEncours] = useState({ montant: dossier.encours === null ? "" : String(dossier.encours), date: dateInput(dossier.dateEncours) });
+  const enregistrerEncours = async () => {
+    try {
+      const m = encours.montant.trim() === "" ? null : Number(encours.montant.replace(/\s/g, "").replace(",", "."));
+      await api(`/api/dossiers/${dossier.id}/encours`, { method: "PUT", body: { encours: m, dateEncours: m === null ? null : encours.date || null } });
+      toast(t("commun.enregistre"));
+      await recharger();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e), "erreur");
+    }
+  };
+
   const tonConformite = (c: string | null) => (c === "conforme" ? "favorable" : c === "partielle" ? "vigilance" : c === "non_conforme" ? "alerte" : "neutre");
   return (
     <div className="space-y-4">
       {dossier.statut === "decide" && dossier.decision === "accorde" && droits.transitions.includes("demarrer_suivi") && (
         <Bandeau ton="info">{t("transition.demarrer_suivi")} : ↑</Bandeau>
+      )}
+      {dossier.decision === "accorde" && (
+        <Carte titre={t("suivi.encoursTitre")} description={t("suivi.encoursAide")}>
+          <div className="flex flex-wrap items-end gap-3">
+            <Champ id="encours" type="number" min={0} className="w-56" libelle={t("suivi.encours")} valeur={encours.montant} onChange={(v) => setEncours({ ...encours, montant: v })} suffixe={dossier.deviseCode} desactive={!droits.plan} />
+            <Champ id="date-encours" type="date" className="w-48" libelle={t("suivi.dateEncours")} valeur={encours.date} onChange={(v) => setEncours({ ...encours, date: v })} desactive={!droits.plan} />
+            {droits.plan && (
+              <Bouton variante="contour" onClick={enregistrerEncours}>
+                {t("commun.enregistrer")}
+              </Bouton>
+            )}
+          </div>
+        </Carte>
       )}
       <Carte
         titre={t("suivi.visites")}

@@ -94,6 +94,12 @@ export async function construireFiche(dossierId: string, langue = "fr") {
         emissionsFinancees: d.climat.emissionsFinancees,
         methodeEmissions: d.climat.methodeEmissions,
         qualitePCAF: d.climat.qualitePCAF,
+        sourceEmissions: d.climat.sourceEmissions,
+        baseAttribution: d.climat.baseAttribution,
+        montantAttribueRef: d.climat.montantAttribueRef,
+        dateArrete: d.climat.dateArrete,
+        couvertureDonnees: d.climat.couvertureDonnees,
+        methodeVersion: d.climat.methodeVersion,
         alignementTaxonomie: d.climat.alignementTaxonomie,
         mesuresAdaptation: d.climat.mesuresAdaptation,
       }

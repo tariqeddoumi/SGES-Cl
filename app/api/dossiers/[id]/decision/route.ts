@@ -2,7 +2,7 @@ import { z } from "zod";
 import { DECISIONS } from "@/lib/domaine/constantes";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
-import { dossierAutorise, historiser, notifierRSE, notifierUtilisateur } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, notifierRSE, notifierUtilisateur, recalculer } from "@/lib/serveur/dossiers";
 import { droitsDossier } from "@/lib/serveur/etat-dossier";
 import { journaliserCritique } from "@/lib/serveur/journal";
 import { prisma } from "@/lib/serveur/prisma";
@@ -67,6 +67,8 @@ export const POST = route(
       },
       { timeout: 60_000, maxWait: 10_000 }
     );
+    // Les émissions financées se recalculent sur le montant accordé (base PCAF).
+    await recalculer(id);
     await notifierUtilisateur(d.chargeId !== ctx.utilisateur.id ? d.chargeId : null, id, "decision", `${d.reference} — ${s.decision}`, s.commentaireComite ?? "");
     if (s.decision === "rejete" && s.motifRejetCode) await notifierRSE(id, "decision", `${d.reference} — rejet pour motif E&S`, s.motifRejetES ?? "");
     return { statut };

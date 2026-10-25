@@ -220,11 +220,15 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
               [t("climat.score"), <PuceNiveau key="n" niveau={f.climat.niveauClimat} score={f.climat.scoreClimat} />],
               [t("climat.physique"), fmt.nombre(f.climat.scorePhysique, 0)],
               [t("climat.transitionTitre"), fmt.nombre(f.climat.scoreTransition, 0)],
+              [t("climat.couverture"), f.climat.couvertureDonnees === null || f.climat.couvertureDonnees === undefined ? "—" : `${fmt.nombre(f.climat.couvertureDonnees * 100, 0)} %`],
               [t("climat.emissionsFinancees"), `${fmt.nombre(f.climat.emissionsFinancees, 0)} ${t("commun.tco2e")}`],
+              [t("climat.qualitePCAF"), String(f.climat.qualitePCAF)],
+              [t("climat.baseAttribution"), f.climat.baseAttribution ? `${t(`climat.base_${f.climat.baseAttribution}`)}${f.climat.dateArrete ? ` · ${fmt.date(f.climat.dateArrete)}` : ""}` : "—"],
               [t("climat.taxonomie"), t(`climat.${f.climat.alignementTaxonomie}`)],
               [t("climat.cbam"), f.climat.expositionCBAM ? t("commun.oui") : t("commun.non")],
             ]}
           />
+          {f.climat.methodeVersion && <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: f.climat.methodeVersion })}</p>}
         </Section>
       )}
 

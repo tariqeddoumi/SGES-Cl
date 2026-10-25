@@ -274,6 +274,8 @@ export async function installerDemo(prisma: PrismaClient) {
       },
     });
     await hist("decision", "valide", "decide", charge);
+    // Base PCAF des émissions financées : montant accordé (comme après une décision saisie à l'écran).
+    await recalculer(d.id);
     if (s.stade === "rejete" || s.stade === "accorde") continue;
 
     await prisma.dossier.update({ where: { id: d.id }, data: { statut: "en_suivi" } });

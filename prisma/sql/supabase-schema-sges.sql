@@ -17,7 +17,7 @@ CREATE TABLE "sges_entites" (
     "pays" TEXT NOT NULL DEFAULT 'MA',
     "deviseCode" TEXT NOT NULL DEFAULT 'MAD',
     "langueDefaut" TEXT NOT NULL DEFAULT 'fr',
-    "seuilDeclenchement" DOUBLE PRECISION,
+    "seuilDeclenchement" DECIMAL(20,2),
     "nomOutil" TEXT,
     "logoUrl" TEXT,
     "couleurPrimaire" TEXT,
@@ -99,7 +99,7 @@ CREATE TABLE "sges_taux_change" (
     "id" TEXT NOT NULL,
     "deviseCode" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "taux" DOUBLE PRECISION NOT NULL,
+    "taux" DECIMAL(24,10) NOT NULL,
     "source" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -173,6 +173,8 @@ CREATE TABLE "sges_criteres_exclusion" (
     "libelle" TEXT NOT NULL,
     "source" TEXT NOT NULL DEFAULT 'SFI',
     "bloquant" BOOLEAN NOT NULL DEFAULT false,
+    "nature" TEXT NOT NULL DEFAULT 'politique_groupe',
+    "derogeable" BOOLEAN NOT NULL DEFAULT false,
     "ordre" INTEGER NOT NULL DEFAULT 0,
     "actif" BOOLEAN NOT NULL DEFAULT true,
 
@@ -297,11 +299,14 @@ CREATE TABLE "sges_dossiers" (
     "projetDeveloppementDurable" BOOLEAN NOT NULL DEFAULT false,
     "secteurId" TEXT,
     "deviseCode" TEXT NOT NULL DEFAULT 'MAD',
-    "montantDemande" DOUBLE PRECISION NOT NULL,
-    "montantInvestissement" DOUBLE PRECISION,
-    "tauxReference" DOUBLE PRECISION NOT NULL DEFAULT 1,
-    "montantDemandeRef" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "montantInvestissementRef" DOUBLE PRECISION,
+    "montantDemande" DECIMAL(20,2) NOT NULL,
+    "montantInvestissement" DECIMAL(20,2),
+    "tauxReference" DECIMAL(24,10) NOT NULL DEFAULT 1,
+    "deviseCoursReference" TEXT,
+    "dateCoursReference" TIMESTAMP(3),
+    "sourceCoursReference" TEXT,
+    "montantDemandeRef" DECIMAL(20,2) NOT NULL DEFAULT 0,
+    "montantInvestissementRef" DECIMAL(20,2),
     "dureeMois" INTEGER,
     "adresseSite" TEXT,
     "localite" TEXT,
@@ -321,6 +326,7 @@ CREATE TABLE "sges_dossiers" (
     "eieRequise" BOOLEAN NOT NULL DEFAULT false,
     "dateCategorisation" TIMESTAMP(3),
     "evaluationTerminee" BOOLEAN NOT NULL DEFAULT false,
+    "versionReferentiel" TEXT,
     "scoreRisque" DOUBLE PRECISION,
     "niveauRisque" TEXT,
     "nbRisquesNonMaitrises" INTEGER NOT NULL DEFAULT 0,
@@ -333,7 +339,9 @@ CREATE TABLE "sges_dossiers" (
     "comite" TEXT,
     "dateComite" TIMESTAMP(3),
     "decision" TEXT,
-    "montantAccorde" DOUBLE PRECISION,
+    "montantAccorde" DECIMAL(20,2),
+    "encours" DECIMAL(20,2),
+    "dateEncours" TIMESTAMP(3),
     "motifRejetCode" TEXT,
     "motifRejetES" TEXT,
     "reservesComite" TEXT,
@@ -353,6 +361,10 @@ CREATE TABLE "sges_reponses_exclusion" (
     "critereId" TEXT NOT NULL,
     "reponse" BOOLEAN NOT NULL,
     "commentaire" TEXT,
+    "derogation" TEXT,
+    "derogationParId" TEXT,
+    "derogationParNom" TEXT,
+    "derogationLe" TIMESTAMP(3),
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "sges_reponses_exclusion_pkey" PRIMARY KEY ("id")
@@ -401,7 +413,7 @@ CREATE TABLE "sges_actions" (
     "periode" TEXT,
     "avancement" INTEGER NOT NULL DEFAULT 0,
     "statut" TEXT NOT NULL DEFAULT 'a_faire',
-    "budget" DOUBLE PRECISION,
+    "budget" DECIMAL(20,2),
     "deviseCode" TEXT,
     "commentaire" TEXT,
     "ordre" INTEGER NOT NULL DEFAULT 0,
@@ -459,7 +471,13 @@ CREATE TABLE "sges_evaluations_climat" (
     "scope3" DOUBLE PRECISION,
     "methodeEmissions" TEXT NOT NULL DEFAULT 'estimee_secteur',
     "qualitePCAF" INTEGER NOT NULL DEFAULT 5,
+    "emissionsVerifiees" BOOLEAN NOT NULL DEFAULT false,
+    "sourceEmissions" TEXT,
     "emissionsFinancees" DOUBLE PRECISION,
+    "baseAttribution" TEXT,
+    "montantAttribueRef" DECIMAL(20,2),
+    "facteurAttribution" DOUBLE PRECISION,
+    "dateArrete" TIMESTAMP(3),
     "emissionsEvitees" DOUBLE PRECISION,
     "partRenouvelable" DOUBLE PRECISION,
     "alignementTaxonomie" TEXT NOT NULL DEFAULT 'non_eligible',
@@ -468,6 +486,8 @@ CREATE TABLE "sges_evaluations_climat" (
     "scoreTransition" DOUBLE PRECISION,
     "scoreClimat" DOUBLE PRECISION,
     "niveauClimat" TEXT,
+    "couvertureDonnees" DOUBLE PRECISION,
+    "methodeVersion" TEXT,
     "commentaire" TEXT,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -492,21 +512,6 @@ CREATE TABLE "sges_documents" (
 );
 
 -- CreateTable
-CREATE TABLE "sges_snapshots_dossiers" (
-    "id" TEXT NOT NULL,
-    "dossierId" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
-    "version" INTEGER NOT NULL,
-    "empreinte" TEXT NOT NULL,
-    "contenu" TEXT NOT NULL,
-    "auteurId" TEXT,
-    "auteurNom" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "sges_snapshots_dossiers_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "sges_historique_dossiers" (
     "id" TEXT NOT NULL,
     "dossierId" TEXT NOT NULL,
@@ -519,6 +524,21 @@ CREATE TABLE "sges_historique_dossiers" (
     "commentaire" TEXT,
 
     CONSTRAINT "sges_historique_dossiers_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sges_snapshots_dossiers" (
+    "id" TEXT NOT NULL,
+    "dossierId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "version" INTEGER NOT NULL,
+    "empreinte" TEXT NOT NULL,
+    "contenu" TEXT NOT NULL,
+    "auteurId" TEXT,
+    "auteurNom" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "sges_snapshots_dossiers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -654,13 +674,13 @@ CREATE UNIQUE INDEX "sges_evaluations_climat_dossierId_key" ON "sges_evaluations
 CREATE INDEX "sges_documents_dossierId_idx" ON "sges_documents"("dossierId");
 
 -- CreateIndex
+CREATE INDEX "sges_historique_dossiers_dossierId_idx" ON "sges_historique_dossiers"("dossierId");
+
+-- CreateIndex
 CREATE INDEX "sges_snapshots_dossiers_dossierId_idx" ON "sges_snapshots_dossiers"("dossierId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sges_snapshots_dossiers_dossierId_version_key" ON "sges_snapshots_dossiers"("dossierId", "version");
-
--- CreateIndex
-CREATE INDEX "sges_historique_dossiers_dossierId_idx" ON "sges_historique_dossiers"("dossierId");
 
 -- CreateIndex
 CREATE INDEX "sges_notifications_destinataireId_lu_idx" ON "sges_notifications"("destinataireId", "lu");
@@ -775,6 +795,7 @@ ALTER TABLE "sges_journal" ADD CONSTRAINT "sges_journal_utilisateurId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "sges_cles_api" ADD CONSTRAINT "sges_cles_api_entiteId_fkey" FOREIGN KEY ("entiteId") REFERENCES "sges_entites"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+
 
 
 -- Schéma réservé à l'application (accès serveur via Prisma) : rien n'est exposé à l'API Supabase.

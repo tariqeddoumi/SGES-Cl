@@ -11,6 +11,21 @@
 
 type L = { fr: string; en: string; ar: string };
 
+/**
+ * Nature de chaque critère (gouvernance, constat F13) : les interdictions légales ne sont jamais
+ * dérogeables ; les exclusions de bailleur (liste SFI) et de politique du groupe peuvent faire l'objet
+ * d'une dérogation motivée du Responsable RSE si le critère est marqué dérogeable. Cette matrice est
+ * une proposition à faire approuver par la gouvernance (Risques, RSE, Juridique), modifiable en
+ * Paramétrage › Liste d'exclusion.
+ */
+export const NATURE_CRITERE: Record<string, { nature: string; derogeable: boolean }> = {
+  EXC01: { nature: "interdiction_legale", derogeable: false },
+  EXC09: { nature: "interdiction_legale", derogeable: false },
+  EXC15: { nature: "politique_groupe", derogeable: true },
+  EXC16: { nature: "politique_groupe", derogeable: true },
+};
+export const NATURE_DEFAUT = { nature: "exclusion_bailleur", derogeable: true };
+
 export const CRITERES_EXCLUSION: { code: string; libelle: L; source: string; bloquant?: boolean; actif?: boolean }[] = [
   {
     code: "EXC01",

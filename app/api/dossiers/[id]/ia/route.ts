@@ -59,6 +59,7 @@ export const POST = route(
   async (req, ctx, { id }) => {
     const p = await chargerParametres();
     if (!booleen(p, "IA_ACTIVE")) throw new ErreurMetier("L'assistant IA est désactivé (Paramétrage).", 403, "ia_inactive");
+    if (!p.IA_REFERENCE_VALIDATION?.trim()) throw new ErreurMetier("Assistant IA non autorisé : la référence de validation juridique / CNDP / SSI n'est pas renseignée.", 403, "ia_non_validee");
     if (!process.env.ANTHROPIC_API_KEY) throw new ErreurMetier("Clé ANTHROPIC_API_KEY absente de la configuration du serveur.", 503, "ia_indisponible");
     const d = await dossierAutorise(ctx, id, "ecriture");
     exigerVolet(ctx, d, "pieces");

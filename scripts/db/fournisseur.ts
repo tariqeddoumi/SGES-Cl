@@ -9,6 +9,9 @@
  *   - l'annotation des textes longs : @db.Text (PostgreSQL, MySQL),
  *     @db.NVarChar(Max) (SQL Server, Unicode : indispensable pour l'arabe), rien (SQLite).
  *
+ * Les précisions décimales (@db.Decimal(p, s)) sont retirées pour SQLite (marqueur « // decimal(p,s) »
+ * pour les restaurer) : Prisma y stocke le type Decimal sans précision native.
+ *
  * Il est idempotent : on peut passer d'un moteur à l'autre et revenir.
  * Ensuite : npx prisma generate && npm run db:schema.
  */
@@ -26,12 +29,16 @@ export function convertirSchema(schema: string, cible: Fournisseur): string {
   // …y compris les champs déjà dépouillés pour SQLite : ils sont repérés par le
   // marqueur de commentaire laissé lors de la conversion.
   sortie = sortie.replace(/ \/\/ texte-long$/gm, " @db.Text");
+  sortie = sortie.replace(/^(.*?)( \/\/ decimal\((\d+),(\d+)\))$/gm, (_l, debut: string, _m, p: string, e: string) => `${debut} @db.Decimal(${p}, ${e})`);
   sortie = sortie.replace(
     /(datasource db \{[\s\S]*?provider\s*=\s*)"[a-z]+"/,
     `$1"${cible}"`
   );
   if (cible === "sqlserver") sortie = sortie.replace(/ @db\.Text/g, " @db.NVarChar(Max)");
-  if (cible === "sqlite") sortie = sortie.replace(/ @db\.Text(.*)$/gm, "$1 // texte-long");
+  if (cible === "sqlite") {
+    sortie = sortie.replace(/ @db\.Text(.*)$/gm, "$1 // texte-long");
+    sortie = sortie.replace(/ @db\.Decimal\((\d+), (\d+)\)(.*)$/gm, "$3 // decimal($1,$2)");
+  }
   return sortie;
 }
 

@@ -1,5 +1,4 @@
-import type { Prisma } from "@prisma/client";
-import { prisma } from "./prisma";
+import { prisma, type Tx } from "./prisma";
 
 /**
  * Journal d'audit. L'écriture ne doit jamais faire échouer l'opération journalisée :
@@ -36,7 +35,7 @@ export async function journaliser(
  * (aucune validation silencieuse sans trace).
  */
 export async function journaliserCritique(
-  db: Prisma.TransactionClient,
+  db: Tx,
   ctx: { utilisateur: { id: string; prenom: string; nom: string } } | null,
   action: string,
   objet: string,

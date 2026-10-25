@@ -56,6 +56,8 @@ export interface DossierComplet {
   dateComite: string | null;
   decision: string | null;
   montantAccorde: number | null;
+  encours: number | null;
+  dateEncours: string | null;
   motifRejetCode: string | null;
   motifRejetES: string | null;
   reservesComite: string | null;
@@ -79,6 +81,7 @@ export interface Droits {
   visites: boolean;
   pieces: boolean;
   reclasser: boolean;
+  deroger: boolean;
   decider: boolean;
   supprimer: boolean;
   transitions: Transition[];

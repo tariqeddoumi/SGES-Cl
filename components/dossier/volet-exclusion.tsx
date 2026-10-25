@@ -9,19 +9,20 @@ import { Bouton } from "@/components/ui/bouton";
 import { ChoixSegmente, ZoneTexte } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, Sablier } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
+import { derogationPossible, reponseBloquante } from "@/lib/domaine/exclusion";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
 
 interface Donnees {
-  criteres: { id: string; code: string; libelle: string; source: string; bloquant: boolean; actif: boolean }[];
-  reponses: { critereId: string; reponse: boolean; commentaire: string | null }[];
+  criteres: { id: string; code: string; libelle: string; source: string; bloquant: boolean; actif: boolean; nature: string; derogeable: boolean }[];
+  reponses: { critereId: string; reponse: boolean; commentaire: string | null; derogation: string | null; derogationParNom: string | null; derogationLe: string | null }[];
   motifExclusion: string | null;
   exclu: boolean;
   exclusionVerifiee: boolean;
 }
 
 export function VoletExclusion() {
-  const { t, lib } = useApp();
+  const { t, lib, fmt } = useApp();
   const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/exclusion`);
@@ -47,7 +48,17 @@ export function VoletExclusion() {
   const criteres = donnees.criteres;
   const sansReponse = criteres.filter((c) => c.actif && reponses[c.id] === undefined).length;
   const exclu = criteres.some((c) => reponses[c.id]);
-  const bloquant = criteres.some((c) => c.bloquant && reponses[c.id]);
+  const derogations = Object.fromEntries(donnees.reponses.map((r) => [r.critereId, r]));
+  const bloquant = criteres.some((c) => reponseBloquante({ reponse: !!reponses[c.id], derogation: derogations[c.id]?.derogation }, c));
+  const deroger = async (critereId: string, justification: string | null) => {
+    try {
+      await api(`/api/dossiers/${dossier.id}/exclusion/derogation`, { method: "PUT", body: { critereId, justification } });
+      toast(t("commun.enregistre"));
+      await Promise.all([rechargerVolet(), recharger()]);
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : String(e));
+    }
+  };
   const modifie = JSON.stringify(reponses) !== JSON.stringify(initiales) || motif !== (donnees.motifExclusion ?? "");
 
   const enregistrer = async () => {
@@ -98,7 +109,31 @@ export function VoletExclusion() {
                     {t("exclusion.source")} : {c.source}
                   </Puce>
                   {c.bloquant && <Puce ton="alerte">{t("exclusion.bloquant")}</Puce>}
+                  <Puce ton={c.nature === "interdiction_legale" ? "alerte" : "info"}>{t(`exclusion.nature_${c.nature}`)}</Puce>
                 </div>
+                {reponses[c.id] && derogations[c.id]?.reponse && derogations[c.id]?.derogation && (
+                  <p className="mt-1.5 border-s-2 border-warning ps-2 text-[12.5px]">
+                    <strong>{t("exclusion.derogationAccordee")}</strong> — {derogations[c.id]!.derogationParNom} · {fmt.date(derogations[c.id]!.derogationLe)} : {derogations[c.id]!.derogation}
+                    {droits.deroger && (
+                      <Bouton variante="lien" taille="petite" className="ms-2" onClick={() => deroger(c.id, null)}>
+                        {t("exclusion.retirerDerogation")}
+                      </Bouton>
+                    )}
+                  </p>
+                )}
+                {droits.deroger && derogations[c.id]?.reponse && reponses[c.id] && !derogations[c.id]?.derogation && derogationPossible(c) && (
+                  <Bouton
+                    variante="contour"
+                    taille="petite"
+                    className="mt-1.5"
+                    onClick={() => {
+                      const j = window.prompt(t("exclusion.justificationDerogation"));
+                      if (j?.trim()) deroger(c.id, j.trim());
+                    }}
+                  >
+                    {t("exclusion.accorderDerogation")}
+                  </Bouton>
+                )}
               </div>
               <ChoixSegmente
                 nom={c.code}

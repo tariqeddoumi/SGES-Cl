@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import type { Prisma } from "@prisma/client";
 import type { Contexte } from "./contexte";
 import { chargerParametres } from "./parametres";
+import type { Tx } from "./prisma";
 
 export const sha256 = (donnees: string | Uint8Array) => createHash("sha256").update(donnees).digest("hex");
 
@@ -13,7 +13,7 @@ export type TypeSnapshot = "soumission" | "validation" | "decision";
  * paramètres de calcul. Il permet de reproduire la décision même si le référentiel, le plan ou les pièces
  * évoluent ensuite. Écrit dans la transaction de la transition : pas d'instantané, pas de transition.
  */
-export async function figerSnapshot(db: Prisma.TransactionClient, dossierId: string, type: TypeSnapshot, ctx: Contexte | null) {
+export async function figerSnapshot(db: Tx, dossierId: string, type: TypeSnapshot, ctx: Contexte | null) {
   const p = await chargerParametres();
   const d = await db.dossier.findUniqueOrThrow({
     where: { id: dossierId },

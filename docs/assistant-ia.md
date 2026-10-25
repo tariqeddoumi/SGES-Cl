@@ -1,6 +1,7 @@
 # Assistant IA — analyse des pièces et réduction de la saisie
 
-Activation : Administration → Paramètres → intégration (`IA_ACTIVE`), clé `ANTHROPIC_API_KEY` côté serveur.
+Activation : Administration → Paramètres → intégration (`IA_ACTIVE`), clé `ANTHROPIC_API_KEY` côté serveur,
+et **référence de la validation juridique / CNDP / SSI** (`IA_REFERENCE_VALIDATION`), sans laquelle l'activation est refusée.
 Désactivé par défaut. Sans IA, la check-list documentaire fonctionne quand même (présence des pièces).
 
 ## Ce que fait l'assistant

@@ -49,7 +49,8 @@ export const PUT = route(
       for (const r of valides) {
         await tx.reponseExclusion.upsert({
           where: { dossierId_critereId: { dossierId: id, critereId: r.critereId } },
-          update: { reponse: r.reponse, commentaire: r.commentaire ?? null },
+          // Une réponse repassée à « non » n'a plus besoin de dérogation.
+          update: { reponse: r.reponse, commentaire: r.commentaire ?? null, ...(r.reponse ? {} : { derogation: null, derogationParId: null, derogationParNom: null, derogationLe: null }) },
           create: { dossierId: id, critereId: r.critereId, reponse: r.reponse, commentaire: r.commentaire ?? null },
         });
       }

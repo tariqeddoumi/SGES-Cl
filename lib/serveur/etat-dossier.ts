@@ -18,6 +18,7 @@ export function droitsDossier(ctx: Contexte, d: Pick<Dossier, "statut" | "entite
     visites: ecriture && p.includes("visite:gerer") && visitesModifiables(d.statut),
     pieces: ecriture && (p.includes("dossier:modifier") || p.includes("visite:gerer")) && d.statut !== "annule",
     reclasser: p.includes("dossier:reclassifier") && evaluationModifiable(d.statut),
+    deroger: p.includes("exclusion:deroger") && evaluationModifiable(d.statut),
     decider: ecriture && p.includes("dossier:decider") && d.statut === "valide",
     supprimer: ecriture && d.statut === "brouillon" && (p.includes("dossier:supprimer") || d.creeParId === ctx.utilisateur.id),
     transitions: ecriture ? transitionsPossibles(d.statut, p) : [],

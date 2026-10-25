@@ -157,6 +157,8 @@ export const REFERENTIELS: DefReferentiel[] = [
       { nom: "libelle", cle: "commun.libelle", type: "libelleLong", requis: true, colonne: true },
       { nom: "source", cle: "admin.source", type: "texte", requis: true, colonne: true },
       { nom: "bloquant", cle: "admin.bloquant", type: "booleen", colonne: true },
+      { nom: "nature", cle: "admin.natureExclusion", type: "choix", choix: ["interdiction_legale", "exclusion_bailleur", "restriction_sectorielle", "politique_groupe"], requis: true, colonne: true },
+      { nom: "derogeable", cle: "admin.derogeable", type: "booleen", colonne: true },
       ACTIF,
       ORDRE,
     ],

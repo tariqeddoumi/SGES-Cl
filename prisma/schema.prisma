@@ -12,7 +12,9 @@
 //   - toutes les relations déclarent onUpdate: NoAction (SQL Server refuse les
 //     chemins de cascade multiples) ; seules les dépendances d'un dossier sont en
 //     suppression en cascade ;
-//   - pas d'unicité sur une colonne facultative (SQL Server tient deux NULL pour égaux).
+//   - pas d'unicité sur une colonne facultative (SQL Server tient deux NULL pour égaux) ;
+//   - montants et cours en Decimal (jamais en Float) : précision 20,2 pour les montants et
+//     24,10 pour les cours ; la précision native est retirée pour SQLite par `npm run db:fournisseur`.
 //
 // Les libellés multilingues (référentiels) sont des objets {"fr": "...", "en": "...",
 // "ar": "..."} sérialisés : voir lib/i18n/libelle.ts.
@@ -44,7 +46,7 @@ model Entite {
   deviseCode      String   @default("MAD")
   langueDefaut    String   @default("fr")
   /// Seuil de déclenchement propre à l'entité (en devise de l'entité) ; vide = paramètre général.
-  seuilDeclenchement Float?
+  seuilDeclenchement Decimal? @db.Decimal(20, 2)
   nomOutil        String?
   logoUrl         String?
   couleurPrimaire String?
@@ -152,7 +154,7 @@ model TauxChange {
   id         String   @id @default(cuid())
   deviseCode String
   date       DateTime
-  taux       Float
+  taux       Decimal  @db.Decimal(24, 10)
   source     String?
   createdAt  DateTime @default(now())
 
@@ -246,6 +248,12 @@ model CritereExclusion {
   source   String  @default("SFI")
   /// true : un « oui » bloque la soumission du dossier (sinon : notification RSE et justification).
   bloquant Boolean @default(false)
+  /// Nature de l'exclusion (gouvernance, ordre de priorité) : interdiction_legale > exclusion_bailleur >
+  /// restriction_sectorielle > politique_groupe.
+  nature   String  @default("politique_groupe")
+  /// Une dérogation motivée (Responsable RSE, permission exclusion:deroger) peut lever le blocage ;
+  /// jamais pour une interdiction légale.
+  derogeable Boolean @default(false)
   ordre    Int     @default(0)
   actif    Boolean @default(true)
 
@@ -411,12 +419,16 @@ model Dossier {
   projetDeveloppementDurable Boolean @default(false)
   secteurId              String?
   deviseCode             String    @default("MAD")
-  montantDemande         Float
-  montantInvestissement  Float?
-  /// Cours appliqué à la création (devise du dossier → devise de référence).
-  tauxReference          Float     @default(1)
-  montantDemandeRef      Float     @default(0)
-  montantInvestissementRef Float?
+  montantDemande         Decimal   @db.Decimal(20, 2)
+  montantInvestissement  Decimal?  @db.Decimal(20, 2)
+  /// Cours appliqué (devise du dossier → devise de référence), figé au cours publié à la date du dossier.
+  tauxReference          Decimal   @default(1) @db.Decimal(24, 10)
+  /// Devise, date et source du cours figé (traçabilité de la conversion et du seuil de déclenchement).
+  deviseCoursReference   String?
+  dateCoursReference     DateTime?
+  sourceCoursReference   String?
+  montantDemandeRef      Decimal   @default(0) @db.Decimal(20, 2)
+  montantInvestissementRef Decimal? @db.Decimal(20, 2)
   dureeMois              Int?
 
   // Lieu
@@ -446,6 +458,9 @@ model Dossier {
 
   // Évaluation des risques
   evaluationTerminee     Boolean   @default(false)
+  /// Empreinte du référentiel (questionnaire, catégorisation, exclusion, paramètres de calcul) ayant
+  /// produit l'évaluation ; figée à la soumission.
+  versionReferentiel     String?
   scoreRisque            Float?
   niveauRisque           String?
   nbRisquesNonMaitrises  Int       @default(0)
@@ -463,7 +478,10 @@ model Dossier {
   dateComite             DateTime?
   /// accorde | rejete | ajourne
   decision               String?
-  montantAccorde         Float?
+  montantAccorde         Decimal?  @db.Decimal(20, 2)
+  /// Encours à date (devise du dossier), saisi au suivi : base PCAF des émissions financées.
+  encours                Decimal?  @db.Decimal(20, 2)
+  dateEncours            DateTime?
   motifRejetCode         String?
   motifRejetES           String?   @db.Text
   reservesComite         String?   @db.Text
@@ -507,6 +525,11 @@ model ReponseExclusion {
   critereId   String
   reponse     Boolean
   commentaire String?  @db.Text
+  /// Dérogation accordée à un critère bloquant dérogeable : justification, auteur, date.
+  derogation       String?   @db.Text
+  derogationParId  String?
+  derogationParNom String?
+  derogationLe     DateTime?
   updatedAt   DateTime @updatedAt
 
   dossier Dossier          @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -572,7 +595,7 @@ model Action {
   avancement   Int       @default(0)
   /// a_faire | en_cours | realisee | abandonnee
   statut       String    @default("a_faire")
-  budget       Float?
+  budget       Decimal? @db.Decimal(20, 2)
   deviseCode   String?
   commentaire  String?   @db.Text
   ordre        Int       @default(0)
@@ -645,9 +668,18 @@ model EvaluationClimat {
   scope3              Float?
   /// declaree | estimee_activite | estimee_secteur
   methodeEmissions    String   @default("estimee_secteur")
-  /// Score de qualité des données PCAF (1 meilleur à 5).
+  /// Score de qualité des données PCAF (1 meilleur à 5) : déduit de la méthode et des preuves, jamais saisi.
   qualitePCAF         Int      @default(5)
+  /// Émissions déclarées vérifiées par un tiers (attestation référencée dans sourceEmissions).
+  emissionsVerifiees  Boolean  @default(false)
+  /// Provenance des émissions : rapport, bilan carbone, attestation de vérification (référence, date, auteur).
+  sourceEmissions     String?  @db.Text
   emissionsFinancees  Float?
+  /// Base du facteur d'attribution PCAF : demande | accorde | encours, montant retenu et date d'arrêté.
+  baseAttribution     String?
+  montantAttribueRef  Decimal? @db.Decimal(20, 2)
+  facteurAttribution  Float?
+  dateArrete          DateTime?
   emissionsEvitees    Float?
   partRenouvelable    Float?
   /// vert | transition | non_aligne | non_eligible
@@ -657,6 +689,10 @@ model EvaluationClimat {
   scoreTransition     Float?
   scoreClimat         Float?
   niveauClimat        String?
+  /// Part des données climat renseignées (0 à 1) ; sous le minimum, aucun score global.
+  couvertureDonnees   Float?
+  /// Version de la méthode de calcul appliquée (reproductibilité).
+  methodeVersion      String?
   commentaire         String?  @db.Text
   updatedAt           DateTime @updatedAt
 

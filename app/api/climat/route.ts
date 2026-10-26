@@ -11,7 +11,9 @@ export const GET = route(
   async (_req, ctx) => {
     const tous = await dossiersPerimetre(ctx);
     const evalues = tous.filter((d) => d.climat?.scoreClimat != null);
-    const financeRef = (d: (typeof tous)[number]) => (d.decision === "accorde" && d.montantAccorde ? d.montantAccorde * d.tauxReference : d.montantDemandeRef);
+    // Exposition = base PCAF du dossier (encours à date, sinon accordé, sinon demandé), à défaut recalculée.
+    const financeRef = (d: (typeof tous)[number]) =>
+      d.climat?.montantAttribueRef ?? (d.decision === "accorde" && d.montantAccorde ? d.montantAccorde * d.tauxReference : d.montantDemandeRef);
     const total = evalues.reduce((s, d) => s + financeRef(d), 0);
     const emissions = evalues.reduce((s, d) => s + (d.climat?.emissionsFinancees ?? 0), 0);
 

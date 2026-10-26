@@ -35,6 +35,12 @@ export const TRANSITIONS: Record<Transition, { de: Statut[]; vers: Statut; permi
   rouvrir: { de: ["cloture"], vers: "en_suivi", permission: "dossier:cloturer", commentaireObligatoire: true },
 };
 
+/** Statut atteint par une transition : à la réouverture, seul un crédit accordé repart en suivi. */
+export function statutApres(transition: Transition, decision: string | null | undefined): Statut {
+  if (transition === "rouvrir" && decision !== "accorde") return "decide";
+  return TRANSITIONS[transition].vers;
+}
+
 export function transitionsPossibles(statut: string, permissions: readonly string[]): Transition[] {
   return (Object.keys(TRANSITIONS) as Transition[]).filter((t) => {
     const def = TRANSITIONS[t];
@@ -63,6 +69,8 @@ export interface ControleSoumission {
   identification: boolean;
   exclusion: boolean;
   categorisation: boolean;
+  /** Les 25 éléments actifs ont tous une réponse (un « oui » A suffit à pré-classer, pas à soumettre). */
+  categorisationComplete: boolean;
   evaluation: boolean;
   climat: boolean;
   plan: boolean;
@@ -79,6 +87,7 @@ export function motifsBlocageSoumission(c: ControleSoumission, options: { climat
   if (!c.exclusion) motifs.push("exclusion");
   if (c.exclusionBloquante) motifs.push("exclusion_bloquante");
   if (!c.categorisation) motifs.push("categorisation");
+  else if (!c.categorisationComplete) motifs.push("categorisation_incomplete");
   if (!c.evaluation) motifs.push("evaluation");
   if (options.climatObligatoire && !c.climat) motifs.push("climat");
   if (!c.plan) motifs.push("plan");

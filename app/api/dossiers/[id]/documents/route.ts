@@ -2,6 +2,7 @@ import { route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
 import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
+import { extraireTexte } from "@/lib/serveur/extraction";
 import { prisma } from "@/lib/serveur/prisma";
 
 const TAILLE_MAX = 10 * 1024 * 1024;
@@ -28,20 +29,6 @@ export const GET = route(
   },
   { permission: "dossier:lire" }
 );
-
-/** Texte d'un PDF (pour l'assistant d'analyse) ; un échec d'extraction n'empêche pas le dépôt. */
-async function extraireTexte(mime: string, octets: Uint8Array): Promise<string | null> {
-  try {
-    if (mime === "text/plain") return new TextDecoder().decode(octets).slice(0, 400_000);
-    if (mime !== "application/pdf") return null;
-    const { extractText, getDocumentProxy } = await import("unpdf");
-    const pdf = await getDocumentProxy(octets);
-    const { text } = await extractText(pdf, { mergePages: true });
-    return (Array.isArray(text) ? text.join("\n") : text).slice(0, 400_000);
-  } catch {
-    return null;
-  }
-}
 
 export const POST = route(
   async (req, ctx, { id }) => {

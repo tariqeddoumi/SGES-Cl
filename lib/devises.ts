@@ -10,24 +10,41 @@ export interface Cours {
   deviseCode: string;
   date: Date | string;
   taux: number;
+  source?: string | null;
 }
 
-/** Dernier cours connu d'une devise à une date (null si inconnu). */
-export function coursA(cours: Cours[], devise: string, reference: string, date: Date = new Date()): number | null {
-  if (devise === reference) return 1;
-  let meilleur: { t: number; taux: number } | null = null;
+export interface CoursRetenu {
+  taux: number;
+  /** Date du cours appliqué (null pour la devise de référence elle-même). */
+  date: Date | null;
+  source: string | null;
+}
+
+const JOUR = 86_400_000;
+
+/**
+ * Cours applicable à une date : le dernier cours publié AU PLUS TARD à cette date.
+ * Jamais de cours postérieur (un cours de janvier ne convertit pas un dossier de décembre) ;
+ * si `validiteJours` > 0, un cours plus ancien que cette durée n'est plus admis. Sans cours
+ * admissible : null — la conversion est bloquée plutôt qu'approximée.
+ */
+export function coursRetenu(cours: Cours[], devise: string, reference: string, date: Date = new Date(), validiteJours = 0): CoursRetenu | null {
+  if (devise === reference) return { taux: 1, date: null, source: null };
+  let meilleur: { t: number; c: Cours } | null = null;
   const limite = date.getTime();
   for (const c of cours) {
     if (c.deviseCode !== devise) continue;
     const t = new Date(c.date).getTime();
-    if (t <= limite && (!meilleur || t > meilleur.t)) meilleur = { t, taux: c.taux };
+    if (t <= limite && (!meilleur || t > meilleur.t)) meilleur = { t, c };
   }
-  // Aucun cours antérieur : le plus ancien cours connu vaut mieux que rien.
-  if (!meilleur) {
-    const premiers = cours.filter((c) => c.deviseCode === devise).sort((a, b) => +new Date(a.date) - +new Date(b.date));
-    return premiers[0]?.taux ?? null;
-  }
-  return meilleur.taux;
+  if (!meilleur || !(meilleur.c.taux > 0)) return null;
+  if (validiteJours > 0 && limite - meilleur.t > validiteJours * JOUR) return null;
+  return { taux: meilleur.c.taux, date: new Date(meilleur.t), source: meilleur.c.source ?? null };
+}
+
+/** Cours applicable à une date (null si aucun cours admissible). */
+export function coursA(cours: Cours[], devise: string, reference: string, date: Date = new Date(), validiteJours = 0): number | null {
+  return coursRetenu(cours, devise, reference, date, validiteJours)?.taux ?? null;
 }
 
 export function convertir(
@@ -43,6 +60,17 @@ export function convertir(
   const tVers = coursA(cours, vers, reference, date);
   if (tDe === null || tVers === null || tVers === 0) return null;
   return (montant * tDe) / tVers;
+}
+
+/**
+ * Arrondi explicite d'un montant à la précision de sa devise (ISO 4217 : 2 décimales pour MAD, EUR, USD ;
+ * 0 pour XOF, XAF ; 3 pour TND…), demi-unité arrondie à l'unité supérieure en valeur absolue.
+ * Tout montant calculé (contre-valeur, conversion) est arrondi avant d'être stocké ou comparé à un seuil.
+ */
+export function arrondirMontant(montant: number, decimales = 2): number {
+  const f = 10 ** decimales;
+  const v = Math.round(Math.abs(montant) * f + 1e-7) / f;
+  return montant < 0 ? -v : v;
 }
 
 const LOCALES: Record<string, string> = { fr: "fr-FR", en: "en-GB", ar: "ar-MA" };

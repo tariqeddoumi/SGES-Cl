@@ -18,6 +18,7 @@ export interface DossierComplet {
   objet: string | null;
   descriptionProcessus: string | null;
   projetDeveloppementDurable: boolean;
+  ligneFinancement: string | null;
   secteurId: string | null;
   deviseCode: string;
   montantDemande: number;
@@ -56,6 +57,8 @@ export interface DossierComplet {
   dateComite: string | null;
   decision: string | null;
   montantAccorde: number | null;
+  encours: number | null;
+  dateEncours: string | null;
   motifRejetCode: string | null;
   motifRejetES: string | null;
   reservesComite: string | null;
@@ -79,6 +82,7 @@ export interface Droits {
   visites: boolean;
   pieces: boolean;
   reclasser: boolean;
+  deroger: boolean;
   decider: boolean;
   supprimer: boolean;
   transitions: Transition[];
@@ -92,7 +96,24 @@ export interface EtatDossier {
   seuil: number;
 }
 
-export const ContexteDossier = createContext<(EtatDossier & { recharger: () => Promise<void> }) | null>(null);
+/** Propositions de l'assistant IA acceptées par le chargé : chaque volet les reprend dans sa saisie (rien n'est enregistré avant « Enregistrer »). */
+export interface Prefill {
+  identification?: { champ: string; valeur: string }[];
+  exclusion?: { critereId: string; valeur: string }[];
+  categorisation?: { questionId: string; valeur: string }[];
+  evaluation?: { questionId: string; valeur: string; justification: string }[];
+  /** Commentaire d'évaluation rédigé par l'assistant (repris dans la zone de texte, non enregistré). */
+  commentaire?: string;
+}
+
+export type ValeurContexte = EtatDossier & {
+  recharger: () => Promise<void>;
+  prefill: Prefill;
+  setPrefill: (p: Prefill) => void;
+  consommer: (section: keyof Prefill) => void;
+};
+
+export const ContexteDossier = createContext<ValeurContexte | null>(null);
 
 export function useDossier() {
   const c = useContext(ContexteDossier);

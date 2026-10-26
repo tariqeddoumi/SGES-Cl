@@ -26,7 +26,7 @@ export default function PageBase() {
         <Carte titre={t("admin.sauvegarde")} description={t("admin.sauvegardeAide")}>
           <div className="flex flex-wrap gap-2">
             <Bouton asChild><a href="/api/admin/sauvegarde"><Download /> JSON</a></Bouton>
-            <Bouton variante="contour" asChild><a href="/api/admin/sauvegarde?documents=0"><Download /> JSON ({t("pieces.titre")} : —)</a></Bouton>
+            <Bouton variante="contour" asChild><a href="/api/admin/sauvegarde?documents=0"><Download /> {t("admin.sauvegardeSansPieces")}</a></Bouton>
           </div>
         </Carte>
         <Carte titre={t("admin.changerMoteur")}>

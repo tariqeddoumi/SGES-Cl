@@ -5,6 +5,7 @@ import { dossierAutorise, historiser, INCLUSION_DOSSIER, recalculer } from "@/li
 import { droitsDossier, etatEtapes, exigerVolet } from "@/lib/serveur/etat-dossier";
 import { journaliser } from "@/lib/serveur/journal";
 import { SchemaIdentification } from "@/lib/serveur/schemas";
+import { versReference } from "@/lib/serveur/devises";
 import { prisma } from "@/lib/serveur/prisma";
 
 export const GET = route(
@@ -32,9 +33,20 @@ export const PATCH = route(
       const u = await prisma.utilisateur.findUnique({ where: { id: chargeId } });
       if (!u || !u.isActive) throw interdit("Chargé inconnu ou inactif.");
     }
+    // Cours applicable vérifié AVANT l'écriture : un changement de devise ou de date sans cours admissible
+    // (aucun cours publié à la date, jamais un cours postérieur) est refusé sans rien modifier.
+    const devise = (data as { deviseCode?: string }).deviseCode ?? d.deviseCode;
+    const date = dateDossier ? new Date(dateDossier) : d.dateDossier;
+    if (devise !== d.deviseCode || date.getTime() !== d.dateDossier.getTime()) await versReference(1, devise, date);
     await prisma.dossier.update({
       where: { id },
-      data: { ...data, ...(dateDossier ? { dateDossier: new Date(dateDossier) } : {}), ...(chargeId ? { chargeId } : {}) },
+      data: {
+        ...data,
+        ...(dateDossier ? { dateDossier: date } : {}),
+        ...(chargeId ? { chargeId } : {}),
+        // Nouvelle devise ou nouvelle date : le cours figé est recherché à nouveau.
+        ...(devise !== d.deviseCode || date.getTime() !== d.dateDossier.getTime() ? { deviseCoursReference: null } : {}),
+      },
     });
     await recalculer(id);
     await historiser(id, ctx, "modification", { commentaire: Object.keys(data).join(", ") });

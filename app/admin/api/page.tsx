@@ -88,7 +88,7 @@ export default function PageApi() {
       <Dialogue ouvert={!!nouvelle} onFermer={() => setNouvelle(null)} titre={t("admin.nouvelleCle")} pied={<><Bouton variante="contour" onClick={() => setNouvelle(null)}>{t("commun.annuler")}</Bouton><Bouton onClick={creer} disabled={!nouvelle?.nom}>{t("commun.creer")}</Bouton></>}>
         {nouvelle && (
           <div className="space-y-3">
-            <Champ id="nom" libelle={t("commun.libelle")} valeur={nouvelle.nom} onChange={(v) => setNouvelle({ ...nouvelle, nom: v })} obligatoire placeholder="Plateforme d'octroi — production" />
+            <Champ id="nom" libelle={t("commun.libelle")} valeur={nouvelle.nom} onChange={(v) => setNouvelle({ ...nouvelle, nom: v })} obligatoire placeholder={t("admin.exempleNomCle")} />
             <Selecteur id="entite" libelle={t("commun.entite")} valeur={nouvelle.entiteId} onChange={(v) => setNouvelle({ ...nouvelle, entiteId: v })} options={(ref?.entites ?? []).map((e) => ({ valeur: e.id, libelle: `${"· ".repeat(e.niveau)}${e.nom}` }))} />
             <Champ id="exp" type="date" libelle={t("commun.au")} valeur={nouvelle.expireLe} onChange={(v) => setNouvelle({ ...nouvelle, expireLe: v })} />
           </div>

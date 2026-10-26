@@ -1,18 +1,21 @@
 import type { Prisma } from "@prisma/client";
 import { calculerCategorie, eieRequise, lirePreseance } from "../domaine/categorisation";
-import { emissions, niveauClimat, normaliserAleas, normaliserTransition, qualitePCAF, scoreClimat, scorePhysique, scoreTransition } from "../domaine/climat";
+import { baseAttribution, emissions, evaluerClimat, lirePonderation, lirePrixCarbone, scenariosClimat, lireSeuilsClimat, METHODE_CLIMAT_VERSION, normaliserAleas, normaliserTransition, qualitePCAF } from "../domaine/climat";
 import type { Categorie } from "../domaine/constantes";
 import { evaluerDeclenchement } from "../domaine/declenchement";
+import { reponseBloquante } from "../domaine/exclusion";
 import { calculerRisque, estRisque, lireSeuils, questionApplicable } from "../domaine/risque";
 import { motifsBlocageSoumission, type ControleSoumission } from "../domaine/workflow";
 import { libelle } from "../i18n/libelle";
 import { booleen, nombre } from "../parametres";
 import { lireJson } from "../utils";
-import { introuvable, interdit, type Contexte } from "./contexte";
+import { ErreurMetier, introuvable, interdit, type Contexte } from "./contexte";
+import { arrondirMontant } from "../devises";
 import { versReference } from "./devises";
+import { versionReferentiel } from "./referentiel-version";
 import { chargerParametres } from "./parametres";
 import { ascendance, chargerArbre, peutEcrire, peutLire, seuilHerite } from "./perimetre";
-import { prisma } from "./prisma";
+import { prisma, type Tx } from "./prisma";
 
 // ─── Accès ─────────────────────────────────────────────────────────────────
 
@@ -87,9 +90,21 @@ export async function recalculer(dossierId: string): Promise<void> {
     include: { secteur: true, region: true, climat: true, reponsesCategorisation: { include: { question: true } }, reponsesExclusion: { include: { critere: true } } },
   });
 
+  // Après soumission, l'évaluation (catégorie, risque, scores climat) est FIGÉE : un changement de
+  // référentiel ou de paramètre ne la modifie plus. Seule la base PCAF des émissions financées suit
+  // la vie du crédit (montant accordé, encours).
+  const evaluationFigee = d.statut !== "brouillon";
+
   // Montants : le cours est figé à la date du dossier (traçabilité de la décision).
-  const demande = await versReference(d.montantDemande, d.deviseCode, d.dateDossier);
-  const investRef = d.montantInvestissement ? d.montantInvestissement * demande.taux : null;
+  // Cours figé : une fois le cours de la date du dossier retenu pour une devise, il ne bouge plus
+  // (seuil de déclenchement et contre-valeurs reproductibles). Changer de devise refait la recherche.
+  const decRef = (await prisma.devise.findUnique({ where: { code: p.DEVISE_REFERENCE || "MAD" }, select: { decimales: true } }))?.decimales ?? 2;
+  const fige = d.deviseCoursReference === d.deviseCode || (evaluationFigee && d.tauxReference > 0);
+  const cours = fige
+    ? { taux: d.tauxReference, dateCours: d.dateCoursReference, source: d.sourceCoursReference }
+    : await versReference(1, d.deviseCode, d.dateDossier);
+  const demande = { montant: arrondirMontant(d.montantDemande * cours.taux, decRef), taux: cours.taux };
+  const investRef = d.montantInvestissement ? arrondirMontant(d.montantInvestissement * demande.taux, decRef) : null;
 
   // Catégorisation
   const questionsCat = await prisma.questionCategorisation.findMany({ where: { actif: true } });
@@ -125,7 +140,7 @@ export async function recalculer(dossierId: string): Promise<void> {
   );
   // Indicateur « risque » de chaque réponse (sert la fiche et le plan d'actions).
   const parId = new Map(questions.map((q) => [q.id, q]));
-  for (const r of reponses) {
+  for (const r of evaluationFigee ? [] : reponses) {
     const q = parId.get(r.questionId);
     const flag = q ? estRisque(q, r.valeur) : false;
     if (flag !== r.risque) await prisma.reponseQuestion.update({ where: { id: r.id }, data: { risque: flag } });
@@ -134,17 +149,29 @@ export async function recalculer(dossierId: string): Promise<void> {
   // Climat
   if (d.climat) {
     const c = d.climat;
-    const aleas = normaliserAleas(lireJson(c.aleas, {}));
-    const transition = normaliserTransition(lireJson(c.transition, {}));
-    const sp = scorePhysique(aleas, c.sensibilite, c.capaciteAdaptation);
-    const st = scoreTransition({
-      risqueSecteur: d.secteur?.risqueTransition ?? 1,
-      facteurs: transition,
-      expositionCBAM: c.expositionCBAM,
-      partExportUE: c.partExportUE,
-      alignement: c.alignementTaxonomie,
+    const r = evaluerClimat(
+      {
+        aleas: normaliserAleas(lireJson(c.aleas, {})),
+        transition: normaliserTransition(lireJson(c.transition, {})),
+        sensibilite: c.sensibilite,
+        capaciteAdaptation: c.capaciteAdaptation,
+        risqueSecteur: d.secteur?.risqueTransition ?? 1,
+        expositionCBAM: c.expositionCBAM,
+        partExportUE: c.partExportUE,
+        alignement: c.alignementTaxonomie,
+      },
+      { couvertureMin: nombre(p, "CLIMAT_COUVERTURE_MIN", 0.75), ponderation: lirePonderation(p.CLIMAT_PONDERATION), seuils: lireSeuilsClimat(p.CLIMAT_SEUILS_NIVEAUX) }
+    );
+    // Base PCAF : encours à date, sinon montant accordé, sinon montant demandé (les trois restent tracés).
+    const base = baseAttribution({
+      decision: d.decision,
+      montantDemandeRef: demande.montant,
+      montantAccordeRef: d.montantAccorde !== null ? arrondirMontant(d.montantAccorde * demande.taux, decRef) : null,
+      encoursRef: d.encours !== null ? arrondirMontant(d.encours * demande.taux, decRef) : null,
+      dateEncours: d.dateEncours,
+      dateComite: d.dateComite,
+      dateDossier: d.dateDossier,
     });
-    const sc = scoreClimat(sp, st);
     const em = emissions({
       methode: c.methodeEmissions,
       scope1: c.scope1,
@@ -152,25 +179,59 @@ export async function recalculer(dossierId: string): Promise<void> {
       scope3: c.scope3,
       facteurSecteur: d.secteur?.facteurEmission ?? 0,
       montantInvestissementRef: investRef,
-      montantFinanceRef: demande.montant,
+      montantFinanceRef: base.montantRef,
     });
     await prisma.evaluationClimat.update({
       where: { id: c.id },
       data: {
-        scorePhysique: sp,
-        scoreTransition: st,
-        scoreClimat: sc,
-        niveauClimat: niveauClimat(sc),
+        ...(evaluationFigee
+          ? {}
+          : {
+              scorePhysique: r.physique,
+              scoreTransition: r.transition,
+              scoreClimat: r.score,
+              niveauClimat: r.niveau,
+              couvertureDonnees: r.couverture,
+              methodeVersion: METHODE_CLIMAT_VERSION,
+            }),
         emissionsFinancees: em.financees,
-        qualitePCAF: c.methodeEmissions === "declaree" ? Math.min(c.qualitePCAF, 2) : qualitePCAF(c.methodeEmissions),
+        baseAttribution: base.base,
+        montantAttribueRef: base.montantRef,
+        facteurAttribution: em.attribution,
+        dateArrete: base.dateArrete,
+        ...(evaluationFigee
+          ? {}
+          : {
+              qualitePCAF: qualitePCAF(c.methodeEmissions, c.emissionsVerifiees, !!c.sourceEmissions?.trim()),
+              scenarios: JSON.stringify(
+                scenariosClimat({
+                  aleas: normaliserAleas(lireJson(c.aleas, {})),
+                  sensibilite: c.sensibilite,
+                  capaciteAdaptation: c.capaciteAdaptation,
+                  emissionsTotales: em.totales,
+                  emissionsDirectes: c.methodeEmissions !== "estimee_secteur" ? c.scope1 : null,
+                  facteurCBAM: nombre(p, "CLIMAT_CBAM_FACTEUR", 0.485),
+                  expositionCBAM: c.expositionCBAM,
+                  partExportUE: c.partExportUE,
+                  prix: lirePrixCarbone(p.CLIMAT_PRIX_CARBONE),
+                  prixETS: nombre(p, "CLIMAT_PRIX_ETS", 850),
+                  ebeRef: c.ebeAnnuel !== null ? arrondirMontant(c.ebeAnnuel * demande.taux, decRef) : null,
+                  seuilEBE: nombre(p, "CLIMAT_SEUIL_EBE", 10) / 100,
+                })
+              ),
+            }),
       },
     });
   }
+  if (evaluationFigee) return;
 
   await prisma.dossier.update({
     where: { id: dossierId },
     data: {
       tauxReference: demande.taux,
+      deviseCoursReference: d.deviseCode,
+      dateCoursReference: cours.dateCours,
+      sourceCoursReference: cours.source,
       montantDemandeRef: demande.montant,
       montantInvestissementRef: investRef,
       evaluationObligatoire: decl.obligatoire,
@@ -185,6 +246,7 @@ export async function recalculer(dossierId: string): Promise<void> {
       niveauRisque: categorieRetenue && risque.nbRepondues > 0 ? risque.niveau : null,
       nbRisquesNonMaitrises: risque.nbRisques,
       evaluationTerminee: !!categorieRetenue && questions.length > 0 && risque.complet,
+      versionReferentiel: await versionReferentiel(p),
     },
   });
 }
@@ -296,8 +358,13 @@ export async function controleSoumission(dossierId: string) {
   const p = await chargerParametres();
   const d = await prisma.dossier.findUniqueOrThrow({
     where: { id: dossierId },
-    include: { climat: true, actions: true, documents: { select: { type: true } }, reponsesExclusion: { include: { critere: true } } },
+    include: { climat: true, actions: true, documents: { select: { type: true } }, reponsesExclusion: { include: { critere: true } }, reponsesCategorisation: { select: { questionId: true } } },
   });
+  // Procédure : les 25 éléments de catégorisation sont à vérifier. Un « oui » A pré-classe le projet
+  // immédiatement (EIES exigée, RSE notifié) mais ne dispense pas de répondre aux autres éléments.
+  const elementsActifs = await prisma.questionCategorisation.findMany({ where: { actif: true }, select: { id: true } });
+  const repondus = new Set(d.reponsesCategorisation.map((r) => r.questionId));
+  const categorisationComplete = elementsActifs.length > 0 && elementsActifs.every((q) => repondus.has(q.id));
   const identification = !!(d.clientId && d.montantDemande > 0 && d.typeCredit && d.secteurId && (d.regionId || d.localite));
   const plan =
     d.actions.length === 0 ||
@@ -305,11 +372,12 @@ export async function controleSoumission(dossierId: string) {
   const c: ControleSoumission = {
     identification,
     exclusion: d.exclusionVerifiee,
-    exclusionBloquante: d.reponsesExclusion.some((r) => r.reponse && r.critere.bloquant && r.critere.actif),
+    exclusionBloquante: d.reponsesExclusion.some((r) => reponseBloquante(r, r.critere)),
     categorisation: !!d.categorie && (d.categorie !== "FI" || !!d.sousCategorieFI),
+    categorisationComplete,
     evaluation:
       d.evaluationTerminee && (!booleen(p, "COMMENTAIRE_EVALUATION_OBLIGATOIRE") || !!d.commentaireEvaluation?.trim()),
-    climat: !booleen(p, "VOLET_CLIMAT_ACTIF") || !!d.climat,
+    climat: !booleen(p, "VOLET_CLIMAT_ACTIF") || (!!d.climat && d.climat.niveauClimat !== "insuffisant"),
     plan,
     eie: d.documents.some((x) => x.type === "EIES"),
   };
@@ -324,9 +392,10 @@ export async function historiser(
   dossierId: string,
   ctx: Contexte | null,
   evenement: string,
-  extra: { deStatut?: string; versStatut?: string; commentaire?: string | null } = {}
+  extra: { deStatut?: string; versStatut?: string; commentaire?: string | null } = {},
+  db: Tx = prisma
 ) {
-  await prisma.historiqueDossier.create({
+  await db.historiqueDossier.create({
     data: {
       dossierId,
       auteurId: ctx?.utilisateur.id ?? null,
@@ -350,3 +419,14 @@ export const INCLUSION_DOSSIER = {
   climat: true,
   precedent: { select: { id: true, reference: true } },
 } satisfies Prisma.DossierInclude;
+
+/**
+ * Précondition de version (écritures concurrentes) : si le client indique la version du dossier
+ * qu'il a lue et que le dossier a changé depuis, l'enregistrement est refusé plutôt que d'écraser.
+ */
+export function exigerVersion(d: { updatedAt: Date }, version: string | null | undefined) {
+  if (!version) return;
+  if (new Date(version).getTime() !== d.updatedAt.getTime()) {
+    throw new ErreurMetier("Le dossier a été modifié par un autre utilisateur depuis son affichage : rechargez la page avant d'enregistrer.", 409, "conflit");
+  }
+}

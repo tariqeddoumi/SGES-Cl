@@ -14,6 +14,8 @@ export const PERMISSIONS = [
   "dossier:reclassifier",
   "dossier:cloturer",
   "dossier:supprimer",
+  // Dérogation motivée à un critère d'exclusion bloquant (hors interdiction légale)
+  "exclusion:deroger",
   // Suivi
   "plan:suivre",
   "visite:gerer",
@@ -49,6 +51,7 @@ export const GROUPES_PERMISSIONS: { groupe: string; permissions: Permission[] }[
       "dossier:reclassifier",
       "dossier:cloturer",
       "dossier:supprimer",
+      "exclusion:deroger",
     ],
   },
   { groupe: "suivi", permissions: ["plan:suivre", "visite:gerer", "client:gerer"] },
@@ -92,6 +95,7 @@ export const ROLES_DEFAUT: { code: string; libelle: Record<string, string>; perm
     permissions: [
       "dossier:lire",
       "dossier:reclassifier",
+      "exclusion:deroger",
       "plan:suivre",
       "visite:gerer",
       "reporting:lire",
@@ -153,7 +157,7 @@ export const ROLES_DEFAUT: { code: string; libelle: Record<string, string>; perm
   {
     code: "auditeur",
     libelle: { fr: "Contrôle / Audit", en: "Control / Audit", ar: "المراقبة / التدقيق" },
-    permissions: ["dossier:lire", "reporting:lire", "audit:lire", "climat:lire"],
+    permissions: ["dossier:lire", "reporting:lire", "reporting:exporter", "audit:lire", "climat:lire"],
   },
   {
     code: "lecture",

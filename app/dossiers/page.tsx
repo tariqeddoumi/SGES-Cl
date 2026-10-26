@@ -176,7 +176,7 @@ function Liste() {
                       <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
                       <PuceStatut statut={d.statut} />
                       <PuceDecision decision={d.decision} />
-                      {d.exclu && <span className="rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">EXCL</span>}
+                      {d.exclu && <span className="rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{t("dossier.badgeExclu")}</span>}
                     </div>
                   </Link>
                 </li>
@@ -203,7 +203,7 @@ function Liste() {
                         <Link href={`/dossiers/${d.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()} dir="ltr">
                           {d.reference}
                         </Link>
-                        {d.exclu && <span className="ms-2 rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">EXCL</span>}
+                        {d.exclu && <span className="ms-2 rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{t("dossier.badgeExclu")}</span>}
                       </Td>
                       <Td>
                         <span className="block max-w-[240px] truncate font-medium" dir="auto">{d.client.raisonSociale}</span>

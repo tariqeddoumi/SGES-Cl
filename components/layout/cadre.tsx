@@ -177,7 +177,7 @@ function MenuLateral({ ouvertMobile, onFermer }: { ouvertMobile: boolean; onFerm
           </div>
         )}
 
-        <nav aria-label="Navigation" className="flex-1 overflow-y-auto px-2.5 pb-3">
+        <nav aria-label={t("nav.navigation")} className="flex-1 overflow-y-auto px-2.5 pb-3">
           {GROUPES.map((g) => {
             const entrees = g.entrees.filter((e) => (!e.permission || peut(e.permission)) && (!e.climat || climatActif));
             if (!entrees.length) return null;

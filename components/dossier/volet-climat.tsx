@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api, useDonnees } from "@/lib/client/api";
-import { emissions, niveauClimat, normaliserAleas, normaliserTransition, scoreClimat, scorePhysique, scoreTransition, type Aleas, type FacteursTransition } from "@/lib/domaine/climat";
+import { emissions, evaluerClimat, lirePonderation, lirePrixCarbone, scenariosClimat, lireSeuilsClimat, METHODE_CLIMAT_VERSION, normaliserAleas, normaliserTransition, qualitePCAF, type Aleas, type FacteursTransition } from "@/lib/domaine/climat";
 import { ALEAS, ALIGNEMENTS_TAXONOMIE, FACTEURS_TRANSITION, METHODES_EMISSIONS } from "@/lib/domaine/constantes";
-import { lireJson } from "@/lib/utils";
+import { cn, lireJson } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
-import { Champ, Echelle, Interrupteur, Selecteur, ZoneTexte } from "@/components/ui/champs";
+import { Champ, Echelle, EchelleEtendue, Interrupteur, Selecteur, ZoneTexte } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, Progression, Sablier } from "@/components/ui/mise-en-page";
 import { PuceNiveau } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
@@ -19,7 +19,7 @@ type Region = Record<string, number> & { libelle: string };
 interface Donnees {
   climat: Record<string, unknown> | null;
   region: Region | null;
-  secteur: { risqueTransition: number; facteurEmission: number; exposeCBAM: boolean; eligibleTaxonomie: boolean; libelle: string } | null;
+  secteur: { risqueTransition: number; sensibilitePhysique: number; facteurEmission: number; exposeCBAM: boolean; eligibleTaxonomie: boolean; libelle: string } | null;
   montantDemandeRef: number;
   montantInvestissementRef: number | null;
 }
@@ -33,6 +33,9 @@ interface Formulaire {
   expositionCBAM: boolean;
   partExportUE: string;
   methodeEmissions: string;
+  emissionsVerifiees: boolean;
+  sourceEmissions: string;
+  ebeAnnuel: string;
   scope1: string;
   scope2: string;
   scope3: string;
@@ -49,13 +52,17 @@ function depuis(d: Donnees): Formulaire {
   const aleasRegion = d.region ? normaliserAleas(d.region) : normaliserAleas({});
   return {
     aleas: c ? normaliserAleas(lireJson(String(c.aleas), {})) : aleasRegion,
-    sensibilite: c ? Number(c.sensibilite) : 1,
+    // Nouvelle évaluation : sensibilité initialisée sur le profil du secteur (ajustable).
+    sensibilite: c ? Number(c.sensibilite) : (d.secteur?.sensibilitePhysique ?? 1),
     capaciteAdaptation: c ? Number(c.capaciteAdaptation) : 1,
     mesuresAdaptation: s(c?.mesuresAdaptation),
     transition: c ? normaliserTransition(lireJson(String(c.transition), {})) : normaliserTransition({}),
     expositionCBAM: c ? !!c.expositionCBAM : !!d.secteur?.exposeCBAM,
     partExportUE: s(c?.partExportUE),
     methodeEmissions: s(c?.methodeEmissions) || "estimee_secteur",
+    emissionsVerifiees: !!c?.emissionsVerifiees,
+    sourceEmissions: s(c?.sourceEmissions),
+    ebeAnnuel: s(c?.ebeAnnuel),
     scope1: s(c?.scope1),
     scope2: s(c?.scope2),
     scope3: s(c?.scope3),
@@ -70,7 +77,7 @@ function depuis(d: Donnees): Formulaire {
 const num = (x: string) => (x.trim() === "" ? null : Number(x.replace(",", ".")));
 
 export function VoletClimat() {
-  const { t, lib, fmt } = useApp();
+  const { t, lib, fmt, parametres } = useApp();
   const { dossier, droits, recharger } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/climat`);
@@ -83,9 +90,10 @@ export function VoletClimat() {
 
   const calcul = useMemo(() => {
     if (!f || !donnees) return null;
-    const sp = scorePhysique(f.aleas, f.sensibilite, f.capaciteAdaptation);
-    const st = scoreTransition({ risqueSecteur: donnees.secteur?.risqueTransition ?? 1, facteurs: f.transition, expositionCBAM: f.expositionCBAM, partExportUE: num(f.partExportUE), alignement: f.alignementTaxonomie });
-    const sc = scoreClimat(sp, st);
+    const r = evaluerClimat(
+      { aleas: f.aleas, transition: f.transition, sensibilite: f.sensibilite, capaciteAdaptation: f.capaciteAdaptation, risqueSecteur: donnees.secteur?.risqueTransition ?? 1, expositionCBAM: f.expositionCBAM, partExportUE: num(f.partExportUE), alignement: f.alignementTaxonomie },
+      { couvertureMin: Number(parametres.CLIMAT_COUVERTURE_MIN ?? 0.75), ponderation: lirePonderation(parametres.CLIMAT_PONDERATION), seuils: lireSeuilsClimat(parametres.CLIMAT_SEUILS_NIVEAUX) }
+    );
     const em = emissions({
       methode: f.methodeEmissions,
       scope1: num(f.scope1),
@@ -93,12 +101,28 @@ export function VoletClimat() {
       scope3: num(f.scope3),
       facteurSecteur: donnees.secteur?.facteurEmission ?? 0,
       montantInvestissementRef: donnees.montantInvestissementRef,
-      montantFinanceRef: donnees.montantDemandeRef,
+      montantFinanceRef: (donnees.climat?.montantAttribueRef as number | null | undefined) ?? donnees.montantDemandeRef,
     });
-    return { sp, st, sc, niveau: niveauClimat(sc), em };
-  }, [f, donnees]);
+    const ebe = num(f.ebeAnnuel);
+    const scenarios = scenariosClimat({
+      aleas: f.aleas,
+      sensibilite: f.sensibilite,
+      capaciteAdaptation: f.capaciteAdaptation,
+      emissionsTotales: em.totales,
+      emissionsDirectes: f.methodeEmissions !== "estimee_secteur" ? num(f.scope1) : null,
+      facteurCBAM: Number(parametres.CLIMAT_CBAM_FACTEUR ?? 0.485),
+      expositionCBAM: f.expositionCBAM,
+      partExportUE: num(f.partExportUE),
+      prix: lirePrixCarbone(parametres.CLIMAT_PRIX_CARBONE),
+      prixETS: Number(parametres.CLIMAT_PRIX_ETS ?? 850),
+      ebeRef: ebe === null ? null : ebe * dossier.tauxReference,
+      seuilEBE: Number(parametres.CLIMAT_SEUIL_EBE ?? 10) / 100,
+    });
+    return { sp: r.physique, st: r.transition, sc: r.score, niveau: r.niveau, couverture: r.couverture, em, scenarios };
+  }, [f, donnees, parametres, dossier.tauxReference]);
 
   if (!donnees || !f || !calcul) return <Chargement lignes={8} />;
+  const manquants = [...ALEAS.filter((a) => f.aleas[a] === null), ...FACTEURS_TRANSITION.filter((x) => f.transition[x] === null)];
   const lecture = !droits.evaluation;
   const maj = <K extends keyof Formulaire>(k: K, v: Formulaire[K]) => setF({ ...f, [k]: v });
   const modifie = !donnees.climat || JSON.stringify(f) !== JSON.stringify(depuis(donnees));
@@ -118,6 +142,9 @@ export function VoletClimat() {
           expositionCBAM: f.expositionCBAM,
           partExportUE: num(f.partExportUE),
           methodeEmissions: f.methodeEmissions,
+          emissionsVerifiees: f.methodeEmissions === "declaree" && f.emissionsVerifiees,
+          sourceEmissions: f.sourceEmissions || null,
+          ebeAnnuel: num(f.ebeAnnuel),
           scope1: num(f.scope1),
           scope2: num(f.scope2),
           scope3: num(f.scope3),
@@ -158,7 +185,7 @@ export function VoletClimat() {
             <p className="mb-2 text-[12px] text-muted-foreground">{t("climat.aleas")}</p>
             <div className="divide-y divide-border">
               {ALEAS.map((a) => (
-                <Echelle key={a} id={`alea-${a}`} libelle={t(`climat.${a}`)} valeur={f.aleas[a]} onChange={(v) => maj("aleas", { ...f.aleas, [a]: v })} desactive={lecture} />
+                <EchelleEtendue key={a} id={`alea-${a}`} libelle={t(`climat.${a}`)} valeur={f.aleas[a]} onChange={(v) => maj("aleas", { ...f.aleas, [a]: v })} desactive={lecture} />
               ))}
             </div>
             <div className="mt-4 divide-y divide-border border-t border-border pt-2">
@@ -172,7 +199,7 @@ export function VoletClimat() {
             <p className="mb-2 text-[12px] text-muted-foreground">{t("climat.facteurs")}</p>
             <div className="divide-y divide-border">
               {FACTEURS_TRANSITION.map((x) => (
-                <Echelle key={x} id={`tr-${x}`} libelle={t(`climat.${x}`)} valeur={f.transition[x]} onChange={(v) => maj("transition", { ...f.transition, [x]: v })} desactive={lecture} />
+                <EchelleEtendue key={x} id={`tr-${x}`} libelle={t(`climat.${x}`)} valeur={f.transition[x]} onChange={(v) => maj("transition", { ...f.transition, [x]: v })} desactive={lecture} />
               ))}
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -200,6 +227,15 @@ export function VoletClimat() {
                   <Champ id="s3" type="number" min={0} libelle={t("climat.scope3")} valeur={f.scope3} onChange={(v) => maj("scope3", v)} desactive={lecture} />
                 </>
               )}
+              {f.methodeEmissions !== "estimee_secteur" && (
+                <ZoneTexte id="source-emissions" className="md:col-span-3" libelle={t("climat.sourceEmissions")} aide={t("climat.sourceEmissionsAide")} valeur={f.sourceEmissions} onChange={(v) => maj("sourceEmissions", v)} lignes={2} obligatoire desactive={lecture} />
+              )}
+              {f.methodeEmissions === "declaree" && (
+                <div className="md:col-span-3">
+                  <Interrupteur id="verifiees" libelle={t("climat.emissionsVerifiees")} aide={t("climat.emissionsVerifieesAide")} valeur={f.emissionsVerifiees} onChange={(v) => maj("emissionsVerifiees", v)} desactive={lecture} />
+                </div>
+              )}
+              <Champ id="ebe" type="number" min={0} libelle={t("climat.ebeAnnuel")} aide={t("climat.ebeAnnuelAide")} valeur={f.ebeAnnuel} onChange={(v) => maj("ebeAnnuel", v)} suffixe={dossier.deviseCode} desactive={lecture} />
               <Champ id="evitees" type="number" min={0} libelle={t("climat.emissionsEvitees")} valeur={f.emissionsEvitees} onChange={(v) => maj("emissionsEvitees", v)} desactive={lecture} />
               <Champ id="enr" type="number" min={0} max={100} libelle={t("climat.partRenouvelable")} valeur={f.partRenouvelable} onChange={(v) => maj("partRenouvelable", v)} suffixe="%" desactive={lecture} />
             </div>
@@ -212,24 +248,34 @@ export function VoletClimat() {
             <div className="flex items-baseline justify-between">
               <PuceNiveau niveau={calcul.niveau} />
               <span className="text-[26px] font-semibold tabulaire">
-                {fmt.nombre(calcul.sc, 0)}
+                {calcul.sc === null ? "—" : fmt.nombre(calcul.sc, 0)}
                 <span className="ms-1 text-[12px] font-normal text-muted-foreground">{t("commun.sur100")}</span>
               </span>
             </div>
+            <p className="mt-2 text-[12px] text-muted-foreground">
+              {t("climat.couverture")} : {fmt.nombre(calcul.couverture * 100, 0)} %
+            </p>
+            {calcul.niveau === "insuffisant" && (
+              <Bandeau ton="vigilance" className="mt-2">
+                {t("climat.donneesInsuffisantes")}
+                {manquants.length > 0 && <span className="mt-1 block">{t("climat.aRenseigner")} : {manquants.map((m) => t(`climat.${m}`)).join(", ")}</span>}
+              </Bandeau>
+            )}
+            <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: METHODE_CLIMAT_VERSION })}</p>
             <div className="mt-4 space-y-3 text-[12.5px]">
               <div>
                 <div className="mb-1 flex justify-between">
                   <span>{t("climat.physique")}</span>
-                  <span className="tabulaire">{fmt.nombre(calcul.sp, 0)}</span>
+                  <span className="tabulaire">{calcul.sp === null ? "—" : fmt.nombre(calcul.sp, 0)}</span>
                 </div>
-                <Progression valeur={calcul.sp} ton={ton(calcul.sp)} />
+                <Progression valeur={calcul.sp ?? 0} ton={ton(calcul.sp ?? 0)} />
               </div>
               <div>
                 <div className="mb-1 flex justify-between">
                   <span>{t("climat.transitionTitre")}</span>
-                  <span className="tabulaire">{fmt.nombre(calcul.st, 0)}</span>
+                  <span className="tabulaire">{calcul.st === null ? "—" : fmt.nombre(calcul.st, 0)}</span>
                 </div>
-                <Progression valeur={calcul.st} ton={ton(calcul.st)} />
+                <Progression valeur={calcul.st ?? 0} ton={ton(calcul.st ?? 0)} />
               </div>
             </div>
           </Carte>
@@ -241,8 +287,42 @@ export function VoletClimat() {
               {t("commun.total")} : {fmt.nombre(calcul.em.totales, 0)} · ×{fmt.nombre(calcul.em.attribution, 2)}
             </p>
             <p className="mt-2 text-[12px] text-muted-foreground">
-              {t("climat.qualitePCAF")} : {f.methodeEmissions === "declaree" ? "1–2" : f.methodeEmissions === "estimee_activite" ? "3" : "5"}
+              {t("climat.qualitePCAF")} : {qualitePCAF(f.methodeEmissions, f.emissionsVerifiees, !!f.sourceEmissions.trim())}
             </p>
+            {donnees.climat?.baseAttribution ? (
+              <p className="mt-1 text-[12px] text-muted-foreground">
+                {t("climat.baseAttribution")} : {t(`climat.base_${String(donnees.climat.baseAttribution)}`)}
+                {donnees.climat.dateArrete ? ` · ${fmt.date(String(donnees.climat.dateArrete))}` : ""}
+              </p>
+            ) : null}
+          </Carte>
+          <Carte titre={t("climat.scenarios")} description={t("climat.scenariosDescription")}>
+            <table className="w-full text-[12.5px]">
+              <tbody>
+                {(["actuel", "ssp245", "ssp585"] as const).map((k) => (
+                  <tr key={k} className="border-b border-border last:border-0">
+                    <td className="py-1.5">{t(`climat.physique_${k}`)}</td>
+                    <td className="py-1.5 text-end tabulaire">{calcul.scenarios.physique[k] === null ? "—" : fmt.nombre(calcul.scenarios.physique[k], 0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-3 mb-1 text-[12px] font-semibold">{t("climat.coutCarbone")}</p>
+            <table className="w-full text-[12px]">
+              <tbody>
+                {calcul.scenarios.transition.map((x) => (
+                  <tr key={x.scenario} className="border-b border-border last:border-0">
+                    <td className="py-1.5">{t(`climat.scenario_${x.scenario}`)}</td>
+                    <td className="py-1.5 text-end tabulaire">{fmt.ref(x.total, true)}</td>
+                    <td className={cn("py-1.5 ps-2 text-end tabulaire", x.partEBE !== null && x.partEBE > Number(parametres.CLIMAT_SEUIL_EBE ?? 10) / 100 && "font-semibold text-destructive")}>
+                      {x.partEBE === null ? "—" : `${fmt.nombre(x.partEBE * 100, 0)} %`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.coutCarboneAide")}</p>
+            {calcul.scenarios.alerteTransition && <Bandeau ton="alerte" className="mt-2">{t("climat.alerteTransition", { seuil: parametres.CLIMAT_SEUIL_EBE ?? "10" })}</Bandeau>}
           </Carte>
         </aside>
       </div>

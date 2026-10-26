@@ -1,9 +1,11 @@
 "use client";
 
+import { Download } from "lucide-react";
 import Link from "next/link";
 import { useDonnees } from "@/lib/client/api";
 import { ALEAS, ALIGNEMENTS_TAXONOMIE } from "@/lib/domaine/constantes";
 import { cn } from "@/lib/utils";
+import { Bouton } from "@/components/ui/bouton";
 import { useApp } from "@/components/providers/application";
 import { Barres, COULEUR_NIVEAU } from "@/components/ui/graphiques";
 import { Bandeau, Carte, Chargement, EnTete, Indicateur, Vide } from "@/components/ui/mise-en-page";
@@ -34,7 +36,17 @@ export default function PageClimat() {
   if (!donnees) return <Chargement lignes={8} />;
   return (
     <div className="space-y-4">
-      <EnTete titre={t("climat.titrePortefeuille")} description={t("climat.descriptionPortefeuille")} />
+      <EnTete
+        titre={t("climat.titrePortefeuille")}
+        description={t("climat.descriptionPortefeuille")}
+        actions={
+          <Bouton variante="contour" asChild>
+            <a href="/api/climat/export">
+              <Download /> {t("climat.exporterBAM")}
+            </a>
+          </Bouton>
+        }
+      />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Indicateur libelle={t("climat.dossiersEvalues")} valeur={`${donnees.nbEvalues} / ${donnees.nbDossiers}`} />
         <Indicateur libelle={t("climat.totalEmissions")} valeur={fmt.nombre(donnees.emissionsFinancees, 0)} unite={t("commun.tco2e")} />

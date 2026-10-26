@@ -42,7 +42,7 @@ type Saisie = Record<string, { valeur: string; commentaire: string }>;
 
 export function VoletEvaluation() {
   const { t, lib, parametres } = useApp();
-  const { dossier, droits, recharger } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/evaluation`);
   const [saisie, setSaisie] = useState<Saisie>({});
@@ -61,6 +61,22 @@ export function VoletEvaluation() {
     setSaisie(initiale);
     setCommentaire(donnees?.commentaireEvaluation ?? "");
   }, [initiale, donnees]);
+
+  useEffect(() => {
+    if (!donnees || !prefill.evaluation) return;
+    const propositions = prefill.evaluation;
+    setSaisie((s) => {
+      const n = { ...s };
+      for (const x of propositions) n[x.questionId] = { valeur: x.valeur, commentaire: x.justification };
+      return n;
+    });
+    consommer("evaluation");
+  }, [prefill.evaluation, donnees, consommer]);
+  useEffect(() => {
+    if (!donnees || prefill.commentaire === undefined) return;
+    setCommentaire(prefill.commentaire);
+    consommer("commentaire");
+  }, [prefill.commentaire, donnees, consommer]);
 
   const questions = useMemo(() => (donnees?.thematiques ?? []).flatMap((th) => th.blocs.flatMap((b) => b.questions.map((q) => ({ ...q, thematique: th.code })))), [donnees]);
   const synthese = useMemo(
@@ -93,6 +109,7 @@ export function VoletEvaluation() {
         body: {
           reponses: modifies.map((id) => ({ questionId: id, valeur: saisie[id]?.valeur || null, commentaire: saisie[id]?.commentaire || null })),
           commentaireEvaluation: commentaire,
+          version: dossier.updatedAt,
         },
       });
       toast(`${t("commun.enregistre")} — ${t("plan.generees", { ajoutees: r.plan.ajoutees, retirees: r.plan.retirees })}`);
@@ -293,19 +310,7 @@ export function VoletEvaluation() {
           </Bouton>
         )}
       </BarreVolet>
-      {assistant && (
-        <AssistantIA
-          onFermer={() => setAssistant(false)}
-          onAppliquer={(propositions) => {
-            setSaisie((s) => {
-              const n = { ...s };
-              for (const p of propositions) n[p.questionId] = { valeur: p.valeur, commentaire: p.justification };
-              return n;
-            });
-            setAssistant(false);
-          }}
-        />
-      )}
+      {assistant && <AssistantIA onFermer={() => setAssistant(false)} />}
     </div>
   );
 }

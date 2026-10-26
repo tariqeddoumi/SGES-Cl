@@ -334,6 +334,61 @@ export function Echelle({
   );
 }
 
+/**
+ * Échelle 0 à 4 avec « inconnu » (?) et « non applicable » (NA) : une donnée non renseignée ne doit
+ * jamais être confondue avec une absence de risque (0).
+ */
+export function EchelleEtendue({
+  id,
+  libelle,
+  valeur,
+  onChange,
+  desactive,
+}: {
+  id: string;
+  libelle: React.ReactNode;
+  valeur: number | null | "na";
+  onChange: (v: number | null | "na") => void;
+  desactive?: boolean;
+}) {
+  const { t } = useApp();
+  const couleurs = ["bg-success", "bg-success/70", "bg-warning", "bg-destructive/80", "bg-destructive"];
+  const options: { v: number | null | "na"; l: string; titre: string }[] = [
+    { v: null, l: "?", titre: t("climat.inconnu") },
+    { v: "na", l: "NA", titre: t("climat.nonApplicable") },
+    ...[0, 1, 2, 3, 4].map((n) => ({ v: n, l: String(n), titre: String(n) })),
+  ];
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 py-1.5">
+      <span id={id} className={cn("min-w-0 text-[13px]", valeur === null ? "text-warning" : "text-foreground")}>
+        {libelle}
+      </span>
+      <div role="radiogroup" aria-labelledby={id} className="flex gap-1">
+        {options.map((o) => {
+          const actif = valeur === o.v;
+          return (
+            <button
+              key={o.l}
+              type="button"
+              role="radio"
+              aria-checked={actif}
+              title={o.titre}
+              disabled={desactive}
+              onClick={() => onChange(o.v)}
+              className={cn(
+                "h-7 min-w-7 rounded-md border px-1 text-[12px] font-semibold tabulaire transition-colors disabled:cursor-not-allowed",
+                actif ? cn(typeof o.v === "number" ? couleurs[o.v] : o.v === "na" ? "bg-muted-foreground" : "bg-warning", "border-transparent text-white") : "border-border bg-background text-muted-foreground hover:bg-accent"
+              )}
+            >
+              {o.l}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Saisie d'un libellé dans chaque langue active (référentiels). */
 export function ChampMultilingue({
   id,

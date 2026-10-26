@@ -95,7 +95,7 @@ export const REFERENTIELS: DefReferentiel[] = [
     actif: "actif",
     tri: [{ champ: "liste", sens: "asc" }, { champ: "ordre", sens: "asc" }],
     champs: [
-      { nom: "liste", cle: "admin.liste", type: "choix", requis: true, colonne: true, fige: true, choix: ["type_credit", "nature_projet", "type_zone", "comite", "motif_rejet", "type_document", "forme_juridique", "segment"] },
+      { nom: "liste", cle: "admin.liste", type: "choix", requis: true, colonne: true, fige: true, choix: ["type_credit", "nature_projet", "type_zone", "comite", "motif_rejet", "type_document", "forme_juridique", "segment", "ligne_financement"] },
       { nom: "code", cle: "commun.code", type: "texte", requis: true, colonne: true, fige: true },
       { nom: "libelle", cle: "commun.libelle", type: "libelle", requis: true, colonne: true },
       ACTIF,
@@ -157,6 +157,8 @@ export const REFERENTIELS: DefReferentiel[] = [
       { nom: "libelle", cle: "commun.libelle", type: "libelleLong", requis: true, colonne: true },
       { nom: "source", cle: "admin.source", type: "texte", requis: true, colonne: true },
       { nom: "bloquant", cle: "admin.bloquant", type: "booleen", colonne: true },
+      { nom: "nature", cle: "admin.natureExclusion", type: "choix", choix: ["interdiction_legale", "exclusion_bailleur", "restriction_sectorielle", "politique_groupe"], requis: true, colonne: true },
+      { nom: "derogeable", cle: "admin.derogeable", type: "booleen", colonne: true },
       ACTIF,
       ORDRE,
     ],

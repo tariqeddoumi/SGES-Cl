@@ -2,7 +2,7 @@ import { z } from "zod";
 import { calculerRisque, lireSeuils } from "@/lib/domaine/risque";
 import { booleen } from "@/lib/parametres";
 import { corps, route } from "@/lib/serveur/api";
-import { dossierAutorise, genererPlan, questionsApplicables, recalculer } from "@/lib/serveur/dossiers";
+import { dossierAutorise, exigerVersion, genererPlan, questionsApplicables, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { chargerParametres } from "@/lib/serveur/parametres";
 import { prisma } from "@/lib/serveur/prisma";
@@ -57,28 +57,32 @@ const Schema = z.object({
     .array(z.object({ questionId: z.string(), valeur: z.string().max(4000).nullable(), commentaire: z.string().max(4000).nullable().optional() }))
     .max(500),
   commentaireEvaluation: z.string().max(20000).nullable().optional(),
+  version: z.string().nullable().optional(),
 });
 
 export const PUT = route(
   async (req, ctx, { id }) => {
     const d = await dossierAutorise(ctx, id, "ecriture");
     exigerVolet(ctx, d, "evaluation");
-    const { reponses, commentaireEvaluation } = Schema.parse(await corps(req));
+    const { reponses, commentaireEvaluation, version } = Schema.parse(await corps(req));
+    exigerVersion(d, version);
     const ids = new Set((await prisma.question.findMany({ select: { id: true } })).map((q) => q.id));
-    for (const r of reponses) {
-      if (!ids.has(r.questionId)) continue;
-      if (r.valeur === null || r.valeur === "") {
-        await prisma.reponseQuestion.deleteMany({ where: { dossierId: id, questionId: r.questionId } });
-        continue;
+    // Toutes les écritures du volet sont atomiques : tout ou rien.
+    await prisma.$transaction(async (tx) => {
+      for (const r of reponses) {
+        if (!ids.has(r.questionId)) continue;
+        if (r.valeur === null || r.valeur === "") {
+          await tx.reponseQuestion.deleteMany({ where: { dossierId: id, questionId: r.questionId } });
+          continue;
+        }
+        await tx.reponseQuestion.upsert({
+          where: { dossierId_questionId: { dossierId: id, questionId: r.questionId } },
+          update: { valeur: r.valeur, commentaire: r.commentaire ?? null },
+          create: { dossierId: id, questionId: r.questionId, valeur: r.valeur, commentaire: r.commentaire ?? null },
+        });
       }
-      await prisma.reponseQuestion.upsert({
-        where: { dossierId_questionId: { dossierId: id, questionId: r.questionId } },
-        update: { valeur: r.valeur, commentaire: r.commentaire ?? null },
-        create: { dossierId: id, questionId: r.questionId, valeur: r.valeur, commentaire: r.commentaire ?? null },
-      });
-    }
-    if (commentaireEvaluation !== undefined) await prisma.dossier.update({ where: { id }, data: { commentaireEvaluation } });
-    await prisma.dossier.update({ where: { id }, data: { etape: Math.max(d.etape, 5) } });
+      await tx.dossier.update({ where: { id }, data: { ...(commentaireEvaluation !== undefined ? { commentaireEvaluation } : {}), etape: Math.max(d.etape, 5) } });
+    });
     await recalculer(id);
     // Le plan d'actions suit les réponses (procédure §3.5 : génération automatique).
     const plan = await genererPlan(id, ctx.langue);

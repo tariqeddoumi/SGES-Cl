@@ -14,7 +14,7 @@ import bcrypt from "bcryptjs";
 import { randomInt } from "crypto";
 import { ROLES_DEFAUT } from "../lib/permissions";
 import { DEVISES, ENTITES, LANGUES, LISTES_VALEURS, TAUX_INDICATIFS } from "./donnees/organisation";
-import { CRITERES_EXCLUSION, QUESTIONS_CATEGORISATION } from "./donnees/exclusion-categorisation";
+import { CRITERES_EXCLUSION, NATURE_CRITERE, NATURE_DEFAUT, QUESTIONS_CATEGORISATION } from "./donnees/exclusion-categorisation";
 import { BLOCS, QUESTIONS, THEMATIQUES } from "./donnees/questionnaires";
 import { REGIONS, SECTEURS } from "./donnees/secteurs-regions";
 
@@ -34,7 +34,8 @@ async function referentiels() {
     const data = { ...d, libelle: j(d.libelle) };
     await prisma.devise.upsert({ where: { code: d.code }, update: FORCER ? data : {}, create: data });
   }
-  const dateCours = new Date("2026-01-01T00:00:00Z");
+  // Cours indicatifs datés du 1er janvier 2024 : un dossier antérieur au premier cours publié ne peut pas être converti.
+  const dateCours = new Date("2024-01-01T00:00:00Z");
   for (const t of TAUX_INDICATIFS) {
     await prisma.tauxChange.upsert({
       where: { deviseCode_date: { deviseCode: t.deviseCode, date: dateCours } },
@@ -101,7 +102,7 @@ async function referentiels() {
   }
 
   for (const [i, c] of CRITERES_EXCLUSION.entries()) {
-    const data = { code: c.code, libelle: j(c.libelle), source: c.source, bloquant: c.bloquant ?? false, actif: c.actif ?? true, ordre: i };
+    const data = { code: c.code, libelle: j(c.libelle), source: c.source, bloquant: c.bloquant ?? false, actif: c.actif ?? true, ordre: i, ...(NATURE_CRITERE[c.code] ?? NATURE_DEFAUT) };
     await prisma.critereExclusion.upsert({ where: { code: c.code }, update: FORCER ? data : {}, create: data });
   }
 

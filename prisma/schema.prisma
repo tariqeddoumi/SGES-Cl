@@ -12,7 +12,9 @@
 //   - toutes les relations déclarent onUpdate: NoAction (SQL Server refuse les
 //     chemins de cascade multiples) ; seules les dépendances d'un dossier sont en
 //     suppression en cascade ;
-//   - pas d'unicité sur une colonne facultative (SQL Server tient deux NULL pour égaux).
+//   - pas d'unicité sur une colonne facultative (SQL Server tient deux NULL pour égaux) ;
+//   - montants et cours en Decimal (jamais en Float) : précision 20,2 pour les montants et
+//     24,10 pour les cours ; la précision native est retirée pour SQLite par `npm run db:fournisseur`.
 //
 // Les libellés multilingues (référentiels) sont des objets {"fr": "...", "en": "...",
 // "ar": "..."} sérialisés : voir lib/i18n/libelle.ts.
@@ -44,7 +46,7 @@ model Entite {
   deviseCode      String   @default("MAD")
   langueDefaut    String   @default("fr")
   /// Seuil de déclenchement propre à l'entité (en devise de l'entité) ; vide = paramètre général.
-  seuilDeclenchement Float?
+  seuilDeclenchement Decimal? @db.Decimal(20, 2)
   nomOutil        String?
   logoUrl         String?
   couleurPrimaire String?
@@ -117,6 +119,7 @@ model Utilisateur {
   journal         Journal[]
 
   @@index([entiteId])
+  @@index([roleId])
   @@map("sges_utilisateurs")
 }
 
@@ -152,7 +155,7 @@ model TauxChange {
   id         String   @id @default(cuid())
   deviseCode String
   date       DateTime
-  taux       Float
+  taux       Decimal  @db.Decimal(24, 10)
   source     String?
   createdAt  DateTime @default(now())
 
@@ -246,6 +249,12 @@ model CritereExclusion {
   source   String  @default("SFI")
   /// true : un « oui » bloque la soumission du dossier (sinon : notification RSE et justification).
   bloquant Boolean @default(false)
+  /// Nature de l'exclusion (gouvernance, ordre de priorité) : interdiction_legale > exclusion_bailleur >
+  /// restriction_sectorielle > politique_groupe.
+  nature   String  @default("politique_groupe")
+  /// Une dérogation motivée (Responsable RSE, permission exclusion:deroger) peut lever le blocage ;
+  /// jamais pour une interdiction légale.
+  derogeable Boolean @default(false)
   ordre    Int     @default(0)
   actif    Boolean @default(true)
 
@@ -299,6 +308,7 @@ model Bloc {
   thematique Thematique @relation(fields: [thematiqueId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   questions  Question[]
 
+  @@index([thematiqueId])
   @@map("sges_blocs")
 }
 
@@ -331,6 +341,7 @@ model Question {
   actions  ModeleAction[]
   reponses ReponseQuestion[]
 
+  @@index([blocId])
   @@map("sges_questions")
 }
 
@@ -348,6 +359,7 @@ model ModeleAction {
 
   question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([questionId])
   @@map("sges_modeles_actions")
 }
 
@@ -386,6 +398,7 @@ model Client {
 
   @@index([entiteId])
   @@index([compteCourant])
+  @@index([secteurId])
   @@map("sges_clients")
 }
 
@@ -409,14 +422,20 @@ model Dossier {
   objet                  String?   @db.Text
   descriptionProcessus   String?   @db.Text
   projetDeveloppementDurable Boolean @default(false)
+  /// Ligne de financement ou de refinancement (SUNREF, MorSEFF, GEFF, obligation verte…) : liste « ligne_financement ».
+  ligneFinancement       String?
   secteurId              String?
   deviseCode             String    @default("MAD")
-  montantDemande         Float
-  montantInvestissement  Float?
-  /// Cours appliqué à la création (devise du dossier → devise de référence).
-  tauxReference          Float     @default(1)
-  montantDemandeRef      Float     @default(0)
-  montantInvestissementRef Float?
+  montantDemande         Decimal   @db.Decimal(20, 2)
+  montantInvestissement  Decimal?  @db.Decimal(20, 2)
+  /// Cours appliqué (devise du dossier → devise de référence), figé au cours publié à la date du dossier.
+  tauxReference          Decimal   @default(1) @db.Decimal(24, 10)
+  /// Devise, date et source du cours figé (traçabilité de la conversion et du seuil de déclenchement).
+  deviseCoursReference   String?
+  dateCoursReference     DateTime?
+  sourceCoursReference   String?
+  montantDemandeRef      Decimal   @default(0) @db.Decimal(20, 2)
+  montantInvestissementRef Decimal? @db.Decimal(20, 2)
   dureeMois              Int?
 
   // Lieu
@@ -446,6 +465,9 @@ model Dossier {
 
   // Évaluation des risques
   evaluationTerminee     Boolean   @default(false)
+  /// Empreinte du référentiel (questionnaire, catégorisation, exclusion, paramètres de calcul) ayant
+  /// produit l'évaluation ; figée à la soumission.
+  versionReferentiel     String?
   scoreRisque            Float?
   niveauRisque           String?
   nbRisquesNonMaitrises  Int       @default(0)
@@ -463,7 +485,10 @@ model Dossier {
   dateComite             DateTime?
   /// accorde | rejete | ajourne
   decision               String?
-  montantAccorde         Float?
+  montantAccorde         Decimal?  @db.Decimal(20, 2)
+  /// Encours à date (devise du dossier), saisi au suivi : base PCAF des émissions financées.
+  encours                Decimal?  @db.Decimal(20, 2)
+  dateEncours            DateTime?
   motifRejetCode         String?
   motifRejetES           String?   @db.Text
   reservesComite         String?   @db.Text
@@ -490,6 +515,7 @@ model Dossier {
   visites               Visite[]
   climat                EvaluationClimat?
   documents             Document[]
+  snapshots             SnapshotDossier[]
   historique            HistoriqueDossier[]
   notifications         Notification[]
 
@@ -497,6 +523,11 @@ model Dossier {
   @@index([clientId])
   @@index([statut])
   @@index([categorie])
+  @@index([chargeId])
+  @@index([dossierPrecedentId])
+  @@index([regionId])
+  @@index([secteurId])
+  @@index([valideurId])
   @@map("sges_dossiers")
 }
 
@@ -506,12 +537,18 @@ model ReponseExclusion {
   critereId   String
   reponse     Boolean
   commentaire String?  @db.Text
+  /// Dérogation accordée à un critère bloquant dérogeable : justification, auteur, date.
+  derogation       String?   @db.Text
+  derogationParId  String?
+  derogationParNom String?
+  derogationLe     DateTime?
   updatedAt   DateTime @updatedAt
 
   dossier Dossier          @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   critere CritereExclusion @relation(fields: [critereId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, critereId])
+  @@index([critereId])
   @@map("sges_reponses_exclusion")
 }
 
@@ -526,6 +563,7 @@ model ReponseCategorisation {
   question QuestionCategorisation @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, questionId])
+  @@index([questionId])
   @@map("sges_reponses_categorisation")
 }
 
@@ -543,6 +581,7 @@ model ReponseQuestion {
   question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, questionId])
+  @@index([questionId])
   @@map("sges_reponses")
 }
 
@@ -571,7 +610,7 @@ model Action {
   avancement   Int       @default(0)
   /// a_faire | en_cours | realisee | abandonnee
   statut       String    @default("a_faire")
-  budget       Float?
+  budget       Decimal? @db.Decimal(20, 2)
   deviseCode   String?
   commentaire  String?   @db.Text
   ordre        Int       @default(0)
@@ -621,6 +660,7 @@ model Visite {
   visiteur Utilisateur? @relation(fields: [visiteurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([dossierId])
+  @@index([visiteurId])
   @@map("sges_visites")
 }
 
@@ -644,9 +684,18 @@ model EvaluationClimat {
   scope3              Float?
   /// declaree | estimee_activite | estimee_secteur
   methodeEmissions    String   @default("estimee_secteur")
-  /// Score de qualité des données PCAF (1 meilleur à 5).
+  /// Score de qualité des données PCAF (1 meilleur à 5) : déduit de la méthode et des preuves, jamais saisi.
   qualitePCAF         Int      @default(5)
+  /// Émissions déclarées vérifiées par un tiers (attestation référencée dans sourceEmissions).
+  emissionsVerifiees  Boolean  @default(false)
+  /// Provenance des émissions : rapport, bilan carbone, attestation de vérification (référence, date, auteur).
+  sourceEmissions     String?  @db.Text
   emissionsFinancees  Float?
+  /// Base du facteur d'attribution PCAF : demande | accorde | encours, montant retenu et date d'arrêté.
+  baseAttribution     String?
+  montantAttribueRef  Decimal? @db.Decimal(20, 2)
+  facteurAttribution  Float?
+  dateArrete          DateTime?
   emissionsEvitees    Float?
   partRenouvelable    Float?
   /// vert | transition | non_aligne | non_eligible
@@ -656,6 +705,14 @@ model EvaluationClimat {
   scoreTransition     Float?
   scoreClimat         Float?
   niveauClimat        String?
+  /// Part des données climat renseignées (0 à 1) ; sous le minimum, aucun score global.
+  couvertureDonnees   Float?
+  /// Version de la méthode de calcul appliquée (reproductibilité).
+  methodeVersion      String?
+  /// EBE (excédent brut d'exploitation) annuel du projet ou du client, devise du dossier : base du stress de transition.
+  ebeAnnuel           Decimal? @db.Decimal(20, 2)
+  /// Scénarios (JSON) : risque physique actuel / 2050 (SSP2-4.5, SSP5-8.5), coût carbone NGFS et CBAM rapporté à l'EBE.
+  scenarios           String?  @db.Text
   commentaire         String?  @db.Text
   updatedAt           DateTime @updatedAt
 
@@ -676,6 +733,8 @@ model Document {
   contenu    Bytes
   /// Texte extrait (PDF) pour l'analyse par l'assistant.
   texte      String?  @db.Text
+  /// Analyse documentaire (JSON) : type reconnu, état de chaque information attendue ; pour un canevas, les réponses saisies.
+  analyse    String?  @db.Text
   deposeParId String?
   createdAt  DateTime @default(now())
 
@@ -702,6 +761,30 @@ model HistoriqueDossier {
   @@map("sges_historique_dossiers")
 }
 
+/// Instantané immuable du dossier (réponses, plan, pièces avec empreinte, questionnaire posé, paramètres)
+/// figé à la soumission, à la validation et à la décision : la décision du comité reste reproductible
+/// même si le référentiel, le plan ou les pièces évoluent ensuite.
+model SnapshotDossier {
+  id        String   @id @default(cuid())
+  dossierId String
+  /// soumission | validation | decision
+  type      String
+  /// Numéro d'ordre par dossier (1, 2, 3…) : un dossier retourné puis revalidé a plusieurs instantanés.
+  version   Int
+  /// SHA-256 du contenu.
+  empreinte String
+  contenu   String   @db.Text
+  auteurId  String?
+  auteurNom String?
+  createdAt DateTime @default(now())
+
+  dossier Dossier @relation(fields: [dossierId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([dossierId, version])
+  @@index([dossierId])
+  @@map("sges_snapshots_dossiers")
+}
+
 // ─── Transverse ────────────────────────────────────────────────────────────
 
 /// Notifications internes (Responsable RSE : exclusion, catégorie A, changement de catégorie…).
@@ -720,6 +803,7 @@ model Notification {
   dossier      Dossier?    @relation(fields: [dossierId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([destinataireId, lu])
+  @@index([dossierId])
   @@map("sges_notifications")
 }
 
@@ -739,6 +823,7 @@ model Journal {
 
   @@index([date])
   @@index([objet, objetId])
+  @@index([utilisateurId])
   @@map("sges_journal")
 }
 
@@ -757,5 +842,6 @@ model CleApi {
 
   entite Entite? @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([entiteId])
   @@map("sges_cles_api")
 }

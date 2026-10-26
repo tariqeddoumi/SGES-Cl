@@ -37,6 +37,7 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   { cle: "CATEGORIE_A_NOTIFIER_RSE", groupe: "regles", type: "booleen", defaut: "true" },
   { cle: "EIE_OBLIGATOIRE_CATEGORIE_A", groupe: "regles", type: "booleen", defaut: "true" },
   { cle: "PRESEANCE_CATEGORIES", groupe: "regles", type: "texte", defaut: "A,B,FI,C", public: true },
+  { cle: "COURS_VALIDITE_JOURS", groupe: "regles", type: "nombre", defaut: "0" },
   { cle: "DELAI_DECISION_JOURS", groupe: "regles", type: "nombre", defaut: "60", public: true },
   { cle: "DELAI_VISITE_MOIS", groupe: "regles", type: "nombre", defaut: "12" },
 
@@ -48,6 +49,13 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   // Climat
   { cle: "VOLET_CLIMAT_ACTIF", groupe: "climat", type: "booleen", defaut: "true", public: true },
   { cle: "VOLET_CLIMAT_OBLIGATOIRE", groupe: "climat", type: "booleen", defaut: "true" },
+  { cle: "CLIMAT_COUVERTURE_MIN", groupe: "climat", type: "nombre", defaut: "0.75", public: true },
+  { cle: "CLIMAT_PONDERATION", groupe: "climat", type: "texte", defaut: "0.6,0.4", public: true },
+  { cle: "CLIMAT_SEUILS_NIVEAUX", groupe: "climat", type: "texte", defaut: "25,50,75", public: true },
+  { cle: "CLIMAT_PRIX_CARBONE", groupe: "climat", type: "texte", defaut: "100,850,1700", public: true },
+  { cle: "CLIMAT_PRIX_ETS", groupe: "climat", type: "nombre", defaut: "850", public: true },
+  { cle: "CLIMAT_CBAM_FACTEUR", groupe: "climat", type: "nombre", defaut: "0.485", public: true },
+  { cle: "CLIMAT_SEUIL_EBE", groupe: "climat", type: "nombre", defaut: "10", public: true },
 
   // Sécurité
   { cle: "SESSION_HEURES", groupe: "securite", type: "nombre", defaut: "10" },
@@ -57,6 +65,8 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   // Intégration
   { cle: "SIGNALETIQUE_MODE", groupe: "integration", type: "choix", defaut: "simulation", choix: ["simulation", "api", "desactive"] },
   { cle: "IA_ACTIVE", groupe: "integration", type: "booleen", defaut: "false", public: true },
+  { cle: "IA_REFERENCE_VALIDATION", groupe: "integration", type: "texte", defaut: "" },
+  { cle: "IA_ANONYMISER", groupe: "integration", type: "booleen", defaut: "true", public: true },
   { cle: "IA_MODELE", groupe: "integration", type: "texte", defaut: "claude-opus-5-5" },
 ];
 

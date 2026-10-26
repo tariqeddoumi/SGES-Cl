@@ -10,6 +10,7 @@ import {
   FileText,
   Lock,
   RefreshCcw,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { api, ErreurApi, useDonnees } from "@/lib/client/api";
@@ -22,7 +23,7 @@ import { ZoneTexte } from "@/components/ui/champs";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Chargement, EnTete } from "@/components/ui/mise-en-page";
 import { Puce, PuceCategorie, PuceDecision, PuceNiveau, PuceStatut } from "@/components/ui/puces";
-import { ContexteDossier, type EtatDossier } from "@/components/dossier/contexte";
+import { ContexteDossier, type EtatDossier, type Prefill } from "@/components/dossier/contexte";
 import { VoletIdentification } from "@/components/dossier/volet-identification";
 import { VoletExclusion } from "@/components/dossier/volet-exclusion";
 import { VoletCategorisation } from "@/components/dossier/volet-categorisation";
@@ -33,6 +34,7 @@ import { VoletFiche } from "@/components/dossier/volet-fiche";
 import { VoletDecision } from "@/components/dossier/volet-decision";
 import { VoletSuivi } from "@/components/dossier/volet-suivi";
 import { VoletPieces } from "@/components/dossier/volet-pieces";
+import { AssistantIA } from "@/components/dossier/assistant-ia";
 import { VoletHistorique } from "@/components/dossier/volet-historique";
 
 const VOLETS = [
@@ -59,6 +61,10 @@ function Espace({ id }: { id: string }) {
   const [commentaire, setCommentaire] = useState("");
   const [enCours, setEnCours] = useState(false);
   const [erreurTransition, setErreurTransition] = useState("");
+  const [assistant, setAssistant] = useState(false);
+  const [prefill, setPrefillEtat] = useState<Prefill>({});
+  const setPrefill = useCallback((n: Prefill) => setPrefillEtat((p) => ({ ...p, ...n })), []);
+  const consommer = useCallback((k: keyof Prefill) => setPrefillEtat((p) => { const reste = { ...p }; delete reste[k]; return reste; }), []);
 
   const climatActif = parametres.VOLET_CLIMAT_ACTIF !== "false";
   const volets = VOLETS.filter((v) => climatActif || v.id !== "climat");
@@ -99,7 +105,7 @@ function Espace({ id }: { id: string }) {
   const visibles = droits.transitions.filter((x) => x !== "decider");
 
   return (
-    <ContexteDossier.Provider value={{ ...donnees, recharger }}>
+    <ContexteDossier.Provider value={{ ...donnees, recharger, prefill, setPrefill, consommer }}>
       <div className="space-y-4">
         <EnTete
           retour={{ href: "/dossiers", libelle: t("nav.dossiers") }}
@@ -146,6 +152,11 @@ function Espace({ id }: { id: string }) {
                   <FileText /> {t("fiche.ouvrir")}
                 </Link>
               </Bouton>
+              {parametres.IA_ACTIVE === "true" && droits.pieces && (
+                <Bouton variante="contour" onClick={() => setAssistant(true)}>
+                  <Sparkles /> {t("evaluation.assistantIA")}
+                </Bouton>
+              )}
               {visibles.map((x) => (
                 <Bouton key={x} variante={x === "annuler" || x === "retourner" ? "contour" : "primaire"} onClick={() => setTransition(x)}>
                   {t(`transition.${x}`)}
@@ -168,6 +179,7 @@ function Espace({ id }: { id: string }) {
           }
         />
 
+        {assistant && <AssistantIA onFermer={() => setAssistant(false)} />}
         {d.verrouille && <Bandeau ton="info">{t("dossier.verrouilleMessage")}</Bandeau>}
         {!droits.ecriture && <Bandeau ton="info">{t("dossier.perimetreMessage")}</Bandeau>}
 

@@ -8,6 +8,7 @@ export const SchemaIdentification = z.object({
   objet: z.string().max(4000).nullable().optional(),
   descriptionProcessus: z.string().max(8000).nullable().optional(),
   projetDeveloppementDurable: z.boolean().optional(),
+  ligneFinancement: z.string().max(40).nullable().optional(),
   secteurId: z.string().max(40).nullable().optional(),
   deviseCode: z.string().length(3).optional(),
   montantDemande: z.number().positive().max(1e15).optional(),

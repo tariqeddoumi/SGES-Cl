@@ -27,7 +27,7 @@ interface Donnees {
 
 export function VoletCategorisation() {
   const { t, lib, parametres } = useApp();
-  const { dossier, droits, recharger } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/categorisation`);
   const [reponses, setReponses] = useState<Record<string, boolean | undefined>>({});
@@ -48,6 +48,13 @@ export function VoletCategorisation() {
     setJustification(donnees.justificationCategorie ?? "");
   }, [donnees, initiales]);
 
+  useEffect(() => {
+    if (!donnees || !prefill.categorisation) return;
+    const propositions = prefill.categorisation;
+    setReponses((r) => ({ ...r, ...Object.fromEntries(propositions.map((x) => [x.questionId, x.valeur === "oui"])) }));
+    consommer("categorisation");
+  }, [prefill.categorisation, donnees, consommer]);
+
   // Calcul immédiat, avec la même règle que le serveur (lib/domaine/categorisation).
   const calcul = useMemo(
     () => calculerCategorie(donnees?.questions ?? [], reponses, lirePreseance(parametres.PRESEANCE_CATEGORIES)),
@@ -67,6 +74,7 @@ export function VoletCategorisation() {
     setErreur("");
     try {
       const corps: Record<string, unknown> = {
+        version: dossier.updatedAt,
         reponses: Object.entries(reponses)
           .filter(([, v]) => v !== undefined)
           .map(([questionId, reponse]) => ({ questionId, reponse })),
@@ -93,6 +101,7 @@ export function VoletCategorisation() {
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           <Bandeau ton="info">{t("categorisation.description")}</Bandeau>
+          {calcul.categorie === "A" && !calcul.complet && <Bandeau ton="vigilance">{t("categorisation.provisoireA")}</Bandeau>}
           {groupes.map((g) => (
             <Carte key={g.c} titre={t(`categorie.${g.c}`)} description={t(`categorie.desc${g.c}`)} sansMarge>
               <ol className="divide-y divide-border">

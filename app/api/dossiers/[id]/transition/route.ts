@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TRANSITIONS, transitionsPossibles, type Transition } from "@/lib/domaine/workflow";
+import { TRANSITIONS, statutApres, transitionsPossibles, type Transition } from "@/lib/domaine/workflow";
 import { booleen } from "@/lib/parametres";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier, interdit } from "@/lib/serveur/contexte";
@@ -25,7 +25,8 @@ export const POST = route(
     const def = TRANSITIONS[transition];
     if (def.commentaireObligatoire && !commentaire?.trim()) throw new ErreurMetier("Commentaire obligatoire.", 400, "validation", [{ champ: "commentaire" }]);
     const p = await chargerParametres();
-    const data: Record<string, unknown> = { statut: def.vers };
+    const vers = statutApres(transition, d.decision);
+    const data: Record<string, unknown> = { statut: vers };
 
     switch (transition) {
       case "soumettre": {
@@ -61,11 +62,11 @@ export const POST = route(
         const r = await tx.dossier.updateMany({ where: { id, statut: d.statut }, data });
         if (r.count !== 1) throw new ErreurMetier("Le statut du dossier a changé entre-temps : rechargez la page.", 409, "conflit");
         const snap = snapshotType ? await figerSnapshot(tx, id, snapshotType, ctx) : null;
-        await historiser(id, ctx, "transition", { deStatut: d.statut, versStatut: def.vers, commentaire }, tx);
+        await historiser(id, ctx, "transition", { deStatut: d.statut, versStatut: vers, commentaire }, tx);
         await journaliserCritique(tx, ctx, transition, "dossier", id, {
           reference: d.reference,
           de: d.statut,
-          vers: def.vers,
+          vers,
           commentaire: commentaire ?? null,
           snapshot: snap,
         });
@@ -78,7 +79,7 @@ export const POST = route(
     if (transition === "soumettre") await notifierPermission(id, "dossier:valider", "a_valider", `${d.reference} — à valider`, commentaire ?? "", ctx.utilisateur.id);
     if (transition === "retourner") await notifierUtilisateur(d.chargeId, id, "retourne", `${d.reference} — retourné`, commentaire ?? "");
     if (transition === "valider") await notifierUtilisateur(d.chargeId, id, "valide", `${d.reference} — validé`, commentaire ?? "");
-    return { statut: def.vers };
+    return { statut: vers };
   },
   { permission: "dossier:lire" }
 );

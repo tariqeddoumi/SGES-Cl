@@ -122,6 +122,7 @@ export function VoletClimat() {
   }, [f, donnees, parametres, dossier.tauxReference]);
 
   if (!donnees || !f || !calcul) return <Chargement lignes={8} />;
+  const manquants = [...ALEAS.filter((a) => f.aleas[a] === null), ...FACTEURS_TRANSITION.filter((x) => f.transition[x] === null)];
   const lecture = !droits.evaluation;
   const maj = <K extends keyof Formulaire>(k: K, v: Formulaire[K]) => setF({ ...f, [k]: v });
   const modifie = !donnees.climat || JSON.stringify(f) !== JSON.stringify(depuis(donnees));
@@ -254,7 +255,12 @@ export function VoletClimat() {
             <p className="mt-2 text-[12px] text-muted-foreground">
               {t("climat.couverture")} : {fmt.nombre(calcul.couverture * 100, 0)} %
             </p>
-            {calcul.niveau === "insuffisant" && <Bandeau ton="vigilance" className="mt-2">{t("climat.donneesInsuffisantes")}</Bandeau>}
+            {calcul.niveau === "insuffisant" && (
+              <Bandeau ton="vigilance" className="mt-2">
+                {t("climat.donneesInsuffisantes")}
+                {manquants.length > 0 && <span className="mt-1 block">{t("climat.aRenseigner")} : {manquants.map((m) => t(`climat.${m}`)).join(", ")}</span>}
+              </Bandeau>
+            )}
             <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: METHODE_CLIMAT_VERSION })}</p>
             <div className="mt-4 space-y-3 text-[12.5px]">
               <div>

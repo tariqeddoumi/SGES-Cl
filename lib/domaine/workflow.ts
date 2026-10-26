@@ -35,6 +35,12 @@ export const TRANSITIONS: Record<Transition, { de: Statut[]; vers: Statut; permi
   rouvrir: { de: ["cloture"], vers: "en_suivi", permission: "dossier:cloturer", commentaireObligatoire: true },
 };
 
+/** Statut atteint par une transition : à la réouverture, seul un crédit accordé repart en suivi. */
+export function statutApres(transition: Transition, decision: string | null | undefined): Statut {
+  if (transition === "rouvrir" && decision !== "accorde") return "decide";
+  return TRANSITIONS[transition].vers;
+}
+
 export function transitionsPossibles(statut: string, permissions: readonly string[]): Transition[] {
   return (Object.keys(TRANSITIONS) as Transition[]).filter((t) => {
     const def = TRANSITIONS[t];

@@ -1,4 +1,4 @@
-import { motifsBlocageSoumission, planModifiable, transitionsPossibles, evaluationModifiable } from "@/lib/domaine/workflow";
+import { motifsBlocageSoumission, planModifiable, statutApres, transitionsPossibles, evaluationModifiable } from "@/lib/domaine/workflow";
 
 describe("circuit du dossier", () => {
   it("transitions selon le statut et les permissions", () => {
@@ -20,5 +20,11 @@ describe("circuit du dossier", () => {
     expect(motifsBlocageSoumission({ ...ok, categorisationComplete: false }, { climatObligatoire: true, eieObligatoire: true })).toEqual(["categorisation_incomplete"]);
     expect(motifsBlocageSoumission({ ...ok, categorisation: false, categorisationComplete: false }, { climatObligatoire: true, eieObligatoire: true })).toEqual(["categorisation"]);
     expect(motifsBlocageSoumission({ ...ok, exclusionBloquante: true }, { climatObligatoire: true, eieObligatoire: false })).toEqual(["exclusion_bloquante"]);
+  });
+  it("réouverture : seul un crédit accordé repart en suivi", () => {
+    expect(statutApres("rouvrir", "accorde")).toBe("en_suivi");
+    expect(statutApres("rouvrir", "rejete")).toBe("decide");
+    expect(statutApres("rouvrir", null)).toBe("decide");
+    expect(statutApres("cloturer", "accorde")).toBe("cloture");
   });
 });

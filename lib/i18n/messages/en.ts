@@ -84,6 +84,7 @@ export const en: Messages = {
     sousTitreDefaut: "Environmental, social and climate management",
   },
   nav: {
+    navigation: "Navigation",
     groupeSuivi: "Overview",
     groupeDossiers: "Files",
     groupePilotage: "Steering",
@@ -208,6 +209,7 @@ export const en: Messages = {
     historique: "History",
   },
   dossier: {
+    badgeExclu: "EXCL",
     ligneFinancement: "Credit / refinancing line",
     ligneFinancementAide: "Lender line (SUNREF, MorSEFF, GEFF, EIB…) or green bond: its eligibility criteria and reporting are added to the clauses.",
     descriptionProjet: "Project description",
@@ -398,6 +400,7 @@ export const en: Messages = {
     emissionsVerifiees: "Emissions verified by an independent third party",
     emissionsVerifieesAide: "Only if the verification statement is cited in the source (PCAF quality 1).",
     couverture: "Data coverage",
+    aRenseigner: "To fill in",
     donneesInsuffisantes: "Too many unknown data: no overall score is produced. Fill in the hazards and factors (or “NA” if not applicable).",
     methodeIndicative: "Indicative score — method {version}.",
     baseAttribution: "Attribution basis",
@@ -829,6 +832,8 @@ export const en: Messages = {
     perimetreTout: "Whole platform",
   },
   admin: {
+    exempleNomCle: "Lending platform — production",
+    sauvegardeSansPieces: "JSON without documents",
     natureExclusion: "Exclusion type",
     derogeable: "Waiver allowed",
     titre: "Settings",

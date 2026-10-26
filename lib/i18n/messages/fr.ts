@@ -86,6 +86,7 @@ export const fr = {
     sousTitreDefaut: "Gestion environnementale, sociale et climatique",
   },
   nav: {
+    navigation: "Navigation",
     groupeSuivi: "Suivi",
     groupeDossiers: "Dossiers",
     groupePilotage: "Pilotage",
@@ -210,6 +211,7 @@ export const fr = {
     historique: "Historique",
   },
   dossier: {
+    badgeExclu: "EXCL",
     ligneFinancement: "Ligne de financement / refinancement",
     ligneFinancementAide: "Ligne de bailleur (SUNREF, MorSEFF, GEFF, BEI…) ou obligation verte : ses critères d'éligibilité et son reporting s'ajoutent aux clauses.",
     descriptionProjet: "Description du projet",
@@ -400,6 +402,7 @@ export const fr = {
     emissionsVerifiees: "Émissions vérifiées par un tiers indépendant",
     emissionsVerifieesAide: "Seulement si l'attestation de vérification est citée dans la source (qualité PCAF 1).",
     couverture: "Couverture des données",
+    aRenseigner: "À renseigner",
     donneesInsuffisantes: "Trop de données inconnues : aucun score global n'est produit. Renseignez les aléas et facteurs (ou « NA » s'ils ne s'appliquent pas).",
     methodeIndicative: "Score indicatif — méthode {version}.",
     baseAttribution: "Base d'attribution",
@@ -831,6 +834,8 @@ export const fr = {
     perimetreTout: "Toute la plateforme",
   },
   admin: {
+    exempleNomCle: "Plateforme d'octroi — production",
+    sauvegardeSansPieces: "JSON sans les pièces",
     natureExclusion: "Nature de l'exclusion",
     derogeable: "Dérogation possible",
     titre: "Paramétrage",

@@ -84,6 +84,7 @@ export const ar: Messages = {
     sousTitreDefaut: "التدبير البيئي والاجتماعي والمناخي",
   },
   nav: {
+    navigation: "التنقل",
     groupeSuivi: "المتابعة",
     groupeDossiers: "الملفات",
     groupePilotage: "القيادة",
@@ -208,6 +209,7 @@ export const ar: Messages = {
     historique: "السجل",
   },
   dossier: {
+    badgeExclu: "مستبعد",
     ligneFinancement: "خط التمويل / إعادة التمويل",
     ligneFinancementAide: "خط ممول أو سندات خضراء: تضاف معايير أهليته والتزامات الإخبار إلى البنود.",
     descriptionProjet: "وصف المشروع",
@@ -398,6 +400,7 @@ export const ar: Messages = {
     emissionsVerifiees: "انبعاثات تم التحقق منها من طرف جهة مستقلة",
     emissionsVerifieesAide: "فقط إذا تمت الإشارة إلى شهادة التحقق في المصدر (جودة PCAF 1).",
     couverture: "تغطية المعطيات",
+    aRenseigner: "يجب إدخال",
     donneesInsuffisantes: "معطيات مجهولة كثيرة: لا تُنتج نقطة إجمالية. أدخل المخاطر والعوامل (أو « NA » إن لم تنطبق).",
     methodeIndicative: "نقطة إرشادية — المنهجية {version}.",
     baseAttribution: "أساس الإسناد",
@@ -829,6 +832,8 @@ export const ar: Messages = {
     perimetreTout: "المنصة بأكملها",
   },
   admin: {
+    exempleNomCle: "منصة المنح — الإنتاج",
+    sauvegardeSansPieces: "JSON بدون المستندات",
     natureExclusion: "طبيعة الإقصاء",
     derogeable: "الاستثناء ممكن",
     titre: "الإعدادات",

@@ -157,7 +157,7 @@ export const ROLES_DEFAUT: { code: string; libelle: Record<string, string>; perm
   {
     code: "auditeur",
     libelle: { fr: "Contrôle / Audit", en: "Control / Audit", ar: "المراقبة / التدقيق" },
-    permissions: ["dossier:lire", "reporting:lire", "audit:lire", "climat:lire"],
+    permissions: ["dossier:lire", "reporting:lire", "reporting:exporter", "audit:lire", "climat:lire"],
   },
   {
     code: "lecture",

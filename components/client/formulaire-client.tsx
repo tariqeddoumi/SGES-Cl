@@ -3,6 +3,7 @@
 import { useApp } from "@/components/providers/application";
 import { Champ, Selecteur, ZoneTexte } from "@/components/ui/champs";
 import type { Referentiels } from "@/lib/client/referentiels";
+import { useLibelles, useListe } from "@/lib/client/listes";
 
 export interface ValeursClient {
   entiteId: string;
@@ -65,6 +66,8 @@ export function FormulaireClient({
   desactive?: boolean;
 }) {
   const { t, lib } = useApp();
+  const villes = useLibelles("ville");
+  const pays = useListe("pays");
   const maj = (k: keyof ValeursClient, v: string) => onChange({ ...valeurs, [k]: v });
   const opt = (liste: string) => (referentiels.listes[liste] ?? []).map((x) => ({ valeur: x.code, libelle: lib(x.libelle) }));
   const entites = referentiels.entites.filter((e) => e.ecriture).map((e) => ({ valeur: e.id, libelle: `${"· ".repeat(e.niveau)}${e.nom}` }));
@@ -81,8 +84,8 @@ export function FormulaireClient({
       <Champ id="ice" libelle={t("client.ice")} valeur={valeurs.ice} onChange={(v) => maj("ice", v)} dir="ltr" desactive={desactive} />
       <Champ id="if" libelle={t("client.identifiantFiscal")} valeur={valeurs.identifiantFiscal} onChange={(v) => maj("identifiantFiscal", v)} dir="ltr" desactive={desactive} />
       <Champ id="rc" libelle={t("client.registreCommerce")} valeur={valeurs.registreCommerce} onChange={(v) => maj("registreCommerce", v)} dir="ltr" desactive={desactive} />
-      <Champ id="ville" libelle={t("client.ville")} valeur={valeurs.ville} onChange={(v) => maj("ville", v)} desactive={desactive} />
-      <Champ id="pays" libelle={t("client.pays")} valeur={valeurs.pays} onChange={(v) => maj("pays", v.toUpperCase().slice(0, 3))} dir="ltr" desactive={desactive} />
+      <Champ id="ville" suggestions={villes} libelle={t("client.ville")} valeur={valeurs.ville} onChange={(v) => maj("ville", v)} desactive={desactive} />
+      <Selecteur id="pays" libelle={t("client.pays")} valeur={valeurs.pays} onChange={(v) => maj("pays", v)} options={pays.map((p) => ({ valeur: p.code, libelle: p.libelle }))} desactive={desactive} />
       <ZoneTexte id="adr" libelle={t("client.adresse")} valeur={valeurs.adresse} onChange={(v) => maj("adresse", v)} lignes={2} className="md:col-span-2" desactive={desactive} />
       <Champ id="cn" libelle={t("client.contact")} valeur={valeurs.contactNom} onChange={(v) => maj("contactNom", v)} desactive={desactive} />
       <Champ id="cp" libelle={t("client.contactPoste")} valeur={valeurs.contactPoste} onChange={(v) => maj("contactPoste", v)} desactive={desactive} />

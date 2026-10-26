@@ -10,7 +10,8 @@ import { dateInput } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
-import { Champ, ChampMultilingue, Echelle, Interrupteur, Selecteur } from "@/components/ui/champs";
+import { ChoixMultiple, Champ, ChampMultilingue, Echelle, Interrupteur, Selecteur } from "@/components/ui/champs";
+import { useReferentiels } from "@/lib/client/referentiels";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Carte, Chargement, Vide } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
@@ -24,13 +25,20 @@ function valeurAffichee(c: ChampRef, v: unknown, lib: (x: string) => string, t: 
   if (c.type === "booleen") return v ? <Puce ton="favorable">{t("commun.oui")}</Puce> : <Puce>{t("commun.non")}</Puce>;
   if (c.type === "date") return fmt.date(String(v));
   if (c.type === "nombre") return <span className="tabulaire">{fmt.nombre(Number(v), 6)}</span>;
+  if (c.type === "multi") return <span className="line-clamp-2">{String(v).split(",").join(", ")}</span>;
+  if (c.nom === "liste") return t(`listes.${String(v)}`);
   return String(v);
 }
 
 /** Écran générique d'un référentiel paramétrable (liste, ajout, modification, désactivation). */
 export function EditeurReferentiel({ def, filtreFixe }: { def: DefReferentiel; filtreFixe?: Record<string, string> }) {
   const { t, lib, fmt } = useApp();
+  const ref = useReferentiels();
   const toast = useToast();
+  const optionsSource = (source: string) =>
+    source === "secteurs"
+      ? (ref?.secteurs ?? []).map((x) => ({ valeur: x.code, libelle: `${x.code} — ${lib(x.libelle)}` }))
+      : (ref?.listes[source.replace(/^liste:/, "")] ?? []).map((x) => ({ valeur: x.code, libelle: lib(x.libelle) }));
   const { donnees, erreur, recharger } = useDonnees<Element[]>(`/api/admin/referentiels/${def.type}`);
   const [edition, setEdition] = useState<{ id: string | null; valeurs: Element } | null>(null);
   const [inactifs, setInactifs] = useState(false);
@@ -105,7 +113,9 @@ export function EditeurReferentiel({ def, filtreFixe }: { def: DefReferentiel; f
       case "booleen":
         return <Interrupteur key={c.nom} id={c.nom} libelle={libelleChamp} valeur={!!v} onChange={maj} />;
       case "choix":
-        return <Selecteur key={c.nom} id={c.nom} libelle={libelleChamp} valeur={String(v ?? "")} onChange={maj} options={(c.choix ?? []).map((x) => ({ valeur: x, libelle: x }))} obligatoire={c.requis} desactive={desactive} />;
+        return <Selecteur key={c.nom} id={c.nom} libelle={libelleChamp} valeur={String(v ?? "")} onChange={maj} options={(c.choix ?? []).map((x) => ({ valeur: x, libelle: c.nom === "liste" ? t(`listes.${x}`) : x }))} obligatoire={c.requis} desactive={desactive} />;
+      case "multi":
+        return <ChoixMultiple key={c.nom} id={c.nom} libelle={libelleChamp} valeur={String(v ?? "")} onChange={maj} options={optionsSource(c.source ?? "")} desactive={desactive} />;
       case "echelle":
         return <Echelle key={c.nom} id={c.nom} libelle={libelleChamp} valeur={Number(v ?? 0)} onChange={maj} />;
       default:
@@ -136,7 +146,7 @@ export function EditeurReferentiel({ def, filtreFixe }: { def: DefReferentiel; f
         {listes.length > 0 && (
           <select aria-label={t("admin.liste")} value={filtreListe} onChange={(e) => setFiltreListe(e.target.value)} className="h-9 rounded-md border border-border bg-background px-2 text-[13px]">
             <option value="">{t("admin.liste")} : {t("commun.toutes")}</option>
-            {listes.map((l) => <option key={l} value={l}>{l}</option>)}
+            {listes.map((l) => <option key={l} value={l}>{t(`listes.${l}`)}</option>)}
           </select>
         )}
         {def.actif && (
@@ -183,7 +193,7 @@ export function EditeurReferentiel({ def, filtreFixe }: { def: DefReferentiel; f
         {erreurForm && <Bandeau ton="alerte" className="mb-3">{erreurForm}</Bandeau>}
         <div className="grid gap-3 md:grid-cols-2">
           {def.champs.map((c) => (
-            <div key={c.nom} className={c.type === "libelle" || c.type === "libelleLong" || c.type === "echelle" ? "md:col-span-2" : undefined}>{champ(c)}</div>
+            <div key={c.nom} className={c.type === "libelle" || c.type === "libelleLong" || c.type === "echelle" || c.type === "multi" ? "md:col-span-2" : undefined}>{champ(c)}</div>
           ))}
         </div>
       </Dialogue>

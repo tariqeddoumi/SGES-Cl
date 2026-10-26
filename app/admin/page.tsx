@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Coins, Database, FileQuestion, Globe, KeyRound, ListChecks, ListOrdered, MapPinned, Ban, Factory, Settings2, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { Blocks, Building2, Coins, Database, FileQuestion, Globe, KeyRound, ListChecks, ListOrdered, MapPinned, Ban, Factory, Settings2, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import type { Permission } from "@/lib/permissions";
 import { useApp } from "@/components/providers/application";
 import { EnTete } from "@/components/ui/mise-en-page";
@@ -12,6 +12,7 @@ const TUILES: { groupe: string; elements: { href: string; cle: string; icone: Lu
     elements: [
       { href: "/admin/parametres", cle: "parametres", icone: Settings2, permission: "admin:parametres" },
       { href: "/admin/questionnaires", cle: "questionnaires", icone: FileQuestion, permission: "admin:referentiels" },
+      { href: "/admin/referentiels/modules", cle: "modules", icone: Blocks, permission: "admin:referentiels" },
       { href: "/admin/referentiels/exclusion", cle: "exclusion", icone: Ban, permission: "admin:referentiels" },
       { href: "/admin/referentiels/categorisation", cle: "categorisation", icone: ListOrdered, permission: "admin:referentiels" },
       { href: "/admin/referentiels/secteurs", cle: "secteurs", icone: Factory, permission: "admin:referentiels" },

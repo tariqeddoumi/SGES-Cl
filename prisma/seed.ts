@@ -16,6 +16,7 @@ import { ROLES_DEFAUT } from "../lib/permissions";
 import { DEVISES, ENTITES, LANGUES, LISTES_VALEURS, TAUX_INDICATIFS } from "./donnees/organisation";
 import { CRITERES_EXCLUSION, NATURE_CRITERE, NATURE_DEFAUT, QUESTIONS_CATEGORISATION } from "./donnees/exclusion-categorisation";
 import { BLOCS, QUESTIONS, THEMATIQUES } from "./donnees/questionnaires";
+import { MARQUAGE, MODULES } from "./donnees/modules";
 import { REGIONS, SECTEURS } from "./donnees/secteurs-regions";
 
 const prisma = new PrismaClient();
@@ -118,6 +119,14 @@ async function referentiels() {
     const r = await prisma.thematique.upsert({ where: { code: t.code }, update: FORCER ? data : {}, create: data });
     themId.set(t.code, r.id);
   }
+  // Modules d'activité du questionnaire (déclencheurs des niveaux minimum et standard).
+  for (const [i, m] of MODULES.entries()) {
+    const data = {
+      code: m.code, libelle: j(m.libelle), secteurs: m.secteurs ?? null, zones: m.zones ?? null, natures: m.natures ?? null,
+      effectifMin: m.effectifMin ?? null, stressHydriqueMin: m.stressHydriqueMin ?? null, equateur: !!m.equateur, ordre: i,
+    };
+    await prisma.moduleQuestionnaire.upsert({ where: { code: m.code }, update: FORCER ? data : {}, create: data });
+  }
   const blocId = new Map<string, string>();
   for (const [i, b] of BLOCS.entries()) {
     const data = { code: b.code, libelle: j(b.libelle), thematiqueId: themId.get(b.thematique)!, ordre: i };
@@ -136,6 +145,8 @@ async function referentiels() {
       libelle: j(q.libelle),
       aide: q.aide ? j(q.aide) : null,
       obligatoire: q.obligatoire ?? true,
+      niveau: MARQUAGE[q.code]?.niveau ?? "reglementaire",
+      module: MARQUAGE[q.code]?.module ?? null,
       ordre: i,
     };
     const existe = await prisma.question.findUnique({ where: { code: q.code } });

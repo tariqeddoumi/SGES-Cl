@@ -13,6 +13,7 @@ import { Bandeau, Carte, Chargement, Progression, Sablier } from "@/components/u
 import { PuceNiveau } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { useLibelles } from "@/lib/client/listes";
 
 type Region = Record<string, number> & { libelle: string };
 
@@ -78,6 +79,8 @@ const num = (x: string) => (x.trim() === "" ? null : Number(x.replace(",", "."))
 
 export function VoletClimat() {
   const { t, lib, fmt, parametres } = useApp();
+  const mesuresTypes = useLibelles("mesure_adaptation");
+  const sourcesTypes = useLibelles("source_emissions");
   const { dossier, droits, recharger } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/climat`);
@@ -192,7 +195,7 @@ export function VoletClimat() {
               <Echelle id="sensibilite" libelle={t("climat.sensibilite")} valeur={f.sensibilite} onChange={(v) => maj("sensibilite", v)} desactive={lecture} />
               <Echelle id="adaptation" libelle={t("climat.capaciteAdaptation")} valeur={f.capaciteAdaptation} onChange={(v) => maj("capaciteAdaptation", v)} desactive={lecture} />
             </div>
-            <ZoneTexte id="adaptation-txt" className="mt-3" libelle={t("climat.mesuresAdaptation")} valeur={f.mesuresAdaptation} onChange={(v) => maj("mesuresAdaptation", v)} lignes={2} desactive={lecture} />
+            <ZoneTexte id="adaptation-txt" modeles={mesuresTypes} className="mt-3" libelle={t("climat.mesuresAdaptation")} valeur={f.mesuresAdaptation} onChange={(v) => maj("mesuresAdaptation", v)} lignes={2} desactive={lecture} />
           </Carte>
 
           <Carte titre={t("climat.transitionTitre")} description={t("climat.sensibiliteSecteur", { n: donnees.secteur?.risqueTransition ?? "—" })}>
@@ -228,7 +231,7 @@ export function VoletClimat() {
                 </>
               )}
               {f.methodeEmissions !== "estimee_secteur" && (
-                <ZoneTexte id="source-emissions" className="md:col-span-3" libelle={t("climat.sourceEmissions")} aide={t("climat.sourceEmissionsAide")} valeur={f.sourceEmissions} onChange={(v) => maj("sourceEmissions", v)} lignes={2} obligatoire desactive={lecture} />
+                <ZoneTexte id="source-emissions" modeles={sourcesTypes} className="md:col-span-3" libelle={t("climat.sourceEmissions")} aide={t("climat.sourceEmissionsAide")} valeur={f.sourceEmissions} onChange={(v) => maj("sourceEmissions", v)} lignes={2} obligatoire desactive={lecture} />
               )}
               {f.methodeEmissions === "declaree" && (
                 <div className="md:col-span-3">

@@ -80,6 +80,10 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
             [t("dossier.natureProjet"), f.description.natureProjet],
             [t("dossier.projetDD"), f.description.projetDeveloppementDurable ? t("commun.oui") : t("commun.non")],
             [t("dossier.ligneFinancement"), f.description.ligneFinancement ?? "—"],
+            ...(f.description.principesEquateur ? [[t("questionnaire.principesEquateur"), t("commun.oui")] as [string, string]] : []),
+            ...(f.description.questionnaire
+              ? [[t("questionnaire.titre"), `${t(`questionnaire.niveau_${f.description.questionnaire.niveau}`)} — ${t("questionnaire.nbPosees", { posees: f.description.questionnaire.posees, total: f.description.questionnaire.total })}`] as [string, string]]
+              : []),
             [t("dossier.montantDemande"), fmt.montant(f.description.montantDemande, f.description.devise)],
             [t("dossier.montantInvestissement"), f.description.montantInvestissement ? fmt.montant(f.description.montantInvestissement, f.description.devise) : null],
           ]}

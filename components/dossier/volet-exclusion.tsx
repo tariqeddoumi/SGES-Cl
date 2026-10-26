@@ -12,6 +12,7 @@ import { Puce } from "@/components/ui/puces";
 import { derogationPossible, reponseBloquante } from "@/lib/domaine/exclusion";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { useLibelles } from "@/lib/client/listes";
 
 interface Donnees {
   criteres: { id: string; code: string; libelle: string; source: string; bloquant: boolean; actif: boolean; nature: string; derogeable: boolean }[];
@@ -23,6 +24,7 @@ interface Donnees {
 
 export function VoletExclusion() {
   const { t, lib, fmt } = useApp();
+  const motifsTypes = useLibelles("motif_exclusion");
   const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/exclusion`);
@@ -163,7 +165,7 @@ export function VoletExclusion() {
 
       {(exclu || donnees.motifExclusion) && (
         <Carte>
-          <ZoneTexte id="motif" libelle={t("exclusion.motif")} aide={t("exclusion.motifAide")} valeur={motif} onChange={setMotif} lignes={3} obligatoire={exclu} desactive={!droits.evaluation} />
+          <ZoneTexte id="motif" modeles={motifsTypes} libelle={t("exclusion.motif")} aide={t("exclusion.motifAide")} valeur={motif} onChange={setMotif} lignes={3} obligatoire={exclu} desactive={!droits.evaluation} />
         </Carte>
       )}
       {erreur && <Bandeau ton="alerte">{erreur}</Bandeau>}

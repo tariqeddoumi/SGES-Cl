@@ -4,7 +4,9 @@
  * l'interface (formulaire, colonnes) : ajouter un référentiel = une entrée ici.
  */
 
-export type TypeChamp = "texte" | "libelle" | "libelleLong" | "nombre" | "entier" | "booleen" | "choix" | "echelle" | "codes" | "date";
+import { LISTES } from "./domaine/constantes";
+
+export type TypeChamp = "texte" | "libelle" | "libelleLong" | "nombre" | "entier" | "booleen" | "choix" | "echelle" | "codes" | "date" | "multi";
 
 export interface ChampRef {
   nom: string;
@@ -19,11 +21,13 @@ export interface ChampRef {
   fige?: boolean;
   min?: number;
   max?: number;
+  /** Choix multiple : référentiel source (« secteurs » ou « liste:<nom de liste> »), valeur = codes séparés par des virgules. */
+  source?: string;
 }
 
 export interface DefReferentiel {
   type: string;
-  modele: "langue" | "devise" | "tauxChange" | "listeValeur" | "secteur" | "region" | "critereExclusion" | "questionCategorisation" | "thematique" | "bloc";
+  modele: "langue" | "devise" | "tauxChange" | "listeValeur" | "secteur" | "region" | "critereExclusion" | "questionCategorisation" | "thematique" | "bloc" | "moduleQuestionnaire";
   cleTitre: string;
   cleDescription: string;
   /** Champ identifiant (clé primaire) ; « id » par défaut. */
@@ -95,7 +99,7 @@ export const REFERENTIELS: DefReferentiel[] = [
     actif: "actif",
     tri: [{ champ: "liste", sens: "asc" }, { champ: "ordre", sens: "asc" }],
     champs: [
-      { nom: "liste", cle: "admin.liste", type: "choix", requis: true, colonne: true, fige: true, choix: ["type_credit", "nature_projet", "type_zone", "comite", "motif_rejet", "type_document", "forme_juridique", "segment", "ligne_financement"] },
+      { nom: "liste", cle: "admin.liste", type: "choix", requis: true, colonne: true, fige: true, choix: [...LISTES] },
       { nom: "code", cle: "commun.code", type: "texte", requis: true, colonne: true, fige: true },
       { nom: "libelle", cle: "commun.libelle", type: "libelle", requis: true, colonne: true },
       ACTIF,
@@ -175,6 +179,26 @@ export const REFERENTIELS: DefReferentiel[] = [
       { nom: "numero", cle: "admin.numero", type: "entier", requis: true, colonne: true },
       { nom: "libelle", cle: "commun.libelle", type: "libelleLong", requis: true, colonne: true },
       { nom: "categorie", cle: "dossier.categorie", type: "choix", choix: ["A", "B", "C", "FI"], requis: true, colonne: true },
+      ACTIF,
+      ORDRE,
+    ],
+  },
+  {
+    type: "modules",
+    modele: "moduleQuestionnaire",
+    cleTitre: "admin.modules",
+    cleDescription: "admin.modulesDesc",
+    actif: "actif",
+    tri: [{ champ: "ordre", sens: "asc" }],
+    champs: [
+      { nom: "code", cle: "commun.code", type: "texte", requis: true, colonne: true, fige: true },
+      { nom: "libelle", cle: "commun.libelle", type: "libelle", requis: true, colonne: true },
+      { nom: "secteurs", cle: "admin.secteurs", type: "multi", source: "secteurs" },
+      { nom: "zones", cle: "dossier.typeZone", type: "multi", source: "liste:type_zone" },
+      { nom: "natures", cle: "dossier.natureProjet", type: "multi", source: "liste:nature_projet" },
+      { nom: "effectifMin", cle: "admin.effectifMin", type: "entier", min: 0, colonne: true },
+      { nom: "stressHydriqueMin", cle: "admin.stressHydriqueMin", type: "entier", min: 0, max: 4, colonne: true },
+      { nom: "equateur", cle: "questionnaire.principesEquateur", type: "booleen", colonne: true },
       ACTIF,
       ORDRE,
     ],

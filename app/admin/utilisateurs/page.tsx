@@ -12,6 +12,7 @@ import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Carte, Chargement, EnTete } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
 import { Tableau, Td, Th, Tr } from "@/components/ui/tableau";
+import { useLibelles } from "@/lib/client/listes";
 
 interface U {
   id: string; email: string; nom: string; prenom: string; matricule: string | null; fonction: string | null; telephone: string | null; roleId: string; entiteId: string | null;
@@ -23,6 +24,7 @@ const vide = { id: "", email: "", nom: "", prenom: "", matricule: "", fonction: 
 
 export default function PageUtilisateurs() {
   const { t, lib, fmt, langues } = useApp();
+  const fonctions = useLibelles("fonction_banque");
   const toast = useToast();
   const ref = useReferentiels();
   const { donnees, recharger } = useDonnees<U[]>("/api/admin/utilisateurs");
@@ -104,7 +106,7 @@ export default function PageUtilisateurs() {
             <Champ id="nom" libelle={t("admin.nom")} valeur={u.nom} onChange={(v) => setU({ ...u, nom: v })} obligatoire />
             <Champ id="email" type="email" libelle={t("auth.email")} valeur={u.email} onChange={(v) => setU({ ...u, email: v })} obligatoire dir="ltr" />
             <Champ id="matricule" libelle={t("dossier.matricule")} valeur={u.matricule} onChange={(v) => setU({ ...u, matricule: v })} />
-            <Champ id="fonction" libelle={t("client.contactPoste")} valeur={u.fonction} onChange={(v) => setU({ ...u, fonction: v })} />
+            <Champ id="fonction" suggestions={fonctions} libelle={t("client.contactPoste")} valeur={u.fonction} onChange={(v) => setU({ ...u, fonction: v })} />
             <Champ id="tel" libelle={t("client.contactTelephone")} valeur={u.telephone} onChange={(v) => setU({ ...u, telephone: v })} dir="ltr" />
             <Selecteur id="role" libelle={t("profil.role")} valeur={u.roleId} onChange={(v) => setU({ ...u, roleId: v })} options={roles.map((r) => ({ valeur: r.id, libelle: lib(r.libelle) }))} sansVide />
             <Selecteur id="entite" libelle={t("commun.entite")} valeur={u.entiteId} onChange={(v) => setU({ ...u, entiteId: v })} options={ref.entites.map((e) => ({ valeur: e.id, libelle: `${"· ".repeat(e.niveau)}${e.nom}` }))} aide={!u.entiteId ? t("admin.sansEntite") : undefined} />

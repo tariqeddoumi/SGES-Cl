@@ -45,6 +45,11 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   { cle: "SEUILS_NIVEAU_RISQUE", groupe: "evaluation", type: "texte", defaut: "15,35,60", public: true },
   { cle: "RELEVER_NIVEAU_CATEGORIE_A", groupe: "evaluation", type: "booleen", defaut: "true", public: true },
   { cle: "COMMENTAIRE_EVALUATION_OBLIGATOIRE", groupe: "evaluation", type: "booleen", defaut: "true" },
+  // Niveau du questionnaire par catégorie (A et FI restent complets) : complet par défaut.
+  { cle: "QUESTIONNAIRE_NIVEAU_B", groupe: "evaluation", type: "choix", defaut: "complet", choix: ["minimum", "standard", "complet"], public: true },
+  { cle: "QUESTIONNAIRE_NIVEAU_C", groupe: "evaluation", type: "choix", defaut: "complet", choix: ["minimum", "standard", "complet"], public: true },
+  { cle: "LIGNES_EXIGENCES_SFI", groupe: "evaluation", type: "liste", defaut: "SUNREF,MORSEFF,GEFF,GVC,BEI,SFI", public: true },
+  { cle: "QUESTION_EFFECTIF", groupe: "evaluation", type: "texte", defaut: "SIG01" },
 
   // Climat
   { cle: "VOLET_CLIMAT_ACTIF", groupe: "climat", type: "booleen", defaut: "true", public: true },

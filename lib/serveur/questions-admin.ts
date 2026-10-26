@@ -17,6 +17,8 @@ export function donneesQuestion(s: Q) {
     ...(s.gravite ? { gravite: s.gravite } : {}),
     ...(s.references !== undefined ? { references: s.references || null } : {}),
     ...(s.secteurs !== undefined ? { secteurs: s.secteurs || null } : {}),
+    ...(s.niveau ? { niveau: s.niveau } : {}),
+    ...(s.module !== undefined ? { module: s.module || null } : {}),
     ...(s.obligatoire !== undefined ? { obligatoire: s.obligatoire } : {}),
     ...(s.ordre !== undefined ? { ordre: s.ordre } : {}),
     ...(s.actif !== undefined ? { actif: s.actif } : {}),

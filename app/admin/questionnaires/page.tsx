@@ -10,7 +10,9 @@ import { cn, lireJson } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
-import { Champ, ChampMultilingue, ChoixSegmente, Interrupteur, Selecteur } from "@/components/ui/champs";
+import { ChoixMultiple, Champ, ChampMultilingue, ChoixSegmente, Interrupteur, Selecteur } from "@/components/ui/champs";
+import { NIVEAUX_QUESTION } from "@/lib/domaine/questionnaire";
+import { useReferentiels } from "@/lib/client/referentiels";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Carte, Chargement, EnTete, Vide } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
@@ -18,14 +20,14 @@ import { Puce } from "@/components/ui/puces";
 interface ModeleAction { id: string; horizon: string; libelle: string; delaiMois: number | null; actif: boolean }
 interface Question {
   id: string; code: string; libelle: string; aide: string | null; blocId: string; categories: string; type: string; options: string | null; reponseRisque: string | null;
-  gravite: number; references: string | null; secteurs: string | null; obligatoire: boolean; ordre: number; actif: boolean; actions: ModeleAction[]; _count: { reponses: number };
+  gravite: number; references: string | null; secteurs: string | null; niveau: string; module: string | null; obligatoire: boolean; ordre: number; actif: boolean; actions: ModeleAction[]; _count: { reponses: number };
 }
 interface Bloc { id: string; code: string; libelle: string; ordre: number; actif: boolean; questions: Question[] }
 interface Thematique { id: string; code: string; libelle: string; actif: boolean; blocs: Bloc[] }
 
 interface Formulaire {
   id: string | null; code: string; blocId: string; libelle: Record<string, string>; aide: Record<string, string>; categories: string[]; type: string;
-  options: { code: string; libelle: Record<string, string> }[]; reponseRisque: string; gravite: number; references: string; secteurs: string; obligatoire: boolean; ordre: string; actif: boolean;
+  options: { code: string; libelle: Record<string, string> }[]; reponseRisque: string; gravite: number; references: string; secteurs: string; niveau: string; module: string; obligatoire: boolean; ordre: string; actif: boolean;
   actions: { id?: string; horizon: string; libelle: Record<string, string>; delaiMois: string; actif: boolean }[];
 }
 
@@ -33,13 +35,15 @@ function versFormulaire(q: Question): Formulaire {
   return {
     id: q.id, code: q.code, blocId: q.blocId, libelle: lireLibelle(q.libelle), aide: lireLibelle(q.aide), categories: q.categories.split(",").filter(Boolean), type: q.type,
     options: lireJson<{ code: string; libelle: Record<string, string> }[]>(q.options, []), reponseRisque: q.reponseRisque ?? "", gravite: q.gravite, references: q.references ?? "",
-    secteurs: q.secteurs ?? "", obligatoire: q.obligatoire, ordre: String(q.ordre), actif: q.actif,
+    secteurs: q.secteurs ?? "", niveau: q.niveau ?? "reglementaire", module: q.module ?? "", obligatoire: q.obligatoire, ordre: String(q.ordre), actif: q.actif,
     actions: q.actions.map((a) => ({ id: a.id, horizon: a.horizon, libelle: lireLibelle(a.libelle), delaiMois: a.delaiMois?.toString() ?? "", actif: a.actif })),
   };
 }
 
 export default function PageQuestionnaires() {
   const { t, lib } = useApp();
+  const ref = useReferentiels();
+  const { donnees: modules } = useDonnees<{ code: string; libelle: string; actif: boolean }[]>("/api/admin/referentiels/modules");
   const toast = useToast();
   const { donnees, recharger } = useDonnees<Thematique[]>("/api/admin/questionnaires");
   const [f, setF] = useState<Formulaire | null>(null);
@@ -52,14 +56,14 @@ export default function PageQuestionnaires() {
   if (!donnees) return <Chargement lignes={10} />;
 
   const nouvelle = (blocId: string) =>
-    setF({ id: null, code: "", blocId, libelle: {}, aide: {}, categories: ["A", "B"], type: "oui_non", options: [], reponseRisque: "non", gravite: 2, references: "", secteurs: "", obligatoire: true, ordre: "", actif: true, actions: [] });
+    setF({ id: null, code: "", blocId, libelle: {}, aide: {}, categories: ["A", "B"], type: "oui_non", options: [], reponseRisque: "non", gravite: 2, references: "", secteurs: "", niveau: "reglementaire", module: "", obligatoire: true, ordre: "", actif: true, actions: [] });
 
   const enregistrer = async () => {
     if (!f) return;
     setErreur("");
     const corps = {
       code: f.code, blocId: f.blocId, libelle: f.libelle, aide: Object.values(f.aide).some((x) => x?.trim()) ? f.aide : null, categories: f.categories, type: f.type,
-      options: f.type === "choix" ? f.options : null, reponseRisque: f.reponseRisque || null, gravite: f.gravite, references: f.references || null, secteurs: f.secteurs || null,
+      options: f.type === "choix" ? f.options : null, reponseRisque: f.reponseRisque || null, gravite: f.gravite, references: f.references || null, secteurs: f.secteurs || null, niveau: f.niveau, module: f.module || null,
       obligatoire: f.obligatoire, actif: f.actif, ...(f.ordre ? { ordre: Number(f.ordre) } : {}),
       actions: f.actions.map((a) => ({ id: a.id, horizon: a.horizon, libelle: a.libelle, delaiMois: a.delaiMois ? Number(a.delaiMois) : null, actif: a.actif })),
     };
@@ -195,10 +199,12 @@ export default function PageQuestionnaires() {
                   </div>
                 )}
                 <Champ id="refs" libelle={t("evaluation.references")} valeur={f.references} onChange={(v) => setF({ ...f, references: v })} />
-                <div className="grid gap-3 md:grid-cols-[1fr_120px]">
-                  <Champ id="secteurs" libelle={t("admin.secteursCibles")} valeur={f.secteurs} onChange={(v) => setF({ ...f, secteurs: v })} dir="ltr" />
+                <div className="grid gap-3 md:grid-cols-[1fr_1fr_120px]">
+                  <Selecteur id="niveau" libelle={t("questionnaire.niveauQuestion")} aide={t("questionnaire.niveauAide")} valeur={f.niveau} onChange={(v) => setF({ ...f, niveau: v })} options={NIVEAUX_QUESTION.map((x) => ({ valeur: x, libelle: t(`questionnaire.niv_${x}`) }))} sansVide />
+                  <Selecteur id="module" libelle={t("questionnaire.module")} aide={t("questionnaire.moduleAide")} valeur={f.module} onChange={(v) => setF({ ...f, module: v })} options={(modules ?? []).filter((m) => m.actif || m.code === f.module).map((m) => ({ valeur: m.code, libelle: `${m.code} — ${lib(m.libelle)}` }))} />
                   <Champ id="ordre" type="number" libelle={t("commun.ordre")} valeur={f.ordre} onChange={(v) => setF({ ...f, ordre: v })} />
                 </div>
+                <ChoixMultiple id="secteurs" libelle={t("admin.secteursCibles")} valeur={f.secteurs} onChange={(v) => setF({ ...f, secteurs: v })} options={(ref?.secteurs ?? []).map((x) => ({ valeur: x.code, libelle: `${x.code} — ${lib(x.libelle)}` }))} />
                 <div className="flex flex-wrap gap-6">
                   <Interrupteur id="obl" libelle={t("commun.obligatoire")} valeur={f.obligatoire} onChange={(v) => setF({ ...f, obligatoire: v })} />
                   <Interrupteur id="actif" libelle={t("commun.actif")} valeur={f.actif} onChange={(v) => setF({ ...f, actif: v })} />

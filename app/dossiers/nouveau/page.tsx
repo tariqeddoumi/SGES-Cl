@@ -11,13 +11,14 @@ import { Bouton } from "@/components/ui/bouton";
 import { Champ, Selecteur } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, EnTete, Sablier } from "@/components/ui/mise-en-page";
 import { FormulaireClient, clientDepuis, clientVersApi, clientVide, type ValeursClient } from "@/components/client/formulaire-client";
-import { FormulaireIdentification, valeursInitiales, versApi, type ValeursIdentification } from "@/components/dossier/formulaire-identification";
+import { FormulaireIdentification, regionDeVille, valeursInitiales, versApi, type ValeursIdentification } from "@/components/dossier/formulaire-identification";
 
 interface ClientResume {
   id: string;
   raisonSociale: string;
   compteCourant: string | null;
   secteurId: string | null;
+  ville?: string | null;
   entite?: { nom: string };
 }
 
@@ -27,6 +28,16 @@ function Contenu() {
   const router = useRouter();
   const toast = useToast();
   const params = useSearchParams();
+  // Le projet reprend par défaut le secteur et la ville du client (modifiables).
+  const depuisClient = (v: ValeursIdentification, c: ClientResume): ValeursIdentification => {
+    const regionId = ref ? regionDeVille(ref, c.ville) : undefined;
+    return {
+      ...v,
+      secteurId: c.secteurId ?? v.secteurId,
+      localite: v.localite || c.ville || "",
+      regionId: v.regionId || regionId || "",
+    };
+  };
 
   const [mode, setMode] = useState<"recherche" | "nouveau">("recherche");
   const [client, setClient] = useState<ClientResume | null>(null);
@@ -48,9 +59,10 @@ function Contenu() {
     if (!id) return;
     api<{ client: ClientResume }>(`/api/clients/${id}`).then((r) => {
       setClient(r.client);
-      setValeurs((v) => ({ ...v, secteurId: r.client.secteurId ?? "" }));
+      setValeurs((v) => depuisClient(v, r.client));
     }).catch(() => undefined);
-  }, [params]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, ref]);
 
   useEffect(() => {
     if (!ref) return;
@@ -78,7 +90,7 @@ function Contenu() {
       const r = await api<{ existant: ClientResume | null; signaletique: (Record<string, unknown> & { source: string }) | null }>(`/api/signaletique/${compte}`);
       if (r.existant) {
         setClient(r.existant);
-        setValeurs((v) => ({ ...v, secteurId: r.existant!.secteurId ?? v.secteurId }));
+        setValeurs((v) => depuisClient(v, r.existant!));
         return;
       }
       setMode("nouveau");
@@ -181,7 +193,7 @@ function Contenu() {
                           className="flex w-full items-center justify-between px-3 py-2 text-start text-[13px] hover:bg-accent"
                           onClick={() => {
                             setClient(c);
-                            setValeurs((v) => ({ ...v, secteurId: c.secteurId ?? v.secteurId }));
+                            setValeurs((v) => depuisClient(v, c));
                           }}
                         >
                           <span className="font-medium">{c.raisonSociale}</span>

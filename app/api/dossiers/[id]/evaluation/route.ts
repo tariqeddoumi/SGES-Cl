@@ -11,7 +11,7 @@ export const GET = route(
   async (_req, ctx, { id }) => {
     await dossierAutorise(ctx, id);
     const d = await prisma.dossier.findUniqueOrThrow({ where: { id }, include: { secteur: true } });
-    const questions = await questionsApplicables(d.categorie, d.secteur?.code ?? null);
+    const questions = await questionsApplicables(d.id, d.categorie, d.secteur?.code ?? null);
     const reponses = await prisma.reponseQuestion.findMany({ where: { dossierId: id } });
     const nbActions = await prisma.modeleAction.groupBy({ by: ["questionId"], where: { actif: true }, _count: true });
     const actionsParQuestion = new Map(nbActions.map((n) => [n.questionId, n._count]));
@@ -42,6 +42,7 @@ export const GET = route(
     );
     return {
       categorie: d.categorie,
+      questionnaire: { ...questions.questionnaire, complet: d.questionnaireComplet },
       thematiques,
       reponses,
       synthese,

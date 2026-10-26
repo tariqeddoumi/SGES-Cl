@@ -95,7 +95,7 @@ export const POST = route(
       prisma.listeValeur.findMany({ where: { liste: "type_zone", actif: true }, select: { code: true, libelle: true } }),
       d.secteurId ? prisma.secteur.findUnique({ where: { id: d.secteurId } }) : null,
     ]);
-    const questions = (await questionsApplicables(d.categorie, secteur?.code ?? null)).filter((q) => q.type !== "texte");
+    const questions = (await questionsApplicables(d.id, d.categorie, secteur?.code ?? null)).filter((q) => q.type !== "texte");
     const listes =
       `<pieces_types>\n${defs}\n</pieces_types>\n` +
       `<regions>\n${regions.map((r) => `${r.code} : ${libelle(r.libelle, "fr")}`).join("\n")}\n</regions>\n` +

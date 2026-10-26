@@ -63,3 +63,34 @@ describe("volet climat", () => {
     expect(qualitePCAF("estimee_secteur")).toBe(5);
   });
 });
+
+import { aleasProjetes, lirePrixCarbone, scenariosClimat, stressTransition } from "@/lib/domaine/climat";
+
+describe("scénarios climat (BAM 5/W/2021)", () => {
+  it("aggrave les aléas à 2050 sans toucher au séisme ni aux inconnus", () => {
+    const a = normaliserAleas({ stressHydrique: 4, secheresse: 3, chaleurExtreme: 3, inondation: 1, submersionMarine: "na", incendie: null, seisme: 3 });
+    const p = aleasProjetes(a, "ssp585");
+    expect(p).toMatchObject({ stressHydrique: 4, secheresse: 4, chaleurExtreme: 4, inondation: 2, submersionMarine: "na", incendie: null, seisme: 3 });
+    expect(aleasProjetes(a, "ssp245").inondation).toBe(1);
+  });
+  it("le risque physique 2050 est au moins égal au risque actuel", () => {
+    const a = normaliserAleas({ stressHydrique: 2, secheresse: 2, inondation: 1, chaleurExtreme: 2, submersionMarine: 0, incendie: 1, seisme: 0 });
+    const s = scenariosClimat({ aleas: a, sensibilite: 2, capaciteAdaptation: 1, emissionsTotales: 0, expositionCBAM: false, prix: lirePrixCarbone(null), prixETS: 850 });
+    expect(s.physique.ssp245!).toBeGreaterThan(s.physique.actuel!);
+    expect(s.physique.ssp585!).toBeGreaterThanOrEqual(s.physique.ssp245!);
+  });
+  it("coût carbone et CBAM rapportés à l'EBE, alerte au-delà du seuil", () => {
+    // Aciérie : 100 000 tCO2e/an dont 60 000 directes, 35 % exportés vers l'UE, EBE 120 M MAD.
+    // CBAM 2030 = 60 000 × 35 % × 850 × 48,5 % (quotas gratuits encore à 51,5 %).
+    const r = stressTransition({ emissionsTotales: 100_000, emissionsDirectes: 60_000, expositionCBAM: true, partExportUE: 35, prix: lirePrixCarbone("100,850,1700"), prixETS: 850, ebeRef: 120_000_000 });
+    expect(r.scenarios[0]).toMatchObject({ scenario: "actuelles", coutCarbone: 10_000_000, coutCBAM: 8_657_250 });
+    expect(r.scenarios[2].total).toBe(170_000_000 + 8_657_250);
+    expect(r.scenarios[2].partEBE).toBeCloseTo(1.489, 3);
+    // Sans émissions directes connues : base = émissions totales (prudence) ; facteur paramétrable.
+    expect(stressTransition({ emissionsTotales: 1000, expositionCBAM: true, partExportUE: 100, prix: lirePrixCarbone(null), prixETS: 1000, facteurCBAM: 1 }).scenarios[0].coutCBAM).toBe(1_000_000);
+    expect(r.alerte).toBe(true);
+    const sobre = stressTransition({ emissionsTotales: 500, expositionCBAM: false, prix: lirePrixCarbone(null), prixETS: 850, ebeRef: 50_000_000 });
+    expect(sobre.alerte).toBe(false);
+    expect(stressTransition({ emissionsTotales: 1, expositionCBAM: false, prix: lirePrixCarbone(null), prixETS: 850 }).scenarios[0].partEBE).toBeNull();
+  });
+});

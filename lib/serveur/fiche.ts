@@ -1,3 +1,7 @@
+import { genererClauses } from "../domaine/clauses";
+import type { ScenariosClimat } from "../domaine/climat";
+import { localeIntl } from "../devises";
+import { DICTIONNAIRES, traduire } from "../i18n";
 import { libelle } from "../i18n/libelle";
 import { lireJson } from "../utils";
 import { prisma } from "./prisma";
@@ -100,10 +104,29 @@ export async function construireFiche(dossierId: string, langue = "fr") {
         dateArrete: d.climat.dateArrete,
         couvertureDonnees: d.climat.couvertureDonnees,
         methodeVersion: d.climat.methodeVersion,
+        scenarios: lireJson<ScenariosClimat | null>(d.climat.scenarios ?? "", null),
         alignementTaxonomie: d.climat.alignementTaxonomie,
         mesuresAdaptation: d.climat.mesuresAdaptation,
       }
     : null;
+
+  // Clauses E&S du contrat de crédit, déduites du dossier (à valider par la direction juridique).
+  const ligneFinancement = await valeurListe("ligne_financement", d.ligneFinancement);
+  const dico = DICTIONNAIRES[langue] ?? DICTIONNAIRES.fr;
+  const clauses = genererClauses({
+    categorie: d.categorie,
+    eieRequise: d.eieRequise,
+    pieces: d.documents.map((x) => x.type),
+    actionsRetenues: d.actions.filter((a) => a.retenue).map((a) => ({ libelle: a.libelle, echeance: a.dateEcheance, horizon: a.horizon, statut: a.statut })),
+    reservesComite: d.reservesComite,
+    derogations: d.reponsesExclusion.filter((r) => r.derogation).map((r) => ({ code: r.critere.code, justification: r.derogation! })),
+    climat: climat ? { niveau: climat.niveauClimat, alerteTransition: !!climat.scenarios?.alerteTransition, expositionCBAM: climat.expositionCBAM, methodeEmissions: climat.methodeEmissions } : null,
+    ligneFinancement,
+    niveauRisque: d.niveauRisque,
+  }).map((c) => {
+    const vars = c.vars?.echeance ? { ...c.vars, echeance: new Date(String(c.vars.echeance)).toLocaleDateString(localeIntl(langue), { timeZone: "UTC" }) } : c.vars;
+    return { type: c.type, code: c.code, texte: traduire(dico, `clauses.${c.code}`, vars) };
+  });
 
   return {
     version: 1,
@@ -144,6 +167,7 @@ export async function construireFiche(dossierId: string, langue = "fr") {
       natureProjet: await valeurListe("nature_projet", d.natureProjet),
       typeCredit: await valeurListe("type_credit", d.typeCredit),
       projetDeveloppementDurable: d.projetDeveloppementDurable,
+      ligneFinancement,
       montantDemande: d.montantDemande,
       montantInvestissement: d.montantInvestissement,
       devise: d.deviseCode,
@@ -184,6 +208,7 @@ export async function construireFiche(dossierId: string, langue = "fr") {
       actions,
     },
     climat,
+    clauses,
     validation: {
       soumisLe: d.soumisLe,
       valideur: d.valideur ? `${d.valideur.prenom} ${d.valideur.nom}` : null,

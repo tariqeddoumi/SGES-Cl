@@ -25,7 +25,10 @@ function creerClient() {
         encours: { needs: { encours: true }, compute: (d) => decN(d.encours) },
       },
       action: { budget: { needs: { budget: true }, compute: (a) => decN(a.budget) } },
-      evaluationClimat: { montantAttribueRef: { needs: { montantAttribueRef: true }, compute: (c) => decN(c.montantAttribueRef) } },
+      evaluationClimat: {
+        montantAttribueRef: { needs: { montantAttribueRef: true }, compute: (c) => decN(c.montantAttribueRef) },
+        ebeAnnuel: { needs: { ebeAnnuel: true }, compute: (c) => decN(c.ebeAnnuel) },
+      },
     },
   });
 }

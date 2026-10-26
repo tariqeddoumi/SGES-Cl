@@ -11,6 +11,7 @@ export interface ValeursIdentification {
   objet: string;
   descriptionProcessus: string;
   projetDeveloppementDurable: boolean;
+  ligneFinancement: string;
   secteurId: string;
   deviseCode: string;
   montantDemande: string;
@@ -32,6 +33,7 @@ export function valeursInitiales(d?: Partial<Record<keyof ValeursIdentification,
     objet: s(d?.objet),
     descriptionProcessus: s(d?.descriptionProcessus),
     projetDeveloppementDurable: !!d?.projetDeveloppementDurable,
+    ligneFinancement: s(d?.ligneFinancement),
     secteurId: s(d?.secteurId),
     deviseCode: s(d?.deviseCode) || devise,
     montantDemande: s(d?.montantDemande),
@@ -56,6 +58,7 @@ export function versApi(v: ValeursIdentification) {
     objet: t(v.objet),
     descriptionProcessus: t(v.descriptionProcessus),
     projetDeveloppementDurable: v.projetDeveloppementDurable,
+    ligneFinancement: t(v.ligneFinancement),
     secteurId: t(v.secteurId),
     deviseCode: v.deviseCode,
     montantDemande: n(v.montantDemande) ?? undefined,
@@ -106,6 +109,7 @@ export function FormulaireIdentification({
         <Selecteur id="secteurId" libelle={t("dossier.secteur")} valeur={valeurs.secteurId} onChange={(v) => maj("secteurId", v)} options={secteurs} obligatoire erreur={erreurs.secteurId} desactive={desactive} className="md:col-span-2" />
         <ZoneTexte id="objet" libelle={t("dossier.objet")} valeur={valeurs.objet} onChange={(v) => maj("objet", v)} lignes={2} desactive={desactive} className="md:col-span-2" />
         <ZoneTexte id="processus" libelle={t("dossier.descriptionProcessus")} valeur={valeurs.descriptionProcessus} onChange={(v) => maj("descriptionProcessus", v)} lignes={3} desactive={desactive} className="md:col-span-2" />
+        <Selecteur id="ligneFinancement" libelle={t("dossier.ligneFinancement")} aide={t("dossier.ligneFinancementAide")} valeur={valeurs.ligneFinancement} onChange={(v) => maj("ligneFinancement", v)} options={options("ligne_financement")} desactive={desactive} className="md:col-span-2" />
         <div className="md:col-span-2">
           <Interrupteur id="dd" libelle={t("dossier.projetDD")} valeur={valeurs.projetDeveloppementDurable} onChange={(v) => maj("projetDeveloppementDurable", v)} desactive={desactive} />
         </div>

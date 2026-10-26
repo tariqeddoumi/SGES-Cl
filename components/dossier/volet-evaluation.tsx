@@ -72,6 +72,11 @@ export function VoletEvaluation() {
     });
     consommer("evaluation");
   }, [prefill.evaluation, donnees, consommer]);
+  useEffect(() => {
+    if (!donnees || prefill.commentaire === undefined) return;
+    setCommentaire(prefill.commentaire);
+    consommer("commentaire");
+  }, [prefill.commentaire, donnees, consommer]);
 
   const questions = useMemo(() => (donnees?.thematiques ?? []).flatMap((th) => th.blocs.flatMap((b) => b.questions.map((q) => ({ ...q, thematique: th.code })))), [donnees]);
   const synthese = useMemo(

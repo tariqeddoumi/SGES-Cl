@@ -10,8 +10,8 @@ import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
 import { dossierAutorise, questionsApplicables } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
+import { exigerIA } from "@/lib/serveur/ia";
 import { journaliser } from "@/lib/serveur/journal";
-import { chargerParametres } from "@/lib/serveur/parametres";
 import { checklistDossier } from "@/lib/serveur/pieces";
 import { prisma } from "@/lib/serveur/prisma";
 
@@ -57,10 +57,7 @@ const SYSTEME =
 
 export const POST = route(
   async (req, ctx, { id }) => {
-    const p = await chargerParametres();
-    if (!booleen(p, "IA_ACTIVE")) throw new ErreurMetier("L'assistant IA est désactivé (Paramétrage).", 403, "ia_inactive");
-    if (!p.IA_REFERENCE_VALIDATION?.trim()) throw new ErreurMetier("Assistant IA non autorisé : la référence de validation juridique / CNDP / SSI n'est pas renseignée.", 403, "ia_non_validee");
-    if (!process.env.ANTHROPIC_API_KEY) throw new ErreurMetier("Clé ANTHROPIC_API_KEY absente de la configuration du serveur.", 503, "ia_indisponible");
+    const p = await exigerIA();
     const d = await dossierAutorise(ctx, id, "ecriture");
     exigerVolet(ctx, d, "pieces");
     z.object({}).passthrough().parse((await corps(req).catch(() => ({}))) ?? {});

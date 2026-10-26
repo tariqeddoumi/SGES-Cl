@@ -79,6 +79,7 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
             [t("dossier.typeCredit"), f.description.typeCredit],
             [t("dossier.natureProjet"), f.description.natureProjet],
             [t("dossier.projetDD"), f.description.projetDeveloppementDurable ? t("commun.oui") : t("commun.non")],
+            [t("dossier.ligneFinancement"), f.description.ligneFinancement ?? "—"],
             [t("dossier.montantDemande"), fmt.montant(f.description.montantDemande, f.description.devise)],
             [t("dossier.montantInvestissement"), f.description.montantInvestissement ? fmt.montant(f.description.montantInvestissement, f.description.devise) : null],
           ]}
@@ -226,6 +227,18 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
               [t("climat.baseAttribution"), f.climat.baseAttribution ? `${t(`climat.base_${f.climat.baseAttribution}`)}${f.climat.dateArrete ? ` · ${fmt.date(f.climat.dateArrete)}` : ""}` : "—"],
               [t("climat.taxonomie"), t(`climat.${f.climat.alignementTaxonomie}`)],
               [t("climat.cbam"), f.climat.expositionCBAM ? t("commun.oui") : t("commun.non")],
+              ...(f.climat.scenarios
+                ? ([
+                    [t("climat.physique_ssp585"), fmt.nombre(f.climat.scenarios.physique.ssp585, 0)],
+                    [
+                      `${t("climat.coutCarbone")} — ${t("climat.scenario_nz2050")}`,
+                      (() => {
+                        const nz = f.climat.scenarios.transition.find((x) => x.scenario === "nz2050");
+                        return nz ? `${fmt.ref(nz.total, true)}${nz.partEBE !== null ? ` · ${fmt.nombre(nz.partEBE * 100, 0)} %` : ""}` : "—";
+                      })(),
+                    ],
+                  ] as [string, string][])
+                : []),
             ]}
           />
           {f.climat.methodeVersion && <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: f.climat.methodeVersion })}</p>}
@@ -296,6 +309,25 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
           </div>
         </div>
       </Section>
+
+      {f.clauses.length > 0 && (
+        <Section titre={t("clauses.titre")} className="print-break">
+          <p className="mb-3 text-[12px] italic text-muted-foreground">{t("clauses.avertissement")}</p>
+          {(["condition_prealable", "engagement", "reporting", "defaut"] as const).map((type) => {
+            const liste = f.clauses.filter((c) => c.type === type);
+            return liste.length ? (
+              <div key={type} className="mb-3">
+                <p className="mb-1 text-[13px] font-semibold">{t(`clauses.type_${type}`)}</p>
+                <ol className="list-decimal space-y-1 ps-5 text-[13px] leading-relaxed">
+                  {liste.map((c, i) => (
+                    <li key={`${c.code}-${i}`}>{c.texte}</li>
+                  ))}
+                </ol>
+              </div>
+            ) : null;
+          })}
+        </Section>
+      )}
     </div>
   );
 }

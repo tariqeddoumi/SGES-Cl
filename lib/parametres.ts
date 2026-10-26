@@ -52,6 +52,10 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   { cle: "CLIMAT_COUVERTURE_MIN", groupe: "climat", type: "nombre", defaut: "0.75", public: true },
   { cle: "CLIMAT_PONDERATION", groupe: "climat", type: "texte", defaut: "0.6,0.4", public: true },
   { cle: "CLIMAT_SEUILS_NIVEAUX", groupe: "climat", type: "texte", defaut: "25,50,75", public: true },
+  { cle: "CLIMAT_PRIX_CARBONE", groupe: "climat", type: "texte", defaut: "100,850,1700", public: true },
+  { cle: "CLIMAT_PRIX_ETS", groupe: "climat", type: "nombre", defaut: "850", public: true },
+  { cle: "CLIMAT_CBAM_FACTEUR", groupe: "climat", type: "nombre", defaut: "0.485", public: true },
+  { cle: "CLIMAT_SEUIL_EBE", groupe: "climat", type: "nombre", defaut: "10", public: true },
 
   // Sécurité
   { cle: "SESSION_HEURES", groupe: "securite", type: "nombre", defaut: "10" },

@@ -10,8 +10,10 @@
  *    aluminium, engrais, électricité, hydrogène).
  * Aléas régionaux : synthèse qualitative 0-4 (stress hydrique, sécheresse, inondation,
  * chaleur extrême, submersion marine, incendie, séisme) à partir des travaux publics
- * disponibles (DGM, ministère de l'Eau, ABH, CNRST) ; à remplacer par les données de
- * l'outil d'analyse climatique retenu par la banque.
+ * disponibles (DGM, ministère de l'Équipement et de l'Eau, ABH, CNRST, zonage sismique RPS 2000
+ * révisé 2011) et des événements récents (sécheresse 2018-2024, séisme d'Al Haouz 2023, record de
+ * chaleur d'Agadir 2023, crues de 2014 et 2024) ; revue du 26/10/2026. À remplacer par les données
+ * de l'outil d'analyse climatique retenu par la banque (maille communale ou coordonnées du site).
  */
 
 type L = { fr: string; en: string; ar: string };
@@ -80,18 +82,18 @@ export const REGIONS: {
   a: [number, number, number, number, number, number, number];
 }[] = [
   // a = [stressHydrique, secheresse, inondation, chaleurExtreme, submersionMarine, incendie, seisme]
-  { code: "MA-01", pays: "MA", libelle: { fr: "Tanger-Tétouan-Al Hoceïma", en: "Tangier-Tetouan-Al Hoceima", ar: "طنجة - تطوان - الحسيمة" }, a: [2, 2, 3, 2, 2, 3, 3] },
-  { code: "MA-02", pays: "MA", libelle: { fr: "L'Oriental", en: "Oriental", ar: "جهة الشرق" }, a: [4, 4, 2, 3, 1, 2, 2] },
-  { code: "MA-03", pays: "MA", libelle: { fr: "Fès-Meknès", en: "Fez-Meknes", ar: "فاس - مكناس" }, a: [3, 3, 2, 3, 0, 2, 2] },
-  { code: "MA-04", pays: "MA", libelle: { fr: "Rabat-Salé-Kénitra", en: "Rabat-Sale-Kenitra", ar: "الرباط - سلا - القنيطرة" }, a: [2, 2, 3, 2, 2, 2, 1] },
-  { code: "MA-05", pays: "MA", libelle: { fr: "Béni Mellal-Khénifra", en: "Beni Mellal-Khenifra", ar: "بني ملال - خنيفرة" }, a: [3, 3, 2, 3, 0, 2, 2] },
-  { code: "MA-06", pays: "MA", libelle: { fr: "Casablanca-Settat", en: "Casablanca-Settat", ar: "الدار البيضاء - سطات" }, a: [3, 3, 3, 2, 2, 1, 1] },
-  { code: "MA-07", pays: "MA", libelle: { fr: "Marrakech-Safi", en: "Marrakesh-Safi", ar: "مراكش - آسفي" }, a: [4, 4, 2, 4, 1, 2, 3] },
-  { code: "MA-08", pays: "MA", libelle: { fr: "Drâa-Tafilalet", en: "Draa-Tafilalet", ar: "درعة - تافيلالت" }, a: [4, 4, 2, 4, 0, 1, 2] },
-  { code: "MA-09", pays: "MA", libelle: { fr: "Souss-Massa", en: "Souss-Massa", ar: "سوس - ماسة" }, a: [4, 4, 2, 3, 2, 2, 2] },
-  { code: "MA-10", pays: "MA", libelle: { fr: "Guelmim-Oued Noun", en: "Guelmim-Oued Noun", ar: "كلميم - واد نون" }, a: [4, 4, 2, 3, 1, 1, 1] },
+  { code: "MA-01", pays: "MA", libelle: { fr: "Tanger-Tétouan-Al Hoceïma", en: "Tangier-Tetouan-Al Hoceima", ar: "طنجة - تطوان - الحسيمة" }, a: [2, 2, 3, 2, 2, 4, 4] }, // séisme d'Al Hoceïma 2004 (M6,3), Rif en zone sismique forte (RPS 2000) ; feux de Larache et Chefchaouen 2022
+  { code: "MA-02", pays: "MA", libelle: { fr: "L'Oriental", en: "Oriental", ar: "جهة الشرق" }, a: [4, 4, 2, 3, 1, 2, 3] }, // séismes de Driouch/Nador 2016 ; nappes surexploitées
+  { code: "MA-03", pays: "MA", libelle: { fr: "Fès-Meknès", en: "Fez-Meknes", ar: "فاس - مكناس" }, a: [4, 3, 2, 3, 0, 3, 2] }, // nappe du Saïss surexploitée ; forêts du Moyen Atlas
+  { code: "MA-04", pays: "MA", libelle: { fr: "Rabat-Salé-Kénitra", en: "Rabat-Sale-Kenitra", ar: "الرباط - سلا - القنيطرة" }, a: [3, 2, 4, 2, 2, 2, 1] }, // crues du Sebou et de la plaine du Gharb (2009-2010) ; forêt de la Maâmora
+  { code: "MA-05", pays: "MA", libelle: { fr: "Béni Mellal-Khénifra", en: "Beni Mellal-Khenifra", ar: "بني ملال - خنيفرة" }, a: [4, 3, 2, 4, 0, 3, 2] }, // barrages Al Massira et Bin El Ouidane à des niveaux historiquement bas ; cédraies
+  { code: "MA-06", pays: "MA", libelle: { fr: "Casablanca-Settat", en: "Casablanca-Settat", ar: "الدار البيضاء - سطات" }, a: [4, 3, 3, 2, 2, 1, 1] }, // pénurie 2022-2024 (restrictions, dessalement) ; inondations urbaines
+  { code: "MA-07", pays: "MA", libelle: { fr: "Marrakech-Safi", en: "Marrakesh-Safi", ar: "مراكش - آسفي" }, a: [4, 4, 2, 4, 1, 2, 4] }, // séisme d'Al Haouz du 8 septembre 2023 (M6,8)
+  { code: "MA-08", pays: "MA", libelle: { fr: "Drâa-Tafilalet", en: "Draa-Tafilalet", ar: "درعة - تافيلالت" }, a: [4, 4, 3, 4, 0, 1, 2] }, // crues éclair de septembre 2024 ; oasis en voie d'ensablement
+  { code: "MA-09", pays: "MA", libelle: { fr: "Souss-Massa", en: "Souss-Massa", ar: "سوس - ماسة" }, a: [4, 4, 2, 4, 2, 2, 3] }, // 50,4 °C à Agadir le 11 août 2023 ; séisme d'Agadir 1960
+  { code: "MA-10", pays: "MA", libelle: { fr: "Guelmim-Oued Noun", en: "Guelmim-Oued Noun", ar: "كلميم - واد نون" }, a: [4, 4, 3, 3, 1, 1, 1] }, // inondations meurtrières de Guelmim (novembre 2014)
   { code: "MA-11", pays: "MA", libelle: { fr: "Laâyoune-Sakia El Hamra", en: "Laayoune-Sakia El Hamra", ar: "العيون - الساقية الحمراء" }, a: [4, 4, 1, 3, 2, 0, 1] },
-  { code: "MA-12", pays: "MA", libelle: { fr: "Dakhla-Oued Ed-Dahab", en: "Dakhla-Oued Ed-Dahab", ar: "الداخلة - وادي الذهب" }, a: [4, 4, 1, 3, 2, 0, 0] },
+  { code: "MA-12", pays: "MA", libelle: { fr: "Dakhla-Oued Ed-Dahab", en: "Dakhla-Oued Ed-Dahab", ar: "الداخلة - وادي الذهب" }, a: [4, 4, 1, 3, 3, 0, 0] }, // lagune de Dakhla à faible altitude
   { code: "CI-AB", pays: "CI", libelle: { fr: "Côte d'Ivoire — District d'Abidjan", en: "Côte d'Ivoire — Abidjan", ar: "ساحل العاج — أبيدجان" }, a: [1, 1, 4, 3, 3, 1, 0] },
   { code: "CI-NO", pays: "CI", libelle: { fr: "Côte d'Ivoire — Nord", en: "Côte d'Ivoire — North", ar: "ساحل العاج — الشمال" }, a: [3, 3, 2, 4, 0, 2, 0] },
   { code: "SN-DK", pays: "SN", libelle: { fr: "Sénégal — Dakar", en: "Senegal — Dakar", ar: "السنغال — داكار" }, a: [3, 3, 3, 3, 4, 1, 0] },

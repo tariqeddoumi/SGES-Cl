@@ -417,6 +417,8 @@ model Dossier {
   objet                  String?   @db.Text
   descriptionProcessus   String?   @db.Text
   projetDeveloppementDurable Boolean @default(false)
+  /// Ligne de financement ou de refinancement (SUNREF, MorSEFF, GEFF, obligation verte…) : liste « ligne_financement ».
+  ligneFinancement       String?
   secteurId              String?
   deviseCode             String    @default("MAD")
   montantDemande         Decimal   @db.Decimal(20, 2)
@@ -693,6 +695,10 @@ model EvaluationClimat {
   couvertureDonnees   Float?
   /// Version de la méthode de calcul appliquée (reproductibilité).
   methodeVersion      String?
+  /// EBE (excédent brut d'exploitation) annuel du projet ou du client, devise du dossier : base du stress de transition.
+  ebeAnnuel           Decimal? @db.Decimal(20, 2)
+  /// Scénarios (JSON) : risque physique actuel / 2050 (SSP2-4.5, SSP5-8.5), coût carbone NGFS et CBAM rapporté à l'EBE.
+  scenarios           String?  @db.Text
   commentaire         String?  @db.Text
   updatedAt           DateTime @updatedAt
 

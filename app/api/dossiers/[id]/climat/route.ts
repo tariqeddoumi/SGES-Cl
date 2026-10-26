@@ -36,6 +36,8 @@ const Schema = z.object({
   methodeEmissions: z.enum(METHODES_EMISSIONS),
   /** Vérification par un tiers des émissions déclarées : exige la référence de l'attestation. */
   emissionsVerifiees: z.boolean().optional(),
+  /** EBE annuel (devise du dossier), facultatif : base du stress de transition. */
+  ebeAnnuel: z.number().min(0).max(1e15).nullable().optional(),
   sourceEmissions: z.string().max(4000).nullable().optional(),
   emissionsEvitees: z.number().min(0).max(1e9).nullable().optional(),
   partRenouvelable: z.number().min(0).max(100).nullable().optional(),

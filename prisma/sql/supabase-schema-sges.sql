@@ -297,6 +297,7 @@ CREATE TABLE "sges_dossiers" (
     "objet" TEXT,
     "descriptionProcessus" TEXT,
     "projetDeveloppementDurable" BOOLEAN NOT NULL DEFAULT false,
+    "ligneFinancement" TEXT,
     "secteurId" TEXT,
     "deviseCode" TEXT NOT NULL DEFAULT 'MAD',
     "montantDemande" DECIMAL(20,2) NOT NULL,
@@ -488,6 +489,8 @@ CREATE TABLE "sges_evaluations_climat" (
     "niveauClimat" TEXT,
     "couvertureDonnees" DOUBLE PRECISION,
     "methodeVersion" TEXT,
+    "ebeAnnuel" DECIMAL(20,2),
+    "scenarios" TEXT,
     "commentaire" TEXT,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

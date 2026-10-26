@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { calculerCategorie, eieRequise, lirePreseance } from "../domaine/categorisation";
-import { baseAttribution, emissions, evaluerClimat, lirePonderation, lireSeuilsClimat, METHODE_CLIMAT_VERSION, normaliserAleas, normaliserTransition, qualitePCAF } from "../domaine/climat";
+import { baseAttribution, emissions, evaluerClimat, lirePonderation, lirePrixCarbone, scenariosClimat, lireSeuilsClimat, METHODE_CLIMAT_VERSION, normaliserAleas, normaliserTransition, qualitePCAF } from "../domaine/climat";
 import type { Categorie } from "../domaine/constantes";
 import { evaluerDeclenchement } from "../domaine/declenchement";
 import { reponseBloquante } from "../domaine/exclusion";
@@ -199,7 +199,27 @@ export async function recalculer(dossierId: string): Promise<void> {
         montantAttribueRef: base.montantRef,
         facteurAttribution: em.attribution,
         dateArrete: base.dateArrete,
-        ...(evaluationFigee ? {} : { qualitePCAF: qualitePCAF(c.methodeEmissions, c.emissionsVerifiees, !!c.sourceEmissions?.trim()) }),
+        ...(evaluationFigee
+          ? {}
+          : {
+              qualitePCAF: qualitePCAF(c.methodeEmissions, c.emissionsVerifiees, !!c.sourceEmissions?.trim()),
+              scenarios: JSON.stringify(
+                scenariosClimat({
+                  aleas: normaliserAleas(lireJson(c.aleas, {})),
+                  sensibilite: c.sensibilite,
+                  capaciteAdaptation: c.capaciteAdaptation,
+                  emissionsTotales: em.totales,
+                  emissionsDirectes: c.methodeEmissions !== "estimee_secteur" ? c.scope1 : null,
+                  facteurCBAM: nombre(p, "CLIMAT_CBAM_FACTEUR", 0.485),
+                  expositionCBAM: c.expositionCBAM,
+                  partExportUE: c.partExportUE,
+                  prix: lirePrixCarbone(p.CLIMAT_PRIX_CARBONE),
+                  prixETS: nombre(p, "CLIMAT_PRIX_ETS", 850),
+                  ebeRef: c.ebeAnnuel !== null ? arrondirMontant(c.ebeAnnuel * demande.taux, decRef) : null,
+                  seuilEBE: nombre(p, "CLIMAT_SEUIL_EBE", 10) / 100,
+                })
+              ),
+            }),
       },
     });
   }

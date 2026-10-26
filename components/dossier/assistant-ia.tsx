@@ -11,6 +11,7 @@ import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Sablier } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
+import { RedactionIA, type TypeRedaction } from "./redaction-ia";
 
 interface Reponse {
   code: string;
@@ -51,6 +52,7 @@ export function AssistantIA({ onFermer }: { onFermer: () => void }) {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState("");
   const masquage = parametres.IA_ANONYMISER !== "false";
+  const [redaction, setRedaction] = useState<TypeRedaction | null>(null);
 
   const cle = (section: string, id: string | number) => `${section}:${id}`;
 
@@ -129,6 +131,8 @@ export function AssistantIA({ onFermer }: { onFermer: () => void }) {
       </div>
     );
 
+  if (redaction) return <RedactionIA type={redaction} onFermer={onFermer} />;
+
   const valeur = (v: string) => <Puce ton={v === "non" ? "alerte" : v === "oui" ? "favorable" : "neutre"}>{v === "na" ? t("commun.na") : v === "oui" ? t("commun.oui") : v === "non" ? t("commun.non") : v}</Puce>;
   const p = resultat?.propositions;
   const total = p ? p.identification.length + p.exclusion.length + p.categorisation.length + p.evaluation.length + p.actionsEIE.length : 0;
@@ -164,6 +168,19 @@ export function AssistantIA({ onFermer }: { onFermer: () => void }) {
           <p className="text-[13px]">{t("ia.presentation")}</p>
           <Bandeau ton={masquage ? "info" : "vigilance"}>{masquage ? t("ia.masquageActif") : t("ia.masquageInactif")}</Bandeau>
           {enCours && <p className="text-[13px] text-muted-foreground">{t("ia.enCours")}</p>}
+          {!enCours && (
+            <div>
+              <p className="mb-2 text-[13px] font-semibold">{t("ia.autresFonctions")}</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {(["commentaire", "revue", "synthese", "clauses"] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setRedaction(m)} className="rounded-md border border-border p-3 text-start transition-colors hover:bg-accent">
+                    <span className="block text-[13px] font-semibold">{t(`ia.mode_${m}`)}</span>
+                    <span className="mt-0.5 block text-[12px] text-muted-foreground">{t(`ia.desc_${m}`)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

@@ -196,3 +196,124 @@ export function qualitePCAF(methode: string, verifiee = false, sourceReferencee 
   if (methode === "estimee_activite") return sourceReferencee ? 3 : 5;
   return 5;
 }
+
+// ─────────────────────────── Scénarios (analyse de sensibilité, BAM 5/W/2021) ───────────────────────────
+
+export type ScenarioPhysique = "ssp245" | "ssp585";
+
+/**
+ * Aggravation des aléas à l'horizon 2050 (en crans de l'échelle 0-4), d'après les tendances projetées
+ * par le GIEC (AR6) pour l'Afrique du Nord et la Méditerranée : réchauffement supérieur à la moyenne
+ * mondiale, baisse des précipitations, sécheresses plus fréquentes, élévation du niveau de la mer.
+ * Le séisme n'évolue pas. Hypothèses d'expert, indicatives, à remplacer par des projections locales.
+ */
+export const AGGRAVATION_2050: Record<ScenarioPhysique, Partial<Record<Alea, number>>> = {
+  ssp245: { stressHydrique: 1, secheresse: 1, chaleurExtreme: 1 },
+  ssp585: { stressHydrique: 1, secheresse: 1, chaleurExtreme: 2, inondation: 1, submersionMarine: 1, incendie: 1 },
+};
+
+/** Aléas projetés : un aléa inconnu reste inconnu, un aléa non applicable reste non applicable. */
+export function aleasProjetes(aleas: Aleas, scenario: ScenarioPhysique): Aleas {
+  const delta = AGGRAVATION_2050[scenario];
+  return Object.fromEntries(
+    ALEAS.map((a) => {
+      const v = aleas[a];
+      return [a, typeof v === "number" ? Math.min(4, v + (delta[a] ?? 0)) : v];
+    })
+  ) as Aleas;
+}
+
+export type ScenarioTransition = "actuelles" | "sous2" | "nz2050";
+export const SCENARIOS_TRANSITION: ScenarioTransition[] = ["actuelles", "sous2", "nz2050"];
+
+/**
+ * Prix du carbone à l'horizon 2030 par scénario NGFS (politiques actuelles, sous 2 °C, zéro émission
+ * nette 2050), en devise de référence par tCO2e — paramètre CLIMAT_PRIX_CARBONE (« 100,850,1700 » MAD).
+ */
+export function lirePrixCarbone(v: string | null | undefined): Record<ScenarioTransition, number> {
+  const p = (v ?? "").split(",").map((x) => Number(x.trim()));
+  const ok = p.length === 3 && p.every((x) => Number.isFinite(x) && x >= 0);
+  const [a, b, c] = ok ? p : [100, 850, 1700];
+  return { actuelles: a, sous2: b, nz2050: c };
+}
+
+export interface ResultatStressTransition {
+  scenario: ScenarioTransition;
+  prixCarbone: number;
+  /** Coût annuel d'un prix du carbone appliqué aux émissions du projet (devise de référence). */
+  coutCarbone: number;
+  /** Coût CBAM annuel sur la part exportée vers l'UE (certificats au prix ETS, sans prix carbone local déductible). */
+  coutCBAM: number;
+  total: number;
+  /** Part de l'EBE annuel absorbée (0 à 1+), null si l'EBE n'est pas renseigné. */
+  partEBE: number | null;
+}
+
+/**
+ * Part des émissions effectivement soumise au CBAM à l'horizon 2030 : suppression progressive des quotas
+ * gratuits du SEQE-UE (règlement (UE) 2023/956) — 2,5 % en 2026, 5 % en 2027, 10 % en 2028, 22,5 % en
+ * 2029, 48,5 % en 2030… 100 % en 2034. Paramètre CLIMAT_CBAM_FACTEUR (0,485 par défaut).
+ */
+export const FACTEUR_CBAM_2030 = 0.485;
+
+/**
+ * Stress de transition : coût annuel du carbone sous chaque scénario et coût CBAM pour les exportateurs
+ * vers l'UE, rapportés à l'EBE du projet. Le CBAM porte sur les émissions directes (scope 1) des produits
+ * exportés — fer, acier, aluminium et hydrogène ; ciment et engrais incluent aussi l'électricité : on
+ * retient les émissions directes si elles sont connues, sinon les émissions totales (approche prudente).
+ * Au-delà du seuil (CLIMAT_SEUIL_EBE, 10 % par défaut), l'alerte est levée.
+ */
+export function stressTransition(e: {
+  emissionsTotales: number;
+  /** Émissions directes (scope 1), base du CBAM lorsqu'elles sont connues. */
+  emissionsDirectes?: number | null;
+  facteurCBAM?: number;
+  expositionCBAM: boolean;
+  partExportUE?: number | null;
+  prix: Record<ScenarioTransition, number>;
+  prixETS: number;
+  ebeRef?: number | null;
+  seuilEBE?: number;
+}): { scenarios: ResultatStressTransition[]; alerte: boolean } {
+  const baseCBAM = e.emissionsDirectes && e.emissionsDirectes > 0 ? e.emissionsDirectes : e.emissionsTotales;
+  const coutCBAM = e.expositionCBAM ? arrondir(baseCBAM * ((e.partExportUE ?? 0) / 100) * e.prixETS * (e.facteurCBAM ?? FACTEUR_CBAM_2030), 0) : 0;
+  const scenarios = SCENARIOS_TRANSITION.map((s) => {
+    const coutCarbone = arrondir(e.emissionsTotales * e.prix[s], 0);
+    const total = coutCarbone + coutCBAM;
+    return { scenario: s, prixCarbone: e.prix[s], coutCarbone, coutCBAM, total, partEBE: e.ebeRef && e.ebeRef > 0 ? arrondir(total / e.ebeRef, 3) : null };
+  });
+  const seuil = e.seuilEBE ?? 0.1;
+  return { scenarios, alerte: scenarios.some((x) => x.partEBE !== null && x.partEBE > seuil) };
+}
+
+export interface ScenariosClimat {
+  physique: { actuel: number | null; ssp245: number | null; ssp585: number | null };
+  transition: ResultatStressTransition[];
+  alerteTransition: boolean;
+}
+
+export function scenariosClimat(e: {
+  aleas: Aleas;
+  sensibilite: number;
+  capaciteAdaptation: number;
+  emissionsTotales: number;
+  emissionsDirectes?: number | null;
+  facteurCBAM?: number;
+  expositionCBAM: boolean;
+  partExportUE?: number | null;
+  prix: Record<ScenarioTransition, number>;
+  prixETS: number;
+  ebeRef?: number | null;
+  seuilEBE?: number;
+}): ScenariosClimat {
+  const st = stressTransition(e);
+  return {
+    physique: {
+      actuel: scorePhysique(e.aleas, e.sensibilite, e.capaciteAdaptation),
+      ssp245: scorePhysique(aleasProjetes(e.aleas, "ssp245"), e.sensibilite, e.capaciteAdaptation),
+      ssp585: scorePhysique(aleasProjetes(e.aleas, "ssp585"), e.sensibilite, e.capaciteAdaptation),
+    },
+    transition: st.scenarios,
+    alerteTransition: st.alerte,
+  };
+}

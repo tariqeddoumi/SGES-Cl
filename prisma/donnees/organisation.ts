@@ -113,6 +113,17 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
     { code: "CANEVAS", libelle: { fr: "Canevas rempli avec le client", en: "Template completed with the client", ar: "نموذج مملوء مع الزبون" } },
     { code: "AUTRE", libelle: { fr: "Autre", en: "Other", ar: "أخرى" } },
   ],
+  /** Lignes de financement / refinancement vert usuelles au Maroc (critères d'éligibilité et reporting propres à chaque bailleur). */
+  ligne_financement: [
+    { code: "SUNREF", libelle: { fr: "SUNREF Maroc (AFD) — efficacité énergétique, énergies renouvelables, environnement", en: "SUNREF Morocco (AFD) — energy efficiency, renewables, environment", ar: "SUNREF المغرب (الوكالة الفرنسية للتنمية)" } },
+    { code: "MORSEFF", libelle: { fr: "MorSEFF (BERD) — énergie durable des entreprises", en: "MorSEFF (EBRD) — sustainable energy financing", ar: "MorSEFF (البنك الأوروبي لإعادة الإعمار والتنمية)" } },
+    { code: "GEFF", libelle: { fr: "GEFF (BERD) — économie verte", en: "GEFF (EBRD) — green economy financing facility", ar: "GEFF (البنك الأوروبي) — الاقتصاد الأخضر" } },
+    { code: "GVC", libelle: { fr: "Green Value Chain (BERD) — chaînes de valeur vertes", en: "Green Value Chain (EBRD)", ar: "سلاسل القيمة الخضراء (البنك الأوروبي)" } },
+    { code: "BEI", libelle: { fr: "Ligne BEI — PME, climat et action pour le climat", en: "EIB credit line — SMEs and climate action", ar: "خط بنك الاستثمار الأوروبي" } },
+    { code: "SFI", libelle: { fr: "Ligne SFI / IFC — financement climatique", en: "IFC climate finance line", ar: "خط المؤسسة المالية الدولية للتمويل المناخي" } },
+    { code: "OBLIGATION_VERTE", libelle: { fr: "Obligation verte, sociale ou durable de la banque (affectation des fonds)", en: "Bank green, social or sustainability bond (use of proceeds)", ar: "سندات خضراء أو اجتماعية أو مستدامة للبنك" } },
+    { code: "FONDS_PROPRES", libelle: { fr: "Ressources propres de la banque", en: "Bank's own resources", ar: "الموارد الذاتية للبنك" } },
+  ],
   forme_juridique: [
     { code: "SA", libelle: { fr: "Société anonyme (SA)", en: "Public limited company (SA)", ar: "شركة مساهمة" } },
     { code: "SARL", libelle: { fr: "SARL", en: "Limited liability company (SARL)", ar: "شركة ذات مسؤولية محدودة" } },

@@ -18,6 +18,7 @@ export interface DossierComplet {
   objet: string | null;
   descriptionProcessus: string | null;
   projetDeveloppementDurable: boolean;
+  ligneFinancement: string | null;
   secteurId: string | null;
   deviseCode: string;
   montantDemande: number;
@@ -101,6 +102,8 @@ export interface Prefill {
   exclusion?: { critereId: string; valeur: string }[];
   categorisation?: { questionId: string; valeur: string }[];
   evaluation?: { questionId: string; valeur: string; justification: string }[];
+  /** Commentaire d'évaluation rédigé par l'assistant (repris dans la zone de texte, non enregistré). */
+  commentaire?: string;
 }
 
 export type ValeurContexte = EtatDossier & {

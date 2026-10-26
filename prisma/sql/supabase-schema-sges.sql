@@ -605,6 +605,9 @@ CREATE UNIQUE INDEX "sges_utilisateurs_email_key" ON "sges_utilisateurs"("email"
 CREATE INDEX "sges_utilisateurs_entiteId_idx" ON "sges_utilisateurs"("entiteId");
 
 -- CreateIndex
+CREATE INDEX "sges_utilisateurs_roleId_idx" ON "sges_utilisateurs"("roleId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_taux_change_deviseCode_date_key" ON "sges_taux_change"("deviseCode", "date");
 
 -- CreateIndex
@@ -629,13 +632,25 @@ CREATE UNIQUE INDEX "sges_thematiques_code_key" ON "sges_thematiques"("code");
 CREATE UNIQUE INDEX "sges_blocs_code_key" ON "sges_blocs"("code");
 
 -- CreateIndex
+CREATE INDEX "sges_blocs_thematiqueId_idx" ON "sges_blocs"("thematiqueId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_questions_code_key" ON "sges_questions"("code");
+
+-- CreateIndex
+CREATE INDEX "sges_questions_blocId_idx" ON "sges_questions"("blocId");
+
+-- CreateIndex
+CREATE INDEX "sges_modeles_actions_questionId_idx" ON "sges_modeles_actions"("questionId");
 
 -- CreateIndex
 CREATE INDEX "sges_clients_entiteId_idx" ON "sges_clients"("entiteId");
 
 -- CreateIndex
 CREATE INDEX "sges_clients_compteCourant_idx" ON "sges_clients"("compteCourant");
+
+-- CreateIndex
+CREATE INDEX "sges_clients_secteurId_idx" ON "sges_clients"("secteurId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sges_dossiers_reference_key" ON "sges_dossiers"("reference");
@@ -653,10 +668,34 @@ CREATE INDEX "sges_dossiers_statut_idx" ON "sges_dossiers"("statut");
 CREATE INDEX "sges_dossiers_categorie_idx" ON "sges_dossiers"("categorie");
 
 -- CreateIndex
+CREATE INDEX "sges_dossiers_chargeId_idx" ON "sges_dossiers"("chargeId");
+
+-- CreateIndex
+CREATE INDEX "sges_dossiers_dossierPrecedentId_idx" ON "sges_dossiers"("dossierPrecedentId");
+
+-- CreateIndex
+CREATE INDEX "sges_dossiers_regionId_idx" ON "sges_dossiers"("regionId");
+
+-- CreateIndex
+CREATE INDEX "sges_dossiers_secteurId_idx" ON "sges_dossiers"("secteurId");
+
+-- CreateIndex
+CREATE INDEX "sges_dossiers_valideurId_idx" ON "sges_dossiers"("valideurId");
+
+-- CreateIndex
+CREATE INDEX "sges_reponses_exclusion_critereId_idx" ON "sges_reponses_exclusion"("critereId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_reponses_exclusion_dossierId_critereId_key" ON "sges_reponses_exclusion"("dossierId", "critereId");
 
 -- CreateIndex
+CREATE INDEX "sges_reponses_categorisation_questionId_idx" ON "sges_reponses_categorisation"("questionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_reponses_categorisation_dossierId_questionId_key" ON "sges_reponses_categorisation"("dossierId", "questionId");
+
+-- CreateIndex
+CREATE INDEX "sges_reponses_questionId_idx" ON "sges_reponses"("questionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sges_reponses_dossierId_questionId_key" ON "sges_reponses"("dossierId", "questionId");
@@ -669,6 +708,9 @@ CREATE INDEX "sges_suivis_actions_actionId_idx" ON "sges_suivis_actions"("action
 
 -- CreateIndex
 CREATE INDEX "sges_visites_dossierId_idx" ON "sges_visites"("dossierId");
+
+-- CreateIndex
+CREATE INDEX "sges_visites_visiteurId_idx" ON "sges_visites"("visiteurId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sges_evaluations_climat_dossierId_key" ON "sges_evaluations_climat"("dossierId");
@@ -689,13 +731,22 @@ CREATE UNIQUE INDEX "sges_snapshots_dossiers_dossierId_version_key" ON "sges_sna
 CREATE INDEX "sges_notifications_destinataireId_lu_idx" ON "sges_notifications"("destinataireId", "lu");
 
 -- CreateIndex
+CREATE INDEX "sges_notifications_dossierId_idx" ON "sges_notifications"("dossierId");
+
+-- CreateIndex
 CREATE INDEX "sges_journal_date_idx" ON "sges_journal"("date");
 
 -- CreateIndex
 CREATE INDEX "sges_journal_objet_objetId_idx" ON "sges_journal"("objet", "objetId");
 
 -- CreateIndex
+CREATE INDEX "sges_journal_utilisateurId_idx" ON "sges_journal"("utilisateurId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_cles_api_empreinte_key" ON "sges_cles_api"("empreinte");
+
+-- CreateIndex
+CREATE INDEX "sges_cles_api_entiteId_idx" ON "sges_cles_api"("entiteId");
 
 -- AddForeignKey
 ALTER TABLE "sges_entites" ADD CONSTRAINT "sges_entites_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "sges_entites"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;

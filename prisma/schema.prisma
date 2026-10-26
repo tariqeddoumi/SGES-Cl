@@ -119,6 +119,7 @@ model Utilisateur {
   journal         Journal[]
 
   @@index([entiteId])
+  @@index([roleId])
   @@map("sges_utilisateurs")
 }
 
@@ -307,6 +308,7 @@ model Bloc {
   thematique Thematique @relation(fields: [thematiqueId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   questions  Question[]
 
+  @@index([thematiqueId])
   @@map("sges_blocs")
 }
 
@@ -339,6 +341,7 @@ model Question {
   actions  ModeleAction[]
   reponses ReponseQuestion[]
 
+  @@index([blocId])
   @@map("sges_questions")
 }
 
@@ -356,6 +359,7 @@ model ModeleAction {
 
   question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([questionId])
   @@map("sges_modeles_actions")
 }
 
@@ -394,6 +398,7 @@ model Client {
 
   @@index([entiteId])
   @@index([compteCourant])
+  @@index([secteurId])
   @@map("sges_clients")
 }
 
@@ -518,6 +523,11 @@ model Dossier {
   @@index([clientId])
   @@index([statut])
   @@index([categorie])
+  @@index([chargeId])
+  @@index([dossierPrecedentId])
+  @@index([regionId])
+  @@index([secteurId])
+  @@index([valideurId])
   @@map("sges_dossiers")
 }
 
@@ -538,6 +548,7 @@ model ReponseExclusion {
   critere CritereExclusion @relation(fields: [critereId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, critereId])
+  @@index([critereId])
   @@map("sges_reponses_exclusion")
 }
 
@@ -552,6 +563,7 @@ model ReponseCategorisation {
   question QuestionCategorisation @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, questionId])
+  @@index([questionId])
   @@map("sges_reponses_categorisation")
 }
 
@@ -569,6 +581,7 @@ model ReponseQuestion {
   question Question @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([dossierId, questionId])
+  @@index([questionId])
   @@map("sges_reponses")
 }
 
@@ -647,6 +660,7 @@ model Visite {
   visiteur Utilisateur? @relation(fields: [visiteurId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([dossierId])
+  @@index([visiteurId])
   @@map("sges_visites")
 }
 
@@ -789,6 +803,7 @@ model Notification {
   dossier      Dossier?    @relation(fields: [dossierId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([destinataireId, lu])
+  @@index([dossierId])
   @@map("sges_notifications")
 }
 
@@ -808,6 +823,7 @@ model Journal {
 
   @@index([date])
   @@index([objet, objetId])
+  @@index([utilisateurId])
   @@map("sges_journal")
 }
 
@@ -826,5 +842,6 @@ model CleApi {
 
   entite Entite? @relation(fields: [entiteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([entiteId])
   @@map("sges_cles_api")
 }

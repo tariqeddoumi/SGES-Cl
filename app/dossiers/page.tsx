@@ -10,7 +10,7 @@ import { CATEGORIES, NIVEAUX_RISQUE, STATUTS } from "@/lib/domaine/constantes";
 import { useApp } from "@/components/providers/application";
 import { Bouton } from "@/components/ui/bouton";
 import { Bandeau, Carte, Chargement, EnTete, Vide } from "@/components/ui/mise-en-page";
-import { PuceCategorie, PuceDecision, PuceNiveau, PuceStatut } from "@/components/ui/puces";
+import { PuceCategorie, PuceDecision, PuceESG, PuceNiveau, PuceStatut } from "@/components/ui/puces";
 import { Tableau, Td, Th, Tr } from "@/components/ui/tableau";
 
 interface Ligne {
@@ -20,6 +20,8 @@ interface Ligne {
   categorie: string | null;
   sousCategorieFI: string | null;
   niveauRisque: string | null;
+  noteESG: string | null;
+  scoreESG: number | null;
   scoreRisque: number | null;
   montantDemande: number;
   deviseCode: string;
@@ -174,6 +176,7 @@ function Liste() {
                     <div className="flex flex-wrap items-center gap-1.5">
                       <PuceCategorie categorie={d.categorie} sous={d.sousCategorieFI} />
                       <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
+                      <PuceESG note={d.noteESG} score={d.scoreESG} />
                       <PuceStatut statut={d.statut} />
                       <PuceDecision decision={d.decision} />
                       {d.exclu && <span className="rounded bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{t("dossier.badgeExclu")}</span>}
@@ -190,6 +193,7 @@ function Liste() {
                     <Th>{t("dossier.client")}</Th>
                     <Th>{t("dossier.categorie")}</Th>
                     <Th>{t("dossier.niveauRisque")}</Th>
+                    <Th>{t("esg.colonne")}</Th>
                     <Th className="hidden 2xl:table-cell">{t("climat.niveau")}</Th>
                     <Th alignFin>{t("dossier.montantDemande")}</Th>
                     <Th>{t("commun.statut")}</Th>
@@ -214,6 +218,9 @@ function Liste() {
                       </Td>
                       <Td>
                         <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />
+                      </Td>
+                      <Td>
+                        <PuceESG note={d.noteESG} score={d.scoreESG} />
                       </Td>
                       <Td className="hidden 2xl:table-cell">
                         <PuceNiveau niveau={d.climat?.niveauClimat} />

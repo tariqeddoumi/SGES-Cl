@@ -12,7 +12,7 @@ export async function dossiersPerimetre(ctx: Contexte, where: Prisma.DossierWher
       montantDemande: true, montantDemandeRef: true, montantAccorde: true, tauxReference: true, deviseCode: true,
       dateDossier: true, valideLe: true, dateComite: true, decision: true, exclu: true, evaluationObligatoire: true,
       projetDeveloppementDurable: true, ligneFinancement: true, planActionPropose: true, nbRisquesNonMaitrises: true, entiteId: true, updatedAt: true,
-      chargeId: true, motifRejetCode: true,
+      chargeId: true, motifRejetCode: true, noteESG: true, scoreESG: true, noteESGOctroi: true, scoreESGOctroi: true,
       client: { select: { raisonSociale: true } },
       entite: { select: { id: true, code: true, nom: true } },
       secteur: { select: { code: true, libelle: true, risqueTransition: true, exposeCBAM: true } },

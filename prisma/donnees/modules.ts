@@ -97,3 +97,14 @@ export const MARQUAGE: Record<string, { niveau: "reglementaire" | "interne" | "s
   CL04: { niveau: "interne" }, CL05: { niveau: "reglementaire" },
   FI01: { niveau: "interne" }, FI02: { niveau: "sfi" }, FI03: { niveau: "interne" }, FI04: { niveau: "interne" }, FI05: { niveau: "sfi" }, FI06: { niveau: "interne" },
 };
+
+/**
+ * Pilier ESG des questions qui ne suivent pas celui de leur thématique (les autres : E pour la
+ * gestion environnementale et le climat, S pour la santé-sécurité, les RH et les normes SFI,
+ * G pour les intermédiaires financiers).
+ */
+export const PILIER_QUESTION: Record<string, "E" | "S" | "G"> = {
+  SGE01: "G", SGE02: "G", SGE03: "G", CERT01: "G", CERT02: "G",
+  URG01: "S", URG02: "S",
+  NP06: "E", NP09: "G",
+};

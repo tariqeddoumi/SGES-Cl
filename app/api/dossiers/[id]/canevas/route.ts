@@ -5,7 +5,7 @@ import { DICTIONNAIRES, traduire } from "@/lib/i18n";
 import { libelle } from "@/lib/i18n/libelle";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { checklistDossier } from "@/lib/serveur/pieces";
 import { prisma } from "@/lib/serveur/prisma";
@@ -43,6 +43,7 @@ export const PUT = route(
     if (existant) await prisma.document.update({ where: { id: existant.id }, data });
     else await prisma.document.create({ data: { dossierId: id, ...data } });
     await historiser(id, ctx, "piece", { commentaire: `Canevas — ${piece}` });
+    await recalculer(id);
     return checklistDossier(id);
   },
   { permission: "dossier:modifier" }

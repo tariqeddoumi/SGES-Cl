@@ -5,6 +5,7 @@ import type { Fiche } from "@/lib/serveur/fiche";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { PuceCategorie, PuceDecision, PuceNiveau } from "@/components/ui/puces";
+import { NoteESG } from "./note-esg";
 
 type FicheJson = Omit<Fiche, never>;
 
@@ -246,6 +247,12 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
             ]}
           />
           {f.climat.methodeVersion && <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: f.climat.methodeVersion })}</p>}
+        </Section>
+      )}
+
+      {f.esg && (
+        <Section titre={t("esg.titre")}>
+          <NoteESG esg={f.esg} />
         </Section>
       )}
 

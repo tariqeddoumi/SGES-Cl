@@ -354,6 +354,8 @@ model Question {
   secteurs      String? @db.Text
   /// Force de l'exigence : reglementaire | interne | sfi | bonne_pratique.
   niveau        String  @default("reglementaire")
+  /// Pilier de la note ESG (E, S ou G) ; vide : celui de la thématique.
+  pilier        String?
   /// Module d'activité qui déclenche la question (vide : posée à tous les dossiers de la catégorie).
   module        String?
   obligatoire   Boolean @default(true)
@@ -487,15 +489,23 @@ model Dossier {
   dateCategorisation     DateTime?
 
   // Évaluation des risques
-  evaluationTerminee    Boolean @default(false)
+  evaluationTerminee   Boolean @default(false)
   /// Principes de l'Équateur applicables au financement : impose au moins le questionnaire « standard ».
-  principesEquateur     Boolean @default(false)
+  principesEquateur    Boolean @default(false)
   /// Questionnaire complet imposé sur ce dossier (Responsable RSE).
-  questionnaireComplet  Boolean @default(false)
+  questionnaireComplet Boolean @default(false)
   /// Niveau de questionnaire appliqué (minimum | standard | complet) et modules d'activité retenus,
   /// figés à la soumission.
-  niveauQuestionnaire   String?
-  modulesQuestionnaire  String? @db.Text
+  niveauQuestionnaire  String?
+  modulesQuestionnaire String? @db.Text
+
+  // Note ESG (lib/domaine/esg.ts) : à l'octroi (figée à la soumission) et actualisée en suivi.
+  scoreESG              Float?
+  noteESG               String?
+  scoreESGOctroi        Float?
+  noteESGOctroi         String?
+  /// Détail de la note actualisée (piliers, composantes, plafond, couverture), JSON.
+  detailESG             String? @db.Text
   /// Empreinte du référentiel (questionnaire, catégorisation, exclusion, paramètres de calcul) ayant
   /// produit l'évaluation ; figée à la soumission.
   versionReferentiel    String?

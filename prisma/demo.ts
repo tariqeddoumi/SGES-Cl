@@ -413,5 +413,7 @@ export async function installerDemo(prisma: PrismaClient) {
       await hist("transition", "en_suivi", "cloture", directeur);
     }
   }
+  // Note ESG actualisée avec les actions et visites de suivi créées ci-dessus.
+  for (const d of await prisma.dossier.findMany({ select: { id: true } })) await recalculer(d.id);
   console.log(`  ${SCENARIOS.length} dossiers, ${CLIENTS.length} clients, ${COMPTES.length} comptes (mot de passe : ${MDP_DEMO}).`);
 }

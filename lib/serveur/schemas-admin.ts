@@ -66,6 +66,7 @@ export const SchemaQuestion = z.object({
   secteurs: z.string().max(2000).nullable().optional(),
   niveau: z.enum(["reglementaire", "interne", "sfi", "bonne_pratique"]).optional(),
   module: z.string().max(40).nullable().optional(),
+  pilier: z.enum(["E", "S", "G"]).nullable().optional(),
   obligatoire: z.boolean(),
   ordre: z.number().int().optional(),
   actif: z.boolean().optional(),

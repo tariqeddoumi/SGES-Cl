@@ -16,7 +16,7 @@ import { ROLES_DEFAUT } from "../lib/permissions";
 import { DEVISES, ENTITES, LANGUES, LISTES_VALEURS, TAUX_INDICATIFS } from "./donnees/organisation";
 import { CRITERES_EXCLUSION, NATURE_CRITERE, NATURE_DEFAUT, QUESTIONS_CATEGORISATION } from "./donnees/exclusion-categorisation";
 import { BLOCS, QUESTIONS, THEMATIQUES } from "./donnees/questionnaires";
-import { MARQUAGE, MODULES } from "./donnees/modules";
+import { MARQUAGE, MODULES, PILIER_QUESTION } from "./donnees/modules";
 import { REGIONS, SECTEURS } from "./donnees/secteurs-regions";
 
 const prisma = new PrismaClient();
@@ -147,6 +147,7 @@ async function referentiels() {
       obligatoire: q.obligatoire ?? true,
       niveau: MARQUAGE[q.code]?.niveau ?? "reglementaire",
       module: MARQUAGE[q.code]?.module ?? null,
+      pilier: PILIER_QUESTION[q.code] ?? null,
       ordre: i,
     };
     const existe = await prisma.question.findUnique({ where: { code: q.code } });

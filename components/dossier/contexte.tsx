@@ -37,6 +37,11 @@ export interface DossierComplet {
   motifDeclenchement: string | null;
   exclusionVerifiee: boolean;
   exclu: boolean;
+  scoreESG: number | null;
+  noteESG: string | null;
+  scoreESGOctroi: number | null;
+  noteESGOctroi: string | null;
+  detailESG: string | null;
   motifExclusion: string | null;
   categorieCalculee: string | null;
   categorie: string | null;

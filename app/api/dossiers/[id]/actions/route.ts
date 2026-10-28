@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HORIZONS, ORIGINES_ACTION } from "@/lib/domaine/constantes";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { prisma } from "@/lib/serveur/prisma";
 
@@ -66,6 +66,7 @@ export const POST = route(
     });
     await prisma.dossier.update({ where: { id }, data: { planActionPropose: true } });
     await historiser(id, ctx, "plan", { commentaire: `+ ${s.libelle.slice(0, 120)}` });
+    await recalculer(id);
     return a;
   },
   { permission: "dossier:lire" }

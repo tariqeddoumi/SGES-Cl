@@ -19,6 +19,7 @@ export function donneesQuestion(s: Q) {
     ...(s.secteurs !== undefined ? { secteurs: s.secteurs || null } : {}),
     ...(s.niveau ? { niveau: s.niveau } : {}),
     ...(s.module !== undefined ? { module: s.module || null } : {}),
+    ...(s.pilier !== undefined ? { pilier: s.pilier || null } : {}),
     ...(s.obligatoire !== undefined ? { obligatoire: s.obligatoire } : {}),
     ...(s.ordre !== undefined ? { ordre: s.ordre } : {}),
     ...(s.actif !== undefined ? { actif: s.actif } : {}),

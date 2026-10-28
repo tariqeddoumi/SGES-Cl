@@ -4,6 +4,7 @@ import { baseAttribution, emissions, evaluerClimat, lirePonderation, lirePrixCar
 import type { Categorie } from "../domaine/constantes";
 import { evaluerDeclenchement } from "../domaine/declenchement";
 import { reponseBloquante } from "../domaine/exclusion";
+import { calculerESG, lirePonderationESG, lireSeuilsESG, pilierQuestion } from "../domaine/esg";
 import { codes, modulesRetenus, niveauQuestionnaire, questionPosee, type NiveauQuestionnaire } from "../domaine/questionnaire";
 import { calculerRisque, estRisque, lireSeuils, questionApplicable } from "../domaine/risque";
 import { motifsBlocageSoumission, type ControleSoumission } from "../domaine/workflow";
@@ -15,6 +16,7 @@ import { arrondirMontant } from "../devises";
 import { versReference } from "./devises";
 import { versionReferentiel } from "./referentiel-version";
 import { chargerParametres } from "./parametres";
+import { checklistDossier } from "./pieces";
 import { ascendance, chargerArbre, peutEcrire, peutLire, seuilHerite } from "./perimetre";
 import { prisma, type Tx } from "./prisma";
 
@@ -130,6 +132,55 @@ export async function questionsApplicables(dossierId: string, categorie: string 
   const questions = toutes.filter((q) => questionPosee(q, r.niveau, r.retenus, r.connus));
   const questionnaire: Questionnaire = { niveau: r.niveau, modules: r.retenus, exigencesSFI: r.exigencesSFI, total: toutes.length, posees: questions.length };
   return Object.assign(questions, { questionnaire });
+}
+
+/** Note ESG du dossier à partir des réponses, du climat, des pièces, du plan d'actions et des visites. */
+async function noteESG(
+  dossierId: string,
+  statut: string,
+  questions: Awaited<ReturnType<typeof questionsApplicables>>,
+  reponses: { questionId: string; valeur: string | null }[],
+  exclu: boolean,
+  p: Record<string, string>
+) {
+  const suivi = ["decide", "en_suivi", "cloture"].includes(statut);
+  const [climat, checklist, actions, visite] = await Promise.all([
+    prisma.evaluationClimat.findUnique({ where: { dossierId }, select: { scoreClimat: true, couvertureDonnees: true, qualitePCAF: true } }),
+    checklistDossier(dossierId),
+    prisma.action.findMany({ where: { dossierId }, select: { questionId: true, retenue: true, statut: true, avancement: true, dateEcheance: true } }),
+    prisma.visite.findFirst({ where: { dossierId, conformite: { not: null } }, orderBy: { date: "desc" }, select: { conformite: true } }),
+  ]);
+  const maintenant = new Date();
+  // Un risque est levé en suivi quand toutes les actions retenues qui le traitent sont réalisées.
+  const parQuestion = new Map<string, boolean>();
+  for (const a of actions) {
+    if (!a.questionId || !a.retenue || a.statut === "abandonnee") continue;
+    parQuestion.set(a.questionId, (parQuestion.get(a.questionId) ?? true) && a.statut === "realisee");
+  }
+  const valeurs = new Map(reponses.map((r) => [r.questionId, r.valeur]));
+  return calculerESG(
+    {
+      questions: questions.map((q) => ({
+        id: q.id, type: q.type, reponseRisque: q.reponseRisque, gravite: q.gravite, valeur: valeurs.get(q.id) ?? null,
+        pilier: pilierQuestion({ pilier: q.pilier, thematique: q.bloc.thematique.code }), actionRealisee: parQuestion.get(q.id) ?? false,
+      })),
+      climat: climat ? { score: climat.scoreClimat, couverture: climat.couvertureDonnees, qualitePCAF: climat.qualitePCAF } : null,
+      pieces: checklist.lignes.map((l) => ({ niveau: l.niveau, statut: l.statut, officiel: l.officiel })),
+      actions: actions.map((a) => ({
+        retenue: a.retenue, statut: a.statut, avancement: a.avancement,
+        enRetard: !!a.dateEcheance && a.dateEcheance < maintenant && a.statut !== "realisee" && a.statut !== "abandonnee",
+      })),
+      conformiteVisite: visite?.conformite ?? null,
+      exclu,
+      suivi,
+    },
+    {
+      ponderation: lirePonderationESG(p.ESG_PONDERATION),
+      seuils: lireSeuilsESG(p.ESG_SEUILS_NOTES),
+      couvertureMin: nombre(p, "ESG_COUVERTURE_MIN", 0.6),
+      partClimat: Math.max(0, Math.min(1, nombre(p, "ESG_PART_CLIMAT", 0.3))),
+    }
+  );
 }
 
 /**
@@ -277,6 +328,18 @@ export async function recalculer(dossierId: string): Promise<void> {
       },
     });
   }
+  // Note ESG : actualisée à chaque recalcul (suivi compris) ; celle « à l'octroi » est figée à la soumission.
+  const esg = await noteESG(dossierId, d.statut, questions, reponses, evaluationFigee ? d.exclu : exclu, p);
+  await prisma.dossier.update({
+    where: { id: dossierId },
+    data: {
+      scoreESG: esg.score,
+      noteESG: esg.exclu ? "exclu" : esg.note,
+      detailESG: JSON.stringify(esg),
+      ...(evaluationFigee ? {} : { scoreESGOctroi: esg.score, noteESGOctroi: esg.exclu ? "exclu" : esg.note }),
+    },
+  });
+
   if (evaluationFigee) return;
 
   await prisma.dossier.update({

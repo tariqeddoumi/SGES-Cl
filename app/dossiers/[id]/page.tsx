@@ -15,14 +15,14 @@ import {
 } from "lucide-react";
 import { api, ErreurApi, useDonnees } from "@/lib/client/api";
 import { TRANSITIONS, type Transition } from "@/lib/domaine/workflow";
-import { cn } from "@/lib/utils";
+import { cn, lireJson } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
 import { ZoneTexte } from "@/components/ui/champs";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Chargement, EnTete } from "@/components/ui/mise-en-page";
-import { Puce, PuceCategorie, PuceDecision, PuceNiveau, PuceStatut } from "@/components/ui/puces";
+import { Puce, PuceCategorie, PuceDecision, PuceESG, PuceNiveau, PuceStatut } from "@/components/ui/puces";
 import { ContexteDossier, type EtatDossier, type Prefill } from "@/components/dossier/contexte";
 import { VoletIdentification } from "@/components/dossier/volet-identification";
 import { VoletExclusion } from "@/components/dossier/volet-exclusion";
@@ -129,6 +129,7 @@ function Espace({ id }: { id: string }) {
               <PuceStatut statut={d.statut} />
               <PuceCategorie categorie={d.categorie} sous={d.sousCategorieFI} />
               {d.niveauRisque && <PuceNiveau niveau={d.niveauRisque} score={d.scoreRisque} />}
+              <PuceESG note={d.noteESG} score={d.scoreESG} provisoire={!!lireJson<{ provisoire?: boolean }>(d.detailESG, {}).provisoire} />
               {d.climat?.niveauClimat && (
                 <Puce ton="info" title={t("climat.score")}>
                   {t("etape.climat")} : {t(`niveau.${d.climat.niveauClimat}`)}

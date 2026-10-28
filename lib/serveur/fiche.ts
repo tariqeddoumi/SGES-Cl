@@ -1,3 +1,4 @@
+import type { ResultatESG } from "../domaine/esg";
 import { genererClauses } from "../domaine/clauses";
 import type { ScenariosClimat } from "../domaine/climat";
 import { localeIntl } from "../devises";
@@ -210,6 +211,7 @@ export async function construireFiche(dossierId: string, langue = "fr") {
       actions,
     },
     climat,
+    esg: d.detailESG ? { ...lireJson<ResultatESG | null>(d.detailESG, null)!, octroi: { score: d.scoreESGOctroi, note: d.noteESGOctroi } } : null,
     clauses,
     validation: {
       soumisLe: d.soumisLe,

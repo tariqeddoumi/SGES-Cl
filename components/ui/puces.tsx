@@ -92,3 +92,21 @@ export function PuceDecision({ decision }: { decision: string | null | undefined
 export function tonNiveau(niveau: string | null | undefined): Ton {
   return TON_NIVEAU[niveau ?? ""] ?? "neutre";
 }
+
+/** Note ESG : A et B favorables, C neutre, D en vigilance, E en alerte ; « exclu » : non noté. */
+const TON_NOTE_ESG: Record<string, Ton> = { A: "favorable", B: "favorable", C: "info", D: "vigilance", E: "alerte", exclu: "neutre" };
+
+export function PuceESG({ note, score, provisoire }: { note: string | null | undefined; score?: number | null; provisoire?: boolean }) {
+  const { t, fmt } = useApp();
+  if (!note) return null;
+  if (note === "exclu") return <Puce title={t("esg.exclu")}>{t("esg.nonNote")}</Puce>;
+  return (
+    <Puce ton={TON_NOTE_ESG[note] ?? "neutre"} title={`${t("esg.titre")}${provisoire ? ` — ${t("esg.provisoire")}` : ""}`}>
+      <span dir="ltr">
+        ESG {note}
+        {score !== null && score !== undefined ? ` · ${fmt.nombre(score, 0)}` : ""}
+        {provisoire ? "*" : ""}
+      </span>
+    </Puce>
+  );
+}

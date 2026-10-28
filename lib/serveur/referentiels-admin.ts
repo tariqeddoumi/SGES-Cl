@@ -92,6 +92,8 @@ export async function utilisations(def: DefReferentiel, element: Record<string, 
       return prisma.bloc.count({ where: { thematiqueId: String(element.id) } });
     case "devise":
       return prisma.dossier.count({ where: { deviseCode: String(element.code) } });
+    case "moduleQuestionnaire":
+      return prisma.question.count({ where: { module: String(element.code) } });
     case "listeValeur": {
       const champ: Record<string, string> = { type_credit: "typeCredit", nature_projet: "natureProjet", type_zone: "typeZone", comite: "comite", motif_rejet: "motifRejetCode" };
       const f = champ[String(element.liste)];

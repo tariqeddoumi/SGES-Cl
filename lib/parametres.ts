@@ -45,6 +45,16 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   { cle: "SEUILS_NIVEAU_RISQUE", groupe: "evaluation", type: "texte", defaut: "15,35,60", public: true },
   { cle: "RELEVER_NIVEAU_CATEGORIE_A", groupe: "evaluation", type: "booleen", defaut: "true", public: true },
   { cle: "COMMENTAIRE_EVALUATION_OBLIGATOIRE", groupe: "evaluation", type: "booleen", defaut: "true" },
+  // Niveau du questionnaire par catégorie (A et FI restent complets) : complet par défaut.
+  { cle: "QUESTIONNAIRE_NIVEAU_B", groupe: "evaluation", type: "choix", defaut: "complet", choix: ["minimum", "standard", "complet"], public: true },
+  { cle: "QUESTIONNAIRE_NIVEAU_C", groupe: "evaluation", type: "choix", defaut: "complet", choix: ["minimum", "standard", "complet"], public: true },
+  { cle: "LIGNES_EXIGENCES_SFI", groupe: "evaluation", type: "liste", defaut: "SUNREF,MORSEFF,GEFF,GVC,BEI,SFI", public: true },
+  { cle: "QUESTION_EFFECTIF", groupe: "evaluation", type: "texte", defaut: "SIG01" },
+  // Note ESG : pondération E, S, G ; seuils des notes A, B, C, D ; couverture minimale ; part du climat dans E.
+  { cle: "ESG_PONDERATION", groupe: "evaluation", type: "texte", defaut: "40,30,30", public: true },
+  { cle: "ESG_SEUILS_NOTES", groupe: "evaluation", type: "texte", defaut: "80,65,50,35", public: true },
+  { cle: "ESG_COUVERTURE_MIN", groupe: "evaluation", type: "nombre", defaut: "0.6", public: true },
+  { cle: "ESG_PART_CLIMAT", groupe: "evaluation", type: "nombre", defaut: "0.3", public: true },
 
   // Climat
   { cle: "VOLET_CLIMAT_ACTIF", groupe: "climat", type: "booleen", defaut: "true", public: true },

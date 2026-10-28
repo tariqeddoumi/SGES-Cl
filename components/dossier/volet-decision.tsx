@@ -12,9 +12,11 @@ import { Champ, ChoixSegmente, Selecteur, ZoneTexte } from "@/components/ui/cham
 import { Bandeau, Carte, Ligne, Sablier } from "@/components/ui/mise-en-page";
 import { PuceDecision } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
+import { useLibelles } from "@/lib/client/listes";
 
 export function VoletDecision() {
   const { t, lib, fmt } = useApp();
+  const reservesTypes = useLibelles("reserve_comite");
   const { dossier: d, droits, recharger } = useDossier();
   const ref = useReferentiels();
   const toast = useToast();
@@ -89,7 +91,7 @@ export function VoletDecision() {
         {v.decision === "accorde" && (
           <>
             <Champ id="montantAccorde" type="number" min={0} libelle={t("comite.montantAccorde")} valeur={v.montantAccorde} onChange={(x) => setV({ ...v, montantAccorde: x })} suffixe={d.deviseCode} obligatoire />
-            <ZoneTexte id="reserves" className="md:col-span-2" libelle={t("comite.reserves")} aide={t("comite.reservesAide")} valeur={v.reservesComite} onChange={(x) => setV({ ...v, reservesComite: x })} lignes={2} />
+            <ZoneTexte id="reserves" modeles={reservesTypes} className="md:col-span-2" libelle={t("comite.reserves")} aide={t("comite.reservesAide")} valeur={v.reservesComite} onChange={(x) => setV({ ...v, reservesComite: x })} lignes={2} />
           </>
         )}
         {v.decision === "rejete" && (

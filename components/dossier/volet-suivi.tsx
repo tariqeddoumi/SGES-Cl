@@ -14,6 +14,7 @@ import { Bandeau, Carte, Chargement, Vide } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { VoletPlan } from "./volet-plan";
+import { useLibelles } from "@/lib/client/listes";
 
 interface Visite {
   id: string;
@@ -31,6 +32,9 @@ const vide = { id: "", date: dateInput(new Date()), type: "suivi", participants:
 
 export function VoletSuivi() {
   const { t, fmt } = useApp();
+  const fonctions = useLibelles("fonction_client");
+  const constatsTypes = useLibelles("constat_visite");
+  const recommandationsTypes = useLibelles("recommandation_visite");
   const { dossier, droits, recharger } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVisites } = useDonnees<Visite[]>(`/api/dossiers/${dossier.id}/visites`);
@@ -170,11 +174,11 @@ export function VoletSuivi() {
           <div className="grid gap-3 md:grid-cols-2">
             <Champ id="dv" type="date" libelle={t("suivi.dateVisite")} valeur={edition.date} onChange={(x) => setEdition({ ...edition, date: x })} obligatoire />
             <Selecteur id="tv" libelle={t("suivi.typeVisite")} valeur={edition.type} onChange={(x) => setEdition({ ...edition, type: x })} options={TYPES_VISITE.map((x) => ({ valeur: x, libelle: t(`suivi.${x}`) }))} sansVide />
-            <Champ id="pv" className="md:col-span-2" libelle={t("suivi.participants")} valeur={edition.participants} onChange={(x) => setEdition({ ...edition, participants: x })} />
-            <ZoneTexte id="cv" className="md:col-span-2" libelle={t("suivi.constats")} valeur={edition.constats} onChange={(x) => setEdition({ ...edition, constats: x })} lignes={4} />
+            <Champ id="pv" suggestions={fonctions} className="md:col-span-2" libelle={t("suivi.participants")} valeur={edition.participants} onChange={(x) => setEdition({ ...edition, participants: x })} />
+            <ZoneTexte id="cv" modeles={constatsTypes} className="md:col-span-2" libelle={t("suivi.constats")} valeur={edition.constats} onChange={(x) => setEdition({ ...edition, constats: x })} lignes={4} />
             <Selecteur id="conf" libelle={t("suivi.conformite")} valeur={edition.conformite} onChange={(x) => setEdition({ ...edition, conformite: x })} options={CONFORMITES.map((x) => ({ valeur: x, libelle: t(`suivi.${x}`) }))} />
             <Champ id="pvn" type="date" libelle={t("suivi.prochaineVisite")} valeur={edition.prochaineVisite} onChange={(x) => setEdition({ ...edition, prochaineVisite: x })} />
-            <ZoneTexte id="rv" className="md:col-span-2" libelle={t("suivi.recommandations")} valeur={edition.recommandations} onChange={(x) => setEdition({ ...edition, recommandations: x })} lignes={3} />
+            <ZoneTexte id="rv" modeles={recommandationsTypes} className="md:col-span-2" libelle={t("suivi.recommandations")} valeur={edition.recommandations} onChange={(x) => setEdition({ ...edition, recommandations: x })} lignes={3} />
           </div>
         )}
       </Dialogue>

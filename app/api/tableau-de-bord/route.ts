@@ -46,6 +46,11 @@ export const GET = route(async (_req, ctx) => {
       exclusions: dossiers.filter((d) => d.exclu).length,
       parCategorie: compter(dossiers, (d) => d.categorie),
       parNiveau: compter(dossiers, (d) => d.niveauRisque),
+      parNoteESG: compter(dossiers, (d) => d.noteESG),
+      scoreESGMoyen: (() => {
+        const notes = dossiers.filter((d) => d.scoreESG !== null);
+        return notes.length ? notes.reduce((s, d) => s + d.scoreESG!, 0) / notes.length : null;
+      })(),
       parStatut: compter(dossiers, (d) => d.statut),
       decisions: compter(decides, (d) => d.decision),
       tauxAccord: decides.length ? decides.filter((d) => d.decision === "accorde").length / decides.length : null,

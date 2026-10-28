@@ -130,6 +130,23 @@ CREATE TABLE "sges_listes_valeurs" (
 );
 
 -- CreateTable
+CREATE TABLE "sges_modules_questionnaire" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "libelle" TEXT NOT NULL,
+    "secteurs" TEXT,
+    "zones" TEXT,
+    "natures" TEXT,
+    "effectifMin" INTEGER,
+    "stressHydriqueMin" INTEGER,
+    "equateur" BOOLEAN NOT NULL DEFAULT false,
+    "actif" BOOLEAN NOT NULL DEFAULT true,
+    "ordre" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "sges_modules_questionnaire_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "sges_secteurs" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -233,6 +250,9 @@ CREATE TABLE "sges_questions" (
     "gravite" INTEGER NOT NULL DEFAULT 2,
     "references" TEXT,
     "secteurs" TEXT,
+    "niveau" TEXT NOT NULL DEFAULT 'reglementaire',
+    "pilier" TEXT,
+    "module" TEXT,
     "obligatoire" BOOLEAN NOT NULL DEFAULT true,
     "ordre" INTEGER NOT NULL DEFAULT 0,
     "actif" BOOLEAN NOT NULL DEFAULT true,
@@ -327,6 +347,15 @@ CREATE TABLE "sges_dossiers" (
     "eieRequise" BOOLEAN NOT NULL DEFAULT false,
     "dateCategorisation" TIMESTAMP(3),
     "evaluationTerminee" BOOLEAN NOT NULL DEFAULT false,
+    "principesEquateur" BOOLEAN NOT NULL DEFAULT false,
+    "questionnaireComplet" BOOLEAN NOT NULL DEFAULT false,
+    "niveauQuestionnaire" TEXT,
+    "modulesQuestionnaire" TEXT,
+    "scoreESG" DOUBLE PRECISION,
+    "noteESG" TEXT,
+    "scoreESGOctroi" DOUBLE PRECISION,
+    "noteESGOctroi" TEXT,
+    "detailESG" TEXT,
     "versionReferentiel" TEXT,
     "scoreRisque" DOUBLE PRECISION,
     "niveauRisque" TEXT,
@@ -614,6 +643,9 @@ CREATE UNIQUE INDEX "sges_taux_change_deviseCode_date_key" ON "sges_taux_change"
 CREATE UNIQUE INDEX "sges_listes_valeurs_liste_code_key" ON "sges_listes_valeurs"("liste", "code");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "sges_modules_questionnaire_code_key" ON "sges_modules_questionnaire"("code");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "sges_secteurs_code_key" ON "sges_secteurs"("code");
 
 -- CreateIndex
@@ -849,7 +881,6 @@ ALTER TABLE "sges_journal" ADD CONSTRAINT "sges_journal_utilisateurId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "sges_cles_api" ADD CONSTRAINT "sges_cles_api_entiteId_fkey" FOREIGN KEY ("entiteId") REFERENCES "sges_entites"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-
 
 
 -- Schéma réservé à l'application (accès serveur via Prisma) : rien n'est exposé à l'API Supabase.

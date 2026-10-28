@@ -316,7 +316,7 @@ export async function installerDemo(prisma: PrismaClient) {
     const apres = await prisma.dossier.findUniqueOrThrow({ where: { id: d.id }, include: { secteur: true, region: true } });
     if (s.stade === "categorise") continue;
 
-    const questions = await questionsApplicables(apres.categorie, apres.secteur?.code ?? null);
+    const questions = await questionsApplicables(d.id, apres.categorie, apres.secteur?.code ?? null);
     for (const [i, q] of questions.entries()) {
       await prisma.reponseQuestion.create({ data: { dossierId: d.id, questionId: q.id, valeur: valeurDemo(q, i + n, s.profil) } });
     }
@@ -413,5 +413,7 @@ export async function installerDemo(prisma: PrismaClient) {
       await hist("transition", "en_suivi", "cloture", directeur);
     }
   }
+  // Note ESG actualisée avec les actions et visites de suivi créées ci-dessus.
+  for (const d of await prisma.dossier.findMany({ select: { id: true } })) await recalculer(d.id);
   console.log(`  ${SCENARIOS.length} dossiers, ${CLIENTS.length} clients, ${COMPTES.length} comptes (mot de passe : ${MDP_DEMO}).`);
 }

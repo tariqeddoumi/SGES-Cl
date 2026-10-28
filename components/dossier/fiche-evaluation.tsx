@@ -5,6 +5,7 @@ import type { Fiche } from "@/lib/serveur/fiche";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 import { PuceCategorie, PuceDecision, PuceNiveau } from "@/components/ui/puces";
+import { NoteESG } from "./note-esg";
 
 type FicheJson = Omit<Fiche, never>;
 
@@ -80,6 +81,10 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
             [t("dossier.natureProjet"), f.description.natureProjet],
             [t("dossier.projetDD"), f.description.projetDeveloppementDurable ? t("commun.oui") : t("commun.non")],
             [t("dossier.ligneFinancement"), f.description.ligneFinancement ?? "—"],
+            ...(f.description.principesEquateur ? [[t("questionnaire.principesEquateur"), t("commun.oui")] as [string, string]] : []),
+            ...(f.description.questionnaire
+              ? [[t("questionnaire.titre"), `${t(`questionnaire.niveau_${f.description.questionnaire.niveau}`)} — ${t("questionnaire.nbPosees", { posees: f.description.questionnaire.posees, total: f.description.questionnaire.total })}`] as [string, string]]
+              : []),
             [t("dossier.montantDemande"), fmt.montant(f.description.montantDemande, f.description.devise)],
             [t("dossier.montantInvestissement"), f.description.montantInvestissement ? fmt.montant(f.description.montantInvestissement, f.description.devise) : null],
           ]}
@@ -242,6 +247,12 @@ export function FicheEvaluation({ fiche }: { fiche: FicheJson }) {
             ]}
           />
           {f.climat.methodeVersion && <p className="mt-2 text-[11px] text-muted-foreground">{t("climat.methodeIndicative", { version: f.climat.methodeVersion })}</p>}
+        </Section>
+      )}
+
+      {f.esg && (
+        <Section titre={t("esg.titre")}>
+          <NoteESG esg={f.esg} />
         </Section>
       )}
 

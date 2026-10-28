@@ -4,6 +4,8 @@ import { baseAttribution, emissions, evaluerClimat, lirePonderation, lirePrixCar
 import type { Categorie } from "../domaine/constantes";
 import { evaluerDeclenchement } from "../domaine/declenchement";
 import { reponseBloquante } from "../domaine/exclusion";
+import { calculerESG, lirePonderationESG, lireSeuilsESG, pilierQuestion } from "../domaine/esg";
+import { codes, modulesRetenus, niveauQuestionnaire, questionPosee, type NiveauQuestionnaire } from "../domaine/questionnaire";
 import { calculerRisque, estRisque, lireSeuils, questionApplicable } from "../domaine/risque";
 import { motifsBlocageSoumission, type ControleSoumission } from "../domaine/workflow";
 import { libelle } from "../i18n/libelle";
@@ -14,6 +16,7 @@ import { arrondirMontant } from "../devises";
 import { versReference } from "./devises";
 import { versionReferentiel } from "./referentiel-version";
 import { chargerParametres } from "./parametres";
+import { checklistDossier } from "./pieces";
 import { ascendance, chargerArbre, peutEcrire, peutLire, seuilHerite } from "./perimetre";
 import { prisma, type Tx } from "./prisma";
 
@@ -67,8 +70,8 @@ export async function estCreditInvestissement(typeCredit: string | null | undefi
 
 // ─── Recalcul ──────────────────────────────────────────────────────────────
 
-/** Questions applicables au dossier, avec leur thématique. */
-export async function questionsApplicables(categorie: string | null, codeSecteur: string | null) {
+/** Questions de la catégorie et du secteur, avec leur thématique (sans filtre de niveau). */
+async function questionsDeCategorie(categorie: string | null, codeSecteur: string | null) {
   if (!categorie) return [];
   const questions = await prisma.question.findMany({
     where: { actif: true, bloc: { actif: true, thematique: { actif: true } } },
@@ -76,6 +79,108 @@ export async function questionsApplicables(categorie: string | null, codeSecteur
     orderBy: [{ bloc: { thematique: { ordre: "asc" } } }, { bloc: { ordre: "asc" } }, { ordre: "asc" }],
   });
   return questions.filter((q) => questionApplicable(q, categorie, codeSecteur));
+}
+
+export interface Questionnaire {
+  niveau: NiveauQuestionnaire;
+  modules: string[];
+  exigencesSFI: boolean;
+  /** Questions de la catégorie (questionnaire complet) et questions effectivement posées. */
+  total: number;
+  posees: number;
+}
+
+/**
+ * Niveau du questionnaire et modules d'activité retenus pour le dossier (paramètres
+ * QUESTIONNAIRE_NIVEAU_*, lignes de financement imposant les normes SFI, Principes de l'Équateur,
+ * décision RSE). Figés à la soumission : un changement de paramétrage ne modifie pas un dossier soumis.
+ */
+async function reglageQuestionnaire(dossierId: string, categorie: string | null) {
+  const p = await chargerParametres();
+  const d = await prisma.dossier.findUniqueOrThrow({
+    where: { id: dossierId },
+    select: {
+      statut: true, typeZone: true, natureProjet: true, ligneFinancement: true, principesEquateur: true, questionnaireComplet: true,
+      niveauQuestionnaire: true, modulesQuestionnaire: true, secteur: { select: { code: true } }, region: { select: { stressHydrique: true } },
+    },
+  });
+  const modules = await prisma.moduleQuestionnaire.findMany({ where: { actif: true } });
+  const connus = modules.map((m) => m.code);
+  const exigencesSFI = d.principesEquateur || (!!d.ligneFinancement && codes(p.LIGNES_EXIGENCES_SFI).includes(d.ligneFinancement));
+  if (d.statut !== "brouillon" && d.niveauQuestionnaire) {
+    return { niveau: d.niveauQuestionnaire as NiveauQuestionnaire, retenus: codes(d.modulesQuestionnaire), connus, exigencesSFI };
+  }
+  const niveau = niveauQuestionnaire(categorie, { parametre: categorie ? p[`QUESTIONNAIRE_NIVEAU_${categorie}`] : null, exigencesSFI, complet: d.questionnaireComplet });
+  // Effectif déclaré dans le questionnaire (question paramétrable) : inconnu tant qu'il n'est pas saisi.
+  const rep = await prisma.reponseQuestion.findFirst({ where: { dossierId, question: { code: p.QUESTION_EFFECTIF || "SIG01" } }, select: { valeur: true } });
+  const effectif = rep?.valeur != null && rep.valeur !== "" && Number.isFinite(Number(rep.valeur)) ? Number(rep.valeur) : null;
+  const retenus = modulesRetenus(modules, {
+    codeSecteur: d.secteur?.code ?? null,
+    typeZone: d.typeZone,
+    natureProjet: d.natureProjet,
+    effectif,
+    stressHydrique: d.region?.stressHydrique ?? null,
+    equateur: d.principesEquateur,
+  });
+  return { niveau, retenus, connus, exigencesSFI };
+}
+
+/** Questions posées au dossier selon sa catégorie, son secteur et le niveau de questionnaire retenu. */
+export async function questionsApplicables(dossierId: string, categorie: string | null, codeSecteur: string | null) {
+  const toutes = await questionsDeCategorie(categorie, codeSecteur);
+  const r = await reglageQuestionnaire(dossierId, categorie);
+  const questions = toutes.filter((q) => questionPosee(q, r.niveau, r.retenus, r.connus));
+  const questionnaire: Questionnaire = { niveau: r.niveau, modules: r.retenus, exigencesSFI: r.exigencesSFI, total: toutes.length, posees: questions.length };
+  return Object.assign(questions, { questionnaire });
+}
+
+/** Note ESG du dossier à partir des réponses, du climat, des pièces, du plan d'actions et des visites. */
+async function noteESG(
+  dossierId: string,
+  statut: string,
+  questions: Awaited<ReturnType<typeof questionsApplicables>>,
+  reponses: { questionId: string; valeur: string | null }[],
+  exclu: boolean,
+  p: Record<string, string>
+) {
+  const suivi = ["decide", "en_suivi", "cloture"].includes(statut);
+  const [climat, checklist, actions, visite] = await Promise.all([
+    prisma.evaluationClimat.findUnique({ where: { dossierId }, select: { scoreClimat: true, couvertureDonnees: true, qualitePCAF: true } }),
+    checklistDossier(dossierId),
+    prisma.action.findMany({ where: { dossierId }, select: { questionId: true, retenue: true, statut: true, avancement: true, dateEcheance: true } }),
+    prisma.visite.findFirst({ where: { dossierId, conformite: { not: null } }, orderBy: { date: "desc" }, select: { conformite: true } }),
+  ]);
+  const maintenant = new Date();
+  // Un risque est levé en suivi quand toutes les actions retenues qui le traitent sont réalisées.
+  const parQuestion = new Map<string, boolean>();
+  for (const a of actions) {
+    if (!a.questionId || !a.retenue || a.statut === "abandonnee") continue;
+    parQuestion.set(a.questionId, (parQuestion.get(a.questionId) ?? true) && a.statut === "realisee");
+  }
+  const valeurs = new Map(reponses.map((r) => [r.questionId, r.valeur]));
+  return calculerESG(
+    {
+      questions: questions.map((q) => ({
+        id: q.id, type: q.type, reponseRisque: q.reponseRisque, gravite: q.gravite, valeur: valeurs.get(q.id) ?? null,
+        pilier: pilierQuestion({ pilier: q.pilier, thematique: q.bloc.thematique.code }), actionRealisee: parQuestion.get(q.id) ?? false,
+      })),
+      climat: climat ? { score: climat.scoreClimat, couverture: climat.couvertureDonnees, qualitePCAF: climat.qualitePCAF } : null,
+      pieces: checklist.lignes.map((l) => ({ niveau: l.niveau, statut: l.statut, officiel: l.officiel })),
+      actions: actions.map((a) => ({
+        retenue: a.retenue, statut: a.statut, avancement: a.avancement,
+        enRetard: !!a.dateEcheance && a.dateEcheance < maintenant && a.statut !== "realisee" && a.statut !== "abandonnee",
+      })),
+      conformiteVisite: visite?.conformite ?? null,
+      exclu,
+      suivi,
+    },
+    {
+      ponderation: lirePonderationESG(p.ESG_PONDERATION),
+      seuils: lireSeuilsESG(p.ESG_SEUILS_NOTES),
+      couvertureMin: nombre(p, "ESG_COUVERTURE_MIN", 0.6),
+      partClimat: Math.max(0, Math.min(1, nombre(p, "ESG_PART_CLIMAT", 0.3))),
+    }
+  );
 }
 
 /**
@@ -130,7 +235,7 @@ export async function recalculer(dossierId: string): Promise<void> {
   const exclu = repExcl.some((r) => r.reponse);
 
   // Risques E&S
-  const questions = await questionsApplicables(categorieRetenue, d.secteur?.code ?? null);
+  const questions = await questionsApplicables(dossierId, categorieRetenue, d.secteur?.code ?? null);
   const reponses = await prisma.reponseQuestion.findMany({ where: { dossierId } });
   const valeurs = Object.fromEntries(reponses.map((r) => [r.questionId, r.valeur]));
   const risque = calculerRisque(
@@ -223,6 +328,18 @@ export async function recalculer(dossierId: string): Promise<void> {
       },
     });
   }
+  // Note ESG : actualisée à chaque recalcul (suivi compris) ; celle « à l'octroi » est figée à la soumission.
+  const esg = await noteESG(dossierId, d.statut, questions, reponses, evaluationFigee ? d.exclu : exclu, p);
+  await prisma.dossier.update({
+    where: { id: dossierId },
+    data: {
+      scoreESG: esg.score,
+      noteESG: esg.exclu ? "exclu" : esg.note,
+      detailESG: JSON.stringify(esg),
+      ...(evaluationFigee ? {} : { scoreESGOctroi: esg.score, noteESGOctroi: esg.exclu ? "exclu" : esg.note }),
+    },
+  });
+
   if (evaluationFigee) return;
 
   await prisma.dossier.update({
@@ -246,6 +363,8 @@ export async function recalculer(dossierId: string): Promise<void> {
       niveauRisque: categorieRetenue && risque.nbRepondues > 0 ? risque.niveau : null,
       nbRisquesNonMaitrises: risque.nbRisques,
       evaluationTerminee: !!categorieRetenue && questions.length > 0 && risque.complet,
+      niveauQuestionnaire: categorieRetenue ? questions.questionnaire.niveau : null,
+      modulesQuestionnaire: categorieRetenue ? questions.questionnaire.modules.join(",") : null,
       versionReferentiel: await versionReferentiel(p),
     },
   });
@@ -261,7 +380,7 @@ export async function recalculer(dossierId: string): Promise<void> {
  */
 export async function genererPlan(dossierId: string, langue = "fr"): Promise<{ ajoutees: number; retirees: number }> {
   const d = await prisma.dossier.findUniqueOrThrow({ where: { id: dossierId }, include: { secteur: true } });
-  const questions = await questionsApplicables(d.categorie, d.secteur?.code ?? null);
+  const questions = await questionsApplicables(dossierId, d.categorie, d.secteur?.code ?? null);
   const applicables = new Set(questions.map((q) => q.id));
   const reponses = await prisma.reponseQuestion.findMany({ where: { dossierId, risque: true } });
   const enRisque = reponses.filter((r) => applicables.has(r.questionId)).map((r) => r.questionId);

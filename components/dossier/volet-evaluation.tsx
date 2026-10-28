@@ -32,6 +32,7 @@ interface Question {
 
 interface Donnees {
   categorie: string | null;
+  questionnaire: { niveau: "minimum" | "standard" | "complet"; total: number; posees: number; exigencesSFI: boolean; complet: boolean };
   thematiques: { id: string; code: string; libelle: string; normes: string | null; blocs: { id: string; code: string; libelle: string; questions: Question[] }[] }[];
   reponses: { questionId: string; valeur: string | null; commentaire: string | null }[];
   commentaireEvaluation: string | null;
@@ -121,6 +122,19 @@ export function VoletEvaluation() {
     }
   };
 
+  const basculerComplet = async () => {
+    setEnCours(true);
+    setErreur("");
+    try {
+      await api(`/api/dossiers/${dossier.id}/questionnaire`, { body: { complet: !donnees.questionnaire.complet } });
+      await Promise.all([rechargerVolet(), recharger()]);
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : String(e));
+    } finally {
+      setEnCours(false);
+    }
+  };
+
   const visible = (q: Question) => {
     const v = saisie[q.id]?.valeur ?? "";
     if (filtre === "vides") return !v;
@@ -164,6 +178,22 @@ export function VoletEvaluation() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-4">
           <Bandeau ton="info">{t("evaluation.description", { categorie: donnees.categorie })}</Bandeau>
+          {(donnees.questionnaire.posees < donnees.questionnaire.total || donnees.questionnaire.complet || droits.reclasser) && (
+            <div className="no-print flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-border bg-surface px-3 py-2 text-[12.5px]">
+              <span>
+                <strong>{t("questionnaire.titre")} : {t(`questionnaire.niveau_${donnees.questionnaire.niveau}`)}</strong>
+                {" — "}
+                {t("questionnaire.nbPosees", { posees: donnees.questionnaire.posees, total: donnees.questionnaire.total })}
+                {donnees.questionnaire.complet && <> · {t("questionnaire.imposeRSE")}</>}
+                {!donnees.questionnaire.complet && donnees.questionnaire.exigencesSFI && donnees.questionnaire.niveau !== "complet" && <> · {t("questionnaire.exigencesSFI")}</>}
+              </span>
+              {droits.reclasser && (donnees.questionnaire.niveau !== "complet" || donnees.questionnaire.complet) && (
+                <Bouton variante="contour" taille="petite" className="ms-auto" disabled={enCours || modifie} title={modifie ? t("commun.modificationsNonEnregistrees") : undefined} onClick={basculerComplet}>
+                  {donnees.questionnaire.complet ? t("questionnaire.revenirParametrage") : t("questionnaire.imposerComplet")}
+                </Bouton>
+              )}
+            </div>
+          )}
           <div className="no-print flex flex-wrap items-center gap-2">
             {(["tout", "risques", "vides"] as const).map((f) => (
               <Bouton key={f} variante={filtre === f ? "secondaire" : "fantome"} taille="petite" onClick={() => setFiltre(f)}>

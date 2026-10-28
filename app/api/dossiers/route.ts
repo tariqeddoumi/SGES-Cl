@@ -32,7 +32,7 @@ export const GET = route(
         select: {
           id: true, reference: true, statut: true, categorie: true, sousCategorieFI: true, niveauRisque: true, scoreRisque: true,
           montantDemande: true, deviseCode: true, montantDemandeRef: true, dateDossier: true, updatedAt: true, decision: true,
-          evaluationObligatoire: true, exclu: true, etape: true, nbRisquesNonMaitrises: true, objet: true,
+          evaluationObligatoire: true, exclu: true, etape: true, nbRisquesNonMaitrises: true, objet: true, noteESG: true, scoreESG: true,
           client: { select: { id: true, raisonSociale: true, compteCourant: true } },
           entite: { select: { id: true, code: true, nom: true } },
           charge: { select: { id: true, prenom: true, nom: true } },

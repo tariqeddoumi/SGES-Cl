@@ -1,6 +1,6 @@
 import { route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { extraireTexte } from "@/lib/serveur/extraction";
 import { prisma } from "@/lib/serveur/prisma";
@@ -56,6 +56,7 @@ export const POST = route(
       select: { id: true, type: true, nom: true, mime: true, taille: true, createdAt: true },
     });
     await historiser(id, ctx, "piece", { commentaire: `${type} — ${doc.nom}` });
+    await recalculer(id);
     return doc;
   },
   { permission: "dossier:lire" }

@@ -13,6 +13,7 @@ import { Bandeau, Carte, Chargement, Sablier } from "@/components/ui/mise-en-pag
 import { PuceCategorie } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { useLibelles } from "@/lib/client/listes";
 
 interface Donnees {
   questions: { id: string; numero: number; code: string; libelle: string; categorie: string; actif: boolean }[];
@@ -27,6 +28,7 @@ interface Donnees {
 
 export function VoletCategorisation() {
   const { t, lib, parametres } = useApp();
+  const motifsTypes = useLibelles("motif_reclassement");
   const { dossier, droits, recharger, prefill, consommer } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/categorisation`);
@@ -102,6 +104,13 @@ export function VoletCategorisation() {
         <div className="space-y-4">
           <Bandeau ton="info">{t("categorisation.description")}</Bandeau>
           {calcul.categorie === "A" && !calcul.complet && <Bandeau ton="vigilance">{t("categorisation.provisoireA")}</Bandeau>}
+          {droits.evaluation && donnees.questions.some((q) => reponses[q.id] === undefined) && (
+            <div className="flex justify-end">
+              <Bouton variante="contour" taille="petite" onClick={() => setReponses((r) => ({ ...Object.fromEntries(donnees.questions.map((q) => [q.id, false])), ...Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined)) }))}>
+                {t("categorisation.nonAuxAutres")}
+              </Bouton>
+            </div>
+          )}
           {groupes.map((g) => (
             <Carte key={g.c} titre={t(`categorie.${g.c}`)} description={t(`categorie.desc${g.c}`)} sansMarge>
               <ol className="divide-y divide-border">
@@ -161,7 +170,7 @@ export function VoletCategorisation() {
               {reclasser && (
                 <div className="space-y-3">
                   <Selecteur id="retenue" libelle={t("categorisation.retenue")} valeur={categorieRetenue} onChange={setCategorieRetenue} options={CATEGORIES.map((c) => ({ valeur: c, libelle: t(`categorie.${c}`) }))} desactive={!droits.reclasser} />
-                  <ZoneTexte id="justif" libelle={t("categorisation.justification")} valeur={justification} onChange={setJustification} aide={t("categorisation.justificationAide")} obligatoire desactive={!droits.reclasser} />
+                  <ZoneTexte id="justif" modeles={motifsTypes} libelle={t("categorisation.justification")} valeur={justification} onChange={setJustification} aide={t("categorisation.justificationAide")} obligatoire desactive={!droits.reclasser} />
                 </div>
               )}
             </Carte>

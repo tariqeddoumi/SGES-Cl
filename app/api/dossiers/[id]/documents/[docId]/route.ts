@@ -1,5 +1,5 @@
 import { route } from "@/lib/serveur/api";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { evaluationModifiable } from "@/lib/domaine/workflow";
 import { ErreurMetier, introuvable } from "@/lib/serveur/contexte";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
@@ -33,6 +33,7 @@ export const DELETE = route(
     if (!doc || doc.dossierId !== id) throw introuvable("Pièce introuvable.");
     await prisma.document.delete({ where: { id: docId } });
     await historiser(id, ctx, "piece", { commentaire: `− ${doc.nom}` });
+    await recalculer(id);
     return { ok: true };
   },
   { permission: "dossier:lire" }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/components/providers/application";
 
@@ -47,6 +48,7 @@ export function Champ({
   step,
   className,
   dir,
+  suggestions,
 }: {
   id: string;
   libelle: React.ReactNode;
@@ -65,6 +67,8 @@ export function Champ({
   step?: number | string;
   className?: string;
   dir?: "ltr" | "rtl" | "auto";
+  /** Valeurs proposées à la saisie (liste paramétrable) ; la saisie libre reste possible. */
+  suggestions?: string[];
 }) {
   return (
     <div className={className}>
@@ -81,10 +85,17 @@ export function Champ({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={desactive}
+          list={suggestions?.length ? `${id}-suggestions` : undefined}
+          autoComplete={suggestions?.length ? "off" : undefined}
           aria-invalid={erreur ? true : undefined}
           className={cn(CLASSE_CHAMP, suffixe && "pe-14", type === "number" && "tabulaire", erreur && "border-destructive")}
         />
         {suffixe && <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">{suffixe}</span>}
+        {!!suggestions?.length && (
+          <datalist id={`${id}-suggestions`}>
+            {suggestions.map((x) => <option key={x} value={x} />)}
+          </datalist>
+        )}
       </div>
       <Aide texte={aide} erreur={erreur} />
     </div>
@@ -103,6 +114,7 @@ export function ZoneTexte({
   obligatoire,
   desactive,
   className,
+  modeles,
 }: {
   id: string;
   libelle: React.ReactNode;
@@ -115,10 +127,32 @@ export function ZoneTexte({
   obligatoire?: boolean;
   desactive?: boolean;
   className?: string;
+  /** Éléments types (liste paramétrable) ajoutés au texte en une sélection. */
+  modeles?: string[];
 }) {
+  const { t } = useApp();
+  const ajouter = (x: string) => {
+    if (!x) return;
+    const v = (valeur ?? "").trimEnd();
+    if (v.split("\n").some((l) => l.replace(/^[-•]\s*/, "") === x)) return;
+    onChange(v ? `${v}\n- ${x}` : `- ${x}`);
+  };
   return (
     <div className={className}>
-      <Etiquette id={id} libelle={libelle} obligatoire={obligatoire} />
+      <div className="flex flex-wrap items-end justify-between gap-x-3">
+        <Etiquette id={id} libelle={libelle} obligatoire={obligatoire} />
+        {!!modeles?.length && !desactive && (
+          <select
+            aria-label={t("commun.ajouterElementType")}
+            value=""
+            onChange={(e) => ajouter(e.target.value)}
+            className="mb-1 max-w-full rounded-md border border-border bg-background px-2 py-1 text-[12px] text-muted-foreground sm:max-w-[60%]"
+          >
+            <option value="">+ {t("commun.ajouterElementType")}</option>
+            {modeles.map((x) => <option key={x} value={x}>{x}</option>)}
+          </select>
+        )}
+      </div>
       <textarea
         id={id}
         value={valeur ?? ""}
@@ -191,6 +225,67 @@ export function Selecteur({
         ))}
       </select>
       <Aide texte={aideOption ?? aide} erreur={erreur} />
+    </div>
+  );
+}
+
+/** Choix multiple (valeur : codes séparés par des virgules), avec recherche au-delà de 12 options. */
+export function ChoixMultiple({
+  id,
+  libelle,
+  valeur,
+  onChange,
+  options,
+  aide,
+  desactive,
+  className,
+}: {
+  id: string;
+  libelle: React.ReactNode;
+  valeur: string | null | undefined;
+  onChange: (v: string) => void;
+  options: OptionChoix[];
+  aide?: React.ReactNode;
+  desactive?: boolean;
+  className?: string;
+}) {
+  const { t } = useApp();
+  const [q, setQ] = useState("");
+  const choisis = (valeur ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  const basculer = (v: string) => onChange((choisis.includes(v) ? choisis.filter((x) => x !== v) : [...choisis, v]).join(","));
+  const filtre = q.trim().toLowerCase();
+  const visibles = options.filter((o) => !filtre || choisis.includes(o.valeur) || `${o.valeur} ${o.libelle}`.toLowerCase().includes(filtre));
+  return (
+    <div className={className}>
+      <div className="flex items-end justify-between gap-2">
+        <span id={id} className="mb-1 text-[12.5px] font-medium text-foreground">{libelle}</span>
+        <span className="mb-1 text-[11.5px] text-muted-foreground">{choisis.length ? t("commun.nbSelectionnes", { n: choisis.length }) : t("commun.aucun")}</span>
+      </div>
+      {options.length > 12 && (
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("commun.rechercher")} aria-label={t("commun.rechercher")} className={cn(CLASSE_CHAMP, "mb-2 py-1.5 text-[12.5px]")} />
+      )}
+      <div role="group" aria-labelledby={id} className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
+        {visibles.map((o) => {
+          const actif = choisis.includes(o.valeur);
+          return (
+            <button
+              key={o.valeur}
+              type="button"
+              aria-pressed={actif}
+              disabled={desactive}
+              title={o.aide ?? o.valeur}
+              onClick={() => basculer(o.valeur)}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-[12px] transition-colors disabled:cursor-not-allowed",
+                actif ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-muted-foreground hover:bg-accent"
+              )}
+            >
+              {o.libelle}
+            </button>
+          );
+        })}
+      </div>
+      <Aide texte={aide} />
     </div>
   );
 }

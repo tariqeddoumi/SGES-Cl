@@ -103,6 +103,18 @@ export const LISTES = [
   "motif_rejet",
   "type_document",
   "segment",
+  "ligne_financement",
+  "ville",
+  "pays",
+  "fonction_client",
+  "fonction_banque",
+  "source_emissions",
+  "mesure_adaptation",
+  "motif_exclusion",
+  "motif_reclassement",
+  "reserve_comite",
+  "constat_visite",
+  "recommandation_visite",
 ] as const;
 export type Liste = (typeof LISTES)[number];
 

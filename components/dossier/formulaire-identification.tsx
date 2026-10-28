@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/components/providers/application";
 import { Champ, Interrupteur, Selecteur, ZoneTexte } from "@/components/ui/champs";
 import type { Referentiels } from "@/lib/client/referentiels";
+import { useListe } from "@/lib/client/listes";
+import { lireLibelle } from "@/lib/i18n/libelle";
+import { lireJson } from "@/lib/utils";
 
 export interface ValeursIdentification {
   typeCredit: string;
@@ -12,6 +15,7 @@ export interface ValeursIdentification {
   descriptionProcessus: string;
   projetDeveloppementDurable: boolean;
   ligneFinancement: string;
+  principesEquateur: boolean;
   secteurId: string;
   deviseCode: string;
   montantDemande: string;
@@ -25,6 +29,15 @@ export interface ValeursIdentification {
   longitude: string;
 }
 
+/** Région d'une ville de la liste « ville » (libellé dans n'importe quelle langue), sinon undefined. */
+export function regionDeVille(referentiels: Referentiels, ville: string | null | undefined): string | undefined {
+  const v = (ville ?? "").trim().toLowerCase();
+  if (!v) return undefined;
+  const x = referentiels.listes.ville?.find((e) => Object.values(lireLibelle(e.libelle)).some((l) => l?.toLowerCase() === v));
+  const code = x?.extra ? lireJson<{ region?: string }>(x.extra, {}).region : undefined;
+  return code ? referentiels.regions.find((r) => r.code === code)?.id : undefined;
+}
+
 export function valeursInitiales(d?: Partial<Record<keyof ValeursIdentification, unknown>> | null, devise = "MAD"): ValeursIdentification {
   const s = (v: unknown) => (v === null || v === undefined ? "" : String(v));
   return {
@@ -34,6 +47,7 @@ export function valeursInitiales(d?: Partial<Record<keyof ValeursIdentification,
     descriptionProcessus: s(d?.descriptionProcessus),
     projetDeveloppementDurable: !!d?.projetDeveloppementDurable,
     ligneFinancement: s(d?.ligneFinancement),
+    principesEquateur: !!d?.principesEquateur,
     secteurId: s(d?.secteurId),
     deviseCode: s(d?.deviseCode) || devise,
     montantDemande: s(d?.montantDemande),
@@ -59,6 +73,7 @@ export function versApi(v: ValeursIdentification) {
     descriptionProcessus: t(v.descriptionProcessus),
     projetDeveloppementDurable: v.projetDeveloppementDurable,
     ligneFinancement: t(v.ligneFinancement),
+    principesEquateur: v.principesEquateur,
     secteurId: t(v.secteurId),
     deviseCode: v.deviseCode,
     montantDemande: n(v.montantDemande) ?? undefined,
@@ -87,6 +102,7 @@ export function FormulaireIdentification({
   erreurs?: Record<string, string>;
 }) {
   const { t, lib, fmt } = useApp();
+  const villes = useListe("ville");
   const maj = <K extends keyof ValeursIdentification>(k: K, v: ValeursIdentification[K]) => onChange({ ...valeurs, [k]: v });
   const options = (liste: string) => (referentiels.listes[liste] ?? []).map((v) => ({ valeur: v.code, libelle: lib(v.libelle) }));
   const secteurs = useMemo(
@@ -95,6 +111,17 @@ export function FormulaireIdentification({
   );
   const regions = referentiels.regions.map((r) => ({ valeur: r.id, libelle: lib(r.libelle) }));
   const devises = referentiels.devises.map((d) => ({ valeur: d.code, libelle: `${d.code} — ${lib(d.libelle)}` }));
+  // Options de financement repliées tant qu'aucune n'est renseignée.
+  const avance = !!valeurs.ligneFinancement || valeurs.projetDeveloppementDurable || valeurs.principesEquateur;
+  const [ouvert, setOuvert] = useState(false);
+  useEffect(() => {
+    if (avance) setOuvert(true);
+  }, [avance]);
+  // Une ville de la liste renseigne sa région (modifiable).
+  const choisirLocalite = (v: string) => {
+    const regionId = regionDeVille(referentiels, v);
+    onChange({ ...valeurs, localite: v, ...(regionId ? { regionId } : {}) });
+  };
   const lisible = (x: string) => {
     const n = Number(x.replace(/\s/g, "").replace(",", "."));
     return x.trim() && Number.isFinite(n) ? `= ${fmt.compact(n, valeurs.deviseCode)}` : undefined;
@@ -109,10 +136,17 @@ export function FormulaireIdentification({
         <Selecteur id="secteurId" libelle={t("dossier.secteur")} valeur={valeurs.secteurId} onChange={(v) => maj("secteurId", v)} options={secteurs} obligatoire erreur={erreurs.secteurId} desactive={desactive} className="md:col-span-2" />
         <ZoneTexte id="objet" libelle={t("dossier.objet")} valeur={valeurs.objet} onChange={(v) => maj("objet", v)} lignes={2} desactive={desactive} className="md:col-span-2" />
         <ZoneTexte id="processus" libelle={t("dossier.descriptionProcessus")} valeur={valeurs.descriptionProcessus} onChange={(v) => maj("descriptionProcessus", v)} lignes={3} desactive={desactive} className="md:col-span-2" />
-        <Selecteur id="ligneFinancement" libelle={t("dossier.ligneFinancement")} aide={t("dossier.ligneFinancementAide")} valeur={valeurs.ligneFinancement} onChange={(v) => maj("ligneFinancement", v)} options={options("ligne_financement")} desactive={desactive} className="md:col-span-2" />
-        <div className="md:col-span-2">
-          <Interrupteur id="dd" libelle={t("dossier.projetDD")} valeur={valeurs.projetDeveloppementDurable} onChange={(v) => maj("projetDeveloppementDurable", v)} desactive={desactive} />
-        </div>
+        <details className="group rounded-md border border-border md:col-span-2" open={ouvert} onToggle={(e) => setOuvert(e.currentTarget.open)}>
+          <summary className="cursor-pointer select-none px-3 py-2 text-[12.5px] font-medium text-foreground marker:text-muted-foreground">
+            {t("dossier.optionsFinancement")}
+            {!ouvert && <span className="ms-2 font-normal text-muted-foreground">{t("dossier.optionsFinancementAide")}</span>}
+          </summary>
+          <div className="grid gap-4 border-t border-border p-3">
+            <Selecteur id="ligneFinancement" libelle={t("dossier.ligneFinancement")} aide={t("dossier.ligneFinancementAide")} valeur={valeurs.ligneFinancement} onChange={(v) => maj("ligneFinancement", v)} options={options("ligne_financement")} desactive={desactive} />
+            <Interrupteur id="dd" libelle={t("dossier.projetDD")} valeur={valeurs.projetDeveloppementDurable} onChange={(v) => maj("projetDeveloppementDurable", v)} desactive={desactive} />
+            <Interrupteur id="ep" libelle={t("questionnaire.principesEquateur")} aide={t("questionnaire.principesEquateurAide")} valeur={valeurs.principesEquateur} onChange={(v) => maj("principesEquateur", v)} desactive={desactive} />
+          </div>
+        </details>
       </fieldset>
 
       <fieldset className="grid gap-4 md:grid-cols-4" disabled={desactive}>
@@ -126,7 +160,7 @@ export function FormulaireIdentification({
       <fieldset className="grid gap-4 md:grid-cols-2" disabled={desactive}>
         <legend className="mb-2 text-[13px] font-semibold text-foreground md:col-span-2">{t("dossier.lieu")}</legend>
         <ZoneTexte id="adresse" libelle={t("dossier.adresseSite")} valeur={valeurs.adresseSite} onChange={(v) => maj("adresseSite", v)} lignes={2} desactive={desactive} className="md:col-span-2" />
-        <Champ id="localite" libelle={t("dossier.localite")} valeur={valeurs.localite} onChange={(v) => maj("localite", v)} erreur={erreurs.localite} desactive={desactive} />
+        <Champ id="localite" suggestions={villes.map((v) => v.libelle)} libelle={t("dossier.localite")} aide={t("dossier.localiteAide")} valeur={valeurs.localite} onChange={choisirLocalite} erreur={erreurs.localite} desactive={desactive} />
         <Selecteur id="region" libelle={t("dossier.region")} valeur={valeurs.regionId} onChange={(v) => maj("regionId", v)} options={regions} obligatoire erreur={erreurs.regionId} desactive={desactive} />
         <Selecteur id="typeZone" libelle={t("dossier.typeZone")} valeur={valeurs.typeZone} onChange={(v) => maj("typeZone", v)} options={options("type_zone")} desactive={desactive} />
         <div className="grid grid-cols-2 gap-3">

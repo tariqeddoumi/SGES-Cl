@@ -1,3 +1,4 @@
+import type { ResultatESG } from "../domaine/esg";
 import { genererClauses } from "../domaine/clauses";
 import type { ScenariosClimat } from "../domaine/climat";
 import { localeIntl } from "../devises";
@@ -36,7 +37,7 @@ export async function construireFiche(dossierId: string, langue = "fr") {
   };
 
   // Problématiques par thématique : maîtrisée (Oui), non maîtrisée (Non), non concernée.
-  const questions = await questionsApplicables(d.categorie, d.secteur?.code ?? null);
+  const questions = await questionsApplicables(d.id, d.categorie, d.secteur?.code ?? null);
   const reponses = await prisma.reponseQuestion.findMany({ where: { dossierId } });
   const parQuestion = new Map(reponses.map((r) => [r.questionId, r]));
   const themes = new Map<string, { code: string; libelle: string; normes: string | null; concernee: boolean; maitrisee: boolean; risques: { code: string; question: string; reponse: string | null; commentaire: string | null }[] }>();
@@ -168,6 +169,8 @@ export async function construireFiche(dossierId: string, langue = "fr") {
       typeCredit: await valeurListe("type_credit", d.typeCredit),
       projetDeveloppementDurable: d.projetDeveloppementDurable,
       ligneFinancement,
+      principesEquateur: d.principesEquateur,
+      questionnaire: questions.questionnaire,
       montantDemande: d.montantDemande,
       montantInvestissement: d.montantInvestissement,
       devise: d.deviseCode,
@@ -208,6 +211,7 @@ export async function construireFiche(dossierId: string, langue = "fr") {
       actions,
     },
     climat,
+    esg: d.detailESG ? { ...lireJson<ResultatESG | null>(d.detailESG, null)!, octroi: { score: d.scoreESGOctroi, note: d.noteESGOctroi } } : null,
     clauses,
     validation: {
       soumisLe: d.soumisLe,

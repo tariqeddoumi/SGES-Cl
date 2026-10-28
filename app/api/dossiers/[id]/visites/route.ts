@@ -1,5 +1,5 @@
 import { corps, route } from "@/lib/serveur/api";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { prisma } from "@/lib/serveur/prisma";
 import { SchemaVisite } from "@/lib/serveur/schemas";
@@ -21,6 +21,7 @@ export const POST = route(
       data: { ...s, dossierId: id, date: new Date(s.date), prochaineVisite: s.prochaineVisite ? new Date(s.prochaineVisite) : null, visiteurId: ctx.utilisateur.id },
     });
     await historiser(id, ctx, "visite", { commentaire: `${s.type} — ${s.date.slice(0, 10)}` });
+    await recalculer(id);
     return v;
   },
   { permission: "visite:gerer" }

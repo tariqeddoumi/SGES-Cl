@@ -8,7 +8,7 @@ import { libelle } from "@/lib/i18n/libelle";
 import { booleen } from "@/lib/parametres";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
-import { dossierAutorise, questionsApplicables } from "@/lib/serveur/dossiers";
+import { dossierAutorise, questionsApplicables, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { exigerIA } from "@/lib/serveur/ia";
 import { journaliser } from "@/lib/serveur/journal";
@@ -95,7 +95,7 @@ export const POST = route(
       prisma.listeValeur.findMany({ where: { liste: "type_zone", actif: true }, select: { code: true, libelle: true } }),
       d.secteurId ? prisma.secteur.findUnique({ where: { id: d.secteurId } }) : null,
     ]);
-    const questions = (await questionsApplicables(d.categorie, secteur?.code ?? null)).filter((q) => q.type !== "texte");
+    const questions = (await questionsApplicables(d.id, d.categorie, secteur?.code ?? null)).filter((q) => q.type !== "texte");
     const listes =
       `<pieces_types>\n${defs}\n</pieces_types>\n` +
       `<regions>\n${regions.map((r) => `${r.code} : ${libelle(r.libelle, "fr")}`).join("\n")}\n</regions>\n` +
@@ -159,6 +159,7 @@ export const POST = route(
       identification.push({ champ: x.champ, valeur: v, citation: x.citation });
     }
 
+    await recalculer(id);
     await journaliser(ctx, "analyse_ia", "dossier", id, { modele: reponse.model, pieces: exploitables.length, masquage: masquer, masques, propositions: { identification: identification.length, exclusion: exclusion.length, categorisation: categorisation.length, evaluation: evaluation.length } });
     return {
       synthese: sortie.synthese,

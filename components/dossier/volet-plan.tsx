@@ -15,6 +15,7 @@ import { Bandeau, Carte, Chargement, Indicateur, Progression, Sablier, Vide } fr
 import { Puce } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { useLibelles } from "@/lib/client/listes";
 
 export interface ActionPlan {
   id: string;
@@ -44,6 +45,7 @@ export function enRetard(a: Pick<ActionPlan, "dateEcheance" | "statut" | "retenu
 
 function LigneAction({ action, questions, onMaj }: { action: ActionPlan; questions: Map<string, { code: string; libelle: string }>; onMaj: () => Promise<void> }) {
   const { t, lib, fmt } = useApp();
+  const fonctions = useLibelles("fonction_client");
   const { dossier, droits } = useDossier();
   const toast = useToast();
   const negociation = dossier.statut === "brouillon";
@@ -167,7 +169,7 @@ function LigneAction({ action, questions, onMaj }: { action: ActionPlan; questio
           {negociation && v.retenue === false && (
             <ZoneTexte id={`res-${action.id}`} className="md:col-span-4" libelle={t("plan.reserveClient")} valeur={v.reserveClient} onChange={(x) => setV({ ...v, reserveClient: x })} lignes={2} desactive={!editable} />
           )}
-          <Champ id={`resp-${action.id}`} libelle={t("plan.responsable")} valeur={v.responsable} onChange={(x) => setV({ ...v, responsable: x })} desactive={!editable} />
+          <Champ id={`resp-${action.id}`} suggestions={fonctions} libelle={t("plan.responsable")} valeur={v.responsable} onChange={(x) => setV({ ...v, responsable: x })} desactive={!editable} />
           <Champ id={`deb-${action.id}`} type="date" libelle={t("plan.dateDebut")} valeur={v.dateDebut} onChange={(x) => setV({ ...v, dateDebut: x })} desactive={!editable} />
           <Champ id={`ech-${action.id}`} type="date" libelle={t("plan.dateEcheance")} valeur={v.dateEcheance} onChange={(x) => setV({ ...v, dateEcheance: x })} desactive={!editable} />
           <Champ id={`bud-${action.id}`} type="number" min={0} libelle={t("plan.budget")} valeur={v.budget} onChange={(x) => setV({ ...v, budget: x })} suffixe={action.deviseCode ?? dossier.deviseCode} desactive={!editable} />
@@ -212,6 +214,7 @@ function LigneAction({ action, questions, onMaj }: { action: ActionPlan; questio
 
 export function VoletPlan() {
   const { t, fmt } = useApp();
+  const fonctions = useLibelles("fonction_client");
   const { dossier, droits, recharger } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<{ actions: ActionPlan[]; questions: { id: string; code: string; libelle: string }[] }>(`/api/dossiers/${dossier.id}/actions`);
@@ -337,7 +340,7 @@ export function VoletPlan() {
           <div className="grid gap-3 md:grid-cols-3">
             <Selecteur id="hz" libelle={t("plan.horizon")} valeur={nouvelle.horizon} onChange={(v) => setNouvelle({ ...nouvelle, horizon: v })} options={HORIZONS.map((h) => ({ valeur: h, libelle: t(`horizon.${h}`) }))} sansVide />
             <Champ id="ech" type="date" libelle={t("plan.dateEcheance")} valeur={nouvelle.dateEcheance} onChange={(v) => setNouvelle({ ...nouvelle, dateEcheance: v })} />
-            <Champ id="resp" libelle={t("plan.responsable")} valeur={nouvelle.responsable} onChange={(v) => setNouvelle({ ...nouvelle, responsable: v })} />
+            <Champ id="resp" suggestions={fonctions} libelle={t("plan.responsable")} valeur={nouvelle.responsable} onChange={(v) => setNouvelle({ ...nouvelle, responsable: v })} />
           </div>
         </div>
       </Dialogue>

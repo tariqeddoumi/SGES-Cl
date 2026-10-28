@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HORIZONS, STATUTS_ACTION } from "@/lib/domaine/constantes";
 import { corps, route } from "@/lib/serveur/api";
 import { ErreurMetier, introuvable } from "@/lib/serveur/contexte";
-import { dossierAutorise, historiser } from "@/lib/serveur/dossiers";
+import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { prisma } from "@/lib/serveur/prisma";
 
@@ -77,6 +77,7 @@ export const PATCH = route(
         data: { actionId, avancement: maj.avancement, statut: maj.statut, commentaire: s.commentaireSuivi ?? null, auteurId: ctx.utilisateur.id },
       });
     }
+    await recalculer(id);
     return maj;
   },
   { permission: "dossier:lire" }
@@ -90,6 +91,7 @@ export const DELETE = route(
     if (d.statut !== "brouillon") throw new ErreurMetier("Le plan d'actions est figé : passez l'action au statut « abandonnée » (la suppression n'est possible qu'en cours d'évaluation).", 409, "verrouille");
     await prisma.action.delete({ where: { id: actionId } });
     await historiser(id, ctx, "plan", { commentaire: `− ${a.libelle.slice(0, 120)}` });
+    await recalculer(id);
     return { ok: true };
   },
   { permission: "dossier:lire" }

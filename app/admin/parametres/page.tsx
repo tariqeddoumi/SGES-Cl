@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { api, ErreurApi, useDonnees } from "@/lib/client/api";
 import type { DefParametre } from "@/lib/parametres";
+import { useReferentiels } from "@/lib/client/referentiels";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
 import { Bouton } from "@/components/ui/bouton";
-import { Champ, Interrupteur, Selecteur } from "@/components/ui/champs";
+import { ChoixMultiple, Champ, Interrupteur, Selecteur } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, EnTete, Sablier } from "@/components/ui/mise-en-page";
 
 const GROUPES = ["habillage", "regles", "evaluation", "climat", "securite", "integration"] as const;
@@ -32,6 +33,14 @@ const LIBELLES: Record<string, { fr: string; en: string; ar: string }> = {
   DELAI_VISITE_MOIS: { fr: "Fréquence des visites de suivi (mois)", en: "Follow-up visit frequency (months)", ar: "وتيرة زيارات التتبع (أشهر)" },
   SEUILS_NIVEAU_RISQUE: { fr: "Seuils des niveaux de risque (modéré, élevé, critique)", en: "Risk level thresholds (moderate, high, critical)", ar: "عتبات مستويات المخاطر" },
   RELEVER_NIVEAU_CATEGORIE_A: { fr: "Relever le niveau d'un cran en catégorie A", en: "Raise level one notch for category A", ar: "رفع المستوى درجة للفئة A" },
+  QUESTIONNAIRE_NIVEAU_B: { fr: "Questionnaire des projets de catégorie B", en: "Questionnaire for category B projects", ar: "استبيان مشاريع الفئة B" },
+  QUESTIONNAIRE_NIVEAU_C: { fr: "Questionnaire des projets de catégorie C", en: "Questionnaire for category C projects", ar: "استبيان مشاريع الفئة C" },
+  LIGNES_EXIGENCES_SFI: { fr: "Lignes de financement imposant les normes SFI (questionnaire au moins standard)", en: "Credit lines requiring IFC standards (at least standard questionnaire)", ar: "خطوط التمويل التي تفرض معايير مؤسسة التمويل الدولية" },
+  ESG_PONDERATION: { fr: "Note ESG : pondération des piliers E, S, G", en: "ESG rating: weighting of E, S, G pillars", ar: "التنقيط البيئي والاجتماعي والحوكمة: ترجيح الركائز" },
+  ESG_SEUILS_NOTES: { fr: "Note ESG : seuils des notes A, B, C, D (sur 100)", en: "ESG rating: thresholds for A, B, C, D (out of 100)", ar: "التنقيط: عتبات A وB وC وD (من 100)" },
+  ESG_COUVERTURE_MIN: { fr: "Note ESG : part minimale de réponses (sinon note provisoire)", en: "ESG rating: minimum share of answers (else provisional)", ar: "التنقيط: الحد الأدنى لنسبة الأجوبة" },
+  ESG_PART_CLIMAT: { fr: "Note ESG : part du climat dans le pilier E (0 à 1)", en: "ESG rating: climate share of the E pillar (0 to 1)", ar: "التنقيط: حصة المناخ في الركيزة البيئية" },
+  QUESTION_EFFECTIF: { fr: "Code de la question donnant l'effectif", en: "Code of the headcount question", ar: "رمز سؤال عدد المستخدمين" },
   COMMENTAIRE_EVALUATION_OBLIGATOIRE: { fr: "Commentaire d'évaluation obligatoire", en: "Assessment comment mandatory", ar: "تعليق التقييم إلزامي" },
   VOLET_CLIMAT_ACTIF: { fr: "Volet climat activé", en: "Climate section enabled", ar: "تفعيل الشق المناخي" },
   VOLET_CLIMAT_OBLIGATOIRE: { fr: "Volet climat obligatoire avant soumission", en: "Climate section mandatory before submission", ar: "الشق المناخي إلزامي قبل الإرسال" },
@@ -53,7 +62,8 @@ const LIBELLES: Record<string, { fr: string; en: string; ar: string }> = {
 };
 
 export default function PageParametres() {
-  const { t, langue, devises, langues } = useApp();
+  const { t, lib, langue, devises, langues } = useApp();
+  const ref = useReferentiels();
   const toast = useToast();
   const { donnees, recharger } = useDonnees<{ catalogue: DefParametre[]; valeurs: Record<string, string> }>("/api/admin/parametres");
   const [v, setV] = useState<Record<string, string>>({});
@@ -84,7 +94,8 @@ export default function PageParametres() {
     if (d.type === "booleen") return <Interrupteur id={d.cle} libelle={nom(d.cle)} aide={d.cle} valeur={val === "true"} onChange={(b) => maj(String(b))} />;
     if (d.cle === "DEVISE_REFERENCE") return <Selecteur id={d.cle} libelle={nom(d.cle)} valeur={val} onChange={maj} options={devises.map((x) => ({ valeur: x.code, libelle: x.code }))} sansVide />;
     if (d.cle === "LANGUE_DEFAUT") return <Selecteur id={d.cle} libelle={nom(d.cle)} valeur={val} onChange={maj} options={langues.map((x) => ({ valeur: x.code, libelle: x.nomNatif }))} sansVide />;
-    if (d.type === "choix") return <Selecteur id={d.cle} libelle={nom(d.cle)} valeur={val} onChange={maj} options={(d.choix ?? []).map((x) => ({ valeur: x, libelle: x }))} sansVide />;
+    if (d.cle === "LIGNES_EXIGENCES_SFI") return <ChoixMultiple id={d.cle} libelle={nom(d.cle)} aide={d.cle} valeur={val} onChange={maj} options={(ref?.listes.ligne_financement ?? []).map((x) => ({ valeur: x.code, libelle: lib(x.libelle).split(" — ")[0] }))} />;
+    if (d.type === "choix") return <Selecteur id={d.cle} libelle={nom(d.cle)} aide={d.cle.startsWith("QUESTIONNAIRE_NIVEAU") ? t("questionnaire.niveauAide") : undefined} valeur={val} onChange={maj} options={(d.choix ?? []).map((x) => ({ valeur: x, libelle: d.cle.startsWith("QUESTIONNAIRE_NIVEAU") ? t(`questionnaire.niveau_${x}`) : x }))} sansVide />;
     if (d.type === "couleur")
       return (
         <div className="flex items-end gap-2">

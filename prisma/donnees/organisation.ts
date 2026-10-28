@@ -2,6 +2,7 @@
  * Données de démarrage : langues, devises, organisation, listes de valeurs.
  * Tout est modifiable ensuite depuis l'écran Paramétrage.
  */
+import { CATALOGUES } from "./catalogues";
 
 export const LANGUES = [
   { code: "fr", nom: "Français", nomNatif: "Français", rtl: false, ordre: 1 },
@@ -141,4 +142,5 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
     { code: "GE", libelle: { fr: "Grande entreprise", en: "Large corporate", ar: "مقاولة كبرى" } },
     { code: "IF", libelle: { fr: "Institution financière", en: "Financial institution", ar: "مؤسسة مالية" } },
   ],
+  ...CATALOGUES,
 };

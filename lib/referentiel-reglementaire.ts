@@ -88,6 +88,14 @@ export const REGLES: { titre: L; texte: L }[] = [
     },
   },
   {
+    titre: { fr: "Note ESG", en: "ESG rating", ar: "التنقيط البيئي والاجتماعي والحوكمة" },
+    texte: {
+      fr: "Qualité de la gestion ESG du client, de 0 à 100 et de A à E (seuils 80 / 65 / 50 / 35 par défaut). Environnement : questions environnementales maîtrisées, pondérées par la gravité, et 100 − score climat (30 %). Social : santé-sécurité, ressources humaines, communautés. Gouvernance : système de gestion et conformité (50 %), pièces (20 %), engagement sur le plan d'actions (20 %), transparence des données climat (10 %). Note = 40 % E + 30 % S + 30 % G (paramétrable). Un risque critique non maîtrisé plafonne à D ; en suivi, une action réalisée lève le risque traité et une visite non conforme plafonne à C. Projet exclu : non noté. Note figée à la soumission, puis actualisée en suivi.",
+      en: "Quality of the client's ESG management, from 0 to 100 and A to E (thresholds 80 / 65 / 50 / 35 by default). Environment: managed environmental questions, weighted by severity, and 100 − climate score (30%). Social: health and safety, human resources, communities. Governance: management system and compliance (50%), documents (20%), action plan commitment (20%), climate data transparency (10%). Rating = 40% E + 30% S + 30% G (configurable). An unmanaged critical risk caps the rating at D; during monitoring, a completed action removes the risk it addresses and a non-compliant visit caps at C. Excluded project: not rated. Frozen at submission, then updated during monitoring.",
+      ar: "جودة تدبير الزبون للقضايا البيئية والاجتماعية والحوكمة، من 0 إلى 100 ومن A إلى E. البيئة: الأسئلة البيئية المتحكم فيها مرجحة بالخطورة و100 ناقص النقطة المناخية (30٪). الاجتماعي: الصحة والسلامة والموارد البشرية والساكنة. الحوكمة: نظام التدبير والمطابقة (50٪)، الوثائق (20٪)، الالتزام بخطة العمل (20٪)، شفافية المعطيات المناخية (10٪). التنقيط = 40٪ بيئة + 30٪ اجتماعي + 30٪ حوكمة (قابل للإعداد). خطر حرج غير متحكم فيه يحدد التنقيط في D؛ أثناء التتبع، إجراء منجز يرفع الخطر المعالج وزيارة غير مطابقة تحدد التنقيط في C. المشروع المقصى لا ينقط.",
+    },
+  },
+  {
     titre: { fr: "Circuit et séparation des fonctions", en: "Workflow and segregation of duties", ar: "المسار وفصل المهام" },
     texte: {
       fr: "Évaluation par le chargé, validation et verrouillage par le directeur (différent du chargé), décision du comité reportée, suivi du plan d'actions et visites, clôture. Chaque étape est historisée et journalisée.",

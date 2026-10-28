@@ -9,6 +9,7 @@ export const SchemaIdentification = z.object({
   descriptionProcessus: z.string().max(8000).nullable().optional(),
   projetDeveloppementDurable: z.boolean().optional(),
   ligneFinancement: z.string().max(40).nullable().optional(),
+  principesEquateur: z.boolean().optional(),
   secteurId: z.string().max(40).nullable().optional(),
   deviseCode: z.string().length(3).optional(),
   montantDemande: z.number().positive().max(1e15).optional(),

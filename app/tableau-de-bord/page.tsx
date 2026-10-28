@@ -1,5 +1,6 @@
 "use client";
 
+import { NOTES_ESG } from "@/lib/domaine/esg";
 import Link from "next/link";
 import { ArrowRight, CalendarClock, ClipboardCheck, FilePen, Gavel, Hourglass, ListTodo } from "lucide-react";
 import { useDonnees } from "@/lib/client/api";
@@ -20,6 +21,8 @@ interface Donnees {
     exclusions: number;
     parCategorie: Record<string, number>;
     parNiveau: Record<string, number>;
+    parNoteESG: Record<string, number>;
+    scoreESGMoyen: number | null;
     decisions: Record<string, number>;
     tauxAccord: number | null;
     parMois: Record<string, number>;
@@ -27,6 +30,8 @@ interface Donnees {
   climat: { emissionsFinancees: number; eleve: number; evalues: number };
   recents: { id: string; reference: string; statut: string; categorie: string | null; niveauRisque: string | null; scoreRisque: number | null; client: string; montantDemande: number; deviseCode: string; decision: string | null }[];
 }
+
+const COULEUR_ESG: Record<string, string> = { A: "bg-success", B: "bg-success/70", C: "bg-chart-1", D: "bg-warning", E: "bg-destructive" };
 
 export default function PageTableauDeBord() {
   const { t, fmt, session, langue, parametres } = useApp();
@@ -87,12 +92,18 @@ export default function PageTableauDeBord() {
         </div>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Carte titre={t("tableau.repartitionCategories")}>
           <Barres barres={CATEGORIES.map((c) => ({ cle: c, libelle: t(`categorie.${c}`), valeur: pf.parCategorie[c] ?? 0, couleur: COULEUR_CATEGORIE[c] }))} />
         </Carte>
         <Carte titre={t("tableau.repartitionNiveaux")}>
           <Barres barres={NIVEAUX_RISQUE.map((n) => ({ cle: n, libelle: t(`niveau.${n}`), valeur: pf.parNiveau[n] ?? 0, couleur: COULEUR_NIVEAU[n] }))} />
+        </Carte>
+        <Carte titre={t("esg.repartition")}>
+          <Barres barres={NOTES_ESG.map((n) => ({ cle: n, libelle: `${t("esg.titre")} ${n}`, valeur: pf.parNoteESG[n] ?? 0, couleur: COULEUR_ESG[n] }))} />
+          <p className="mt-4 text-[12.5px] text-muted-foreground">
+            {t("esg.moyenne")} : <strong className="text-foreground">{pf.scoreESGMoyen === null ? "—" : `${fmt.nombre(pf.scoreESGMoyen, 0)} / 100`}</strong>
+          </p>
         </Carte>
         <Carte titre={t("tableau.decisions")}>
           <Barres

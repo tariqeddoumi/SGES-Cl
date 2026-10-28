@@ -12,6 +12,7 @@ import { Champ, Interrupteur, Selecteur } from "@/components/ui/champs";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Carte, Chargement, EnTete } from "@/components/ui/mise-en-page";
 import { Puce } from "@/components/ui/puces";
+import { useListe } from "@/lib/client/listes";
 
 interface Entite {
   id: string; code: string; nom: string; type: string; parentId: string | null; niveau: number; pays: string; deviseCode: string; langueDefaut: string;
@@ -23,6 +24,7 @@ const vide = { id: "", code: "", nom: "", type: "agence", parentId: "", pays: "M
 
 export default function PageEntites() {
   const { t, devises, langues, fmt } = useApp();
+  const pays = useListe("pays");
   const toast = useToast();
   const { donnees, recharger } = useDonnees<Entite[]>("/api/admin/entites");
   const [e, setE] = useState<typeof vide | null>(null);
@@ -80,7 +82,7 @@ export default function PageEntites() {
             <Champ id="nom" libelle={t("commun.libelle")} valeur={e.nom} onChange={(v) => setE({ ...e, nom: v })} obligatoire />
             <Selecteur id="type" libelle={t("commun.type")} valeur={e.type} onChange={(v) => setE({ ...e, type: v })} options={TYPES_ENTITE.map((x) => ({ valeur: x, libelle: x }))} sansVide />
             <Selecteur id="parent" libelle={t("admin.parent")} valeur={e.parentId} onChange={(v) => setE({ ...e, parentId: v })} options={donnees.filter((x) => x.id !== e.id).map((x) => ({ valeur: x.id, libelle: `${"· ".repeat(x.niveau)}${x.nom}` }))} />
-            <Champ id="pays" libelle={t("client.pays")} valeur={e.pays} onChange={(v) => setE({ ...e, pays: v.toUpperCase() })} dir="ltr" />
+            <Selecteur id="pays" libelle={t("client.pays")} valeur={e.pays} onChange={(v) => setE({ ...e, pays: v })} options={pays.map((p) => ({ valeur: p.code, libelle: p.libelle }))} />
             <Selecteur id="devise" libelle={t("commun.devise")} valeur={e.deviseCode} onChange={(v) => setE({ ...e, deviseCode: v })} options={devises.map((d) => ({ valeur: d.code, libelle: d.code }))} sansVide />
             <Selecteur id="langue" libelle={t("commun.langue")} valeur={e.langueDefaut} onChange={(v) => setE({ ...e, langueDefaut: v })} options={langues.map((l) => ({ valeur: l.code, libelle: l.nomNatif }))} sansVide />
             <Champ id="seuil" type="number" libelle={t("admin.seuilPropre")} valeur={e.seuilDeclenchement} onChange={(v) => setE({ ...e, seuilDeclenchement: v })} suffixe={e.deviseCode} />

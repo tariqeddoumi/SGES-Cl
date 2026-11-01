@@ -1,0 +1,3295 @@
+{
+ "thematiques": [
+  {
+   "code": "SIGNALETIQUE",
+   "libelle": "Signalétique de l'entreprise",
+   "normes": ""
+  },
+  {
+   "code": "GEST_ENV",
+   "libelle": "Gestion environnementale",
+   "normes": "SFI NP1, NP3 ; lois 11-03, 49-17, 36-15, 28-00, 13-03"
+  },
+  {
+   "code": "HSE",
+   "libelle": "Hygiène et sécurité",
+   "normes": "SFI NP2, NP4 ; Code du travail (livre II, titre IV)"
+  },
+  {
+   "code": "RH",
+   "libelle": "Gestion des ressources humaines",
+   "normes": "SFI NP2 ; Code du travail ; conventions fondamentales OIT"
+  },
+  {
+   "code": "SFI",
+   "libelle": "Conformité aux normes de performance de la SFI",
+   "normes": "SFI NP1 à NP8 ; Principes de l'Équateur IV"
+  },
+  {
+   "code": "CLIMAT",
+   "libelle": "Climat et énergie",
+   "normes": "SFI NP3 ; PE IV ; Directive BAM 5/W/2021 ; loi 47-09"
+  },
+  {
+   "code": "FI_ACTIVITE",
+   "libelle": "Description de l'activité (intermédiaire financier)",
+   "normes": "SFI NP1 (intermédiaires financiers)"
+  },
+  {
+   "code": "FI_ENGAGEMENT",
+   "libelle": "Engagement stratégique",
+   "normes": "SFI NP1 ; Directive BAM 5/W/2021"
+  }
+ ],
+ "questions": [
+  {
+   "code": "SIG01",
+   "thematique": "SIGNALETIQUE",
+   "thematiqueLib": "Signalétique de l'entreprise",
+   "bloc": "Signalétique",
+   "categories": "A,B,C,FI",
+   "type": "nombre",
+   "risque": null,
+   "gravite": 2,
+   "references": "",
+   "libelle": "Effectif total (salariés permanents et temporaires)",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "",
+   "actions": []
+  },
+  {
+   "code": "SIG02",
+   "thematique": "SIGNALETIQUE",
+   "thematiqueLib": "Signalétique de l'entreprise",
+   "bloc": "Signalétique",
+   "categories": "A,B,C,FI",
+   "type": "nombre",
+   "risque": null,
+   "gravite": 2,
+   "references": "",
+   "libelle": "Part des femmes dans l'effectif (%)",
+   "obligatoire": false,
+   "niveau": "bonne_pratique",
+   "module": "",
+   "pilier": "",
+   "actions": []
+  },
+  {
+   "code": "SIG03",
+   "thematique": "SIGNALETIQUE",
+   "thematiqueLib": "Signalétique de l'entreprise",
+   "bloc": "Signalétique",
+   "categories": "A,B,C,FI",
+   "type": "texte",
+   "risque": null,
+   "gravite": 2,
+   "references": "",
+   "libelle": "Activités sous-traitées et principaux sous-traitants",
+   "obligatoire": false,
+   "niveau": "bonne_pratique",
+   "module": "",
+   "pilier": "",
+   "actions": []
+  },
+  {
+   "code": "EFF01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 1 — Effluents liquides",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI NP3 ; Directives EHS générales §1.3 ; loi 36-15 sur l'eau",
+   "libelle": "Les effluents liquides (eaux de procédé, de lavage, sanitaires) sont-ils collectés séparément et traités avant rejet ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M1",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place une collecte séparative et un prétraitement des effluents avant rejet"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 18,
+     "libelle": "Installer une station de traitement des eaux usées dimensionnée pour l'activité"
+    }
+   ]
+  },
+  {
+   "code": "EFF02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 1 — Effluents liquides",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Loi 36-15 (autorisation de déversement) ; valeurs limites sectorielles",
+   "libelle": "Le rejet dispose-t-il d'une autorisation de déversement de l'Agence de bassin hydraulique et respecte-t-il les valeurs limites ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M1",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Déposer la demande d'autorisation de déversement auprès de l'Agence de bassin hydraulique"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place un autocontrôle semestriel des rejets par un laboratoire agréé"
+    }
+   ]
+  },
+  {
+   "code": "EFF03",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 1 — Effluents liquides",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP3 ; Directives EHS",
+   "libelle": "Des analyses périodiques des rejets liquides sont-elles réalisées et archivées ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M1",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Réaliser une campagne d'analyses des rejets liquides par un laboratoire agréé"
+    }
+   ]
+  },
+  {
+   "code": "DS01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 2 — Déchets solides",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Loi 28-00 relative à la gestion des déchets ; SFI NP3",
+   "libelle": "Les déchets solides non dangereux sont-ils triés, stockés sur une aire dédiée et évacués par un collecteur autorisé ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Aménager une aire de stockage des déchets et contractualiser avec un collecteur autorisé"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place un plan de réduction et de valorisation des déchets (recyclage, réemploi)"
+    }
+   ]
+  },
+  {
+   "code": "DS02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 2 — Déchets solides",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 1,
+   "references": "Loi 28-00",
+   "libelle": "Un registre des quantités de déchets produits et éliminés est-il tenu ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Tenir un registre des déchets (nature, quantités, destination)"
+    }
+   ]
+  },
+  {
+   "code": "AIR01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 3 — Émissions gazeuses et bruit",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 2,
+   "references": "Loi 13-03 relative à la lutte contre la pollution de l'air ; SFI NP3",
+   "libelle": "Existe-t-il des émissions de particules en suspension ou de fumées ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M2",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place des dispositifs de captage des particules"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 18,
+     "libelle": "Étudier l'opportunité de réduire les émissions de particules"
+    }
+   ]
+  },
+  {
+   "code": "AIR02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 3 — Émissions gazeuses et bruit",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Loi 13-03 ; décret 2-09-631 (valeurs limites) ; Directives EHS §1.1",
+   "libelle": "Les sources d'émission (cheminées, chaudières, fours) sont-elles équipées de dispositifs de traitement et contrôlées périodiquement ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M2",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Équiper les sources d'émission de dispositifs de traitement adaptés (filtres, dépoussiéreurs, laveurs)"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place une surveillance périodique des émissions atmosphériques par un laboratoire agréé"
+    }
+   ]
+  },
+  {
+   "code": "AIR03",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 3 — Émissions gazeuses et bruit",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 1,
+   "references": "Directives EHS §1.7 (bruit)",
+   "libelle": "Les niveaux de bruit en limite de site sont-ils mesurés et conformes ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M7",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Réaliser une campagne de mesures acoustiques en limite de propriété"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Installer des dispositifs d'insonorisation (capotage, écrans acoustiques)"
+    }
+   ]
+  },
+  {
+   "code": "DD01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 4 — Déchets et produits dangereux",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI NP3 ; Directives EHS §1.5 (matières dangereuses)",
+   "libelle": "Les produits chimiques et déchets dangereux sont-ils stockés sur rétention, étiquetés, avec fiches de données de sécurité disponibles ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M3",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Aménager des bacs de rétention et un local de stockage ventilé ; afficher les fiches de données de sécurité"
+    }
+   ]
+  },
+  {
+   "code": "DD02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 4 — Déchets et produits dangereux",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Loi 28-00 ; décret 2-07-253 (classification des déchets)",
+   "libelle": "Les déchets dangereux sont-ils éliminés par une entreprise autorisée, avec conservation des bordereaux de suivi ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M3",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Contractualiser l'élimination des déchets dangereux avec une société autorisée et conserver les bordereaux"
+    }
+   ]
+  },
+  {
+   "code": "DD03",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 4 — Déchets et produits dangereux",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 3,
+   "references": "Protocole de Montréal ; Convention de Stockholm (PCB)",
+   "libelle": "L'activité utilise-t-elle des substances appauvrissant la couche d'ozone ou des équipements contenant des PCB ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M3",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Établir un inventaire des équipements contenant des SAO ou des PCB"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 24,
+     "libelle": "Remplacer progressivement les fluides et équipements concernés"
+    }
+   ]
+  },
+  {
+   "code": "URG01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 5 — Préparation aux situations d'urgence",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI NP1 §20-21 ; NP4",
+   "libelle": "Un plan d'urgence (incendie, déversement, fuite, évacuation) existe-t-il et est-il testé par des exercices ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Élaborer un plan d'urgence et d'évacuation et désigner les équipes d'intervention"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Organiser au moins un exercice par an et former les équipes d'intervention"
+    }
+   ]
+  },
+  {
+   "code": "URG02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 5 — Préparation aux situations d'urgence",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Code du travail ; règlement de sécurité incendie",
+   "libelle": "Les moyens de lutte contre l'incendie (extincteurs, robinets d'incendie, détection) sont-ils en place et vérifiés ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Installer les moyens de lutte contre l'incendie et souscrire un contrat de vérification périodique"
+    }
+   ]
+  },
+  {
+   "code": "CERT01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 6 — Certifications et autorisations",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Loi 49-17 relative à l'évaluation environnementale ; autorisations d'exploiter",
+   "libelle": "Le projet dispose-t-il (ou disposera-t-il avant décaissement) des autorisations requises : décision d'acceptabilité environnementale, autorisation d'exploiter, autorisation de prélèvement d'eau ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Obtenir les autorisations manquantes avant le premier décaissement (condition suspensive)"
+    }
+   ]
+  },
+  {
+   "code": "CERT02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 6 — Certifications et autorisations",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 1,
+   "references": "ISO 14001, ISO 45001, ISO 50001",
+   "libelle": "L'entreprise est-elle certifiée (ISO 14001, ISO 45001, ISO 50001) ou engagée dans une démarche de certification ?",
+   "obligatoire": false,
+   "niveau": "bonne_pratique",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "long",
+     "delai": 36,
+     "libelle": "Engager une démarche de certification ISO 14001 / ISO 45001"
+    }
+   ]
+  },
+  {
+   "code": "SGE01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 7 — Système de gestion sociale et environnementale",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP1 §6-7",
+   "libelle": "L'entreprise dispose-t-elle d'une politique environnementale et sociale formalisée et d'un responsable désigné ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Désigner un responsable E&S et formaliser une politique environnementale et sociale"
+    }
+   ]
+  },
+  {
+   "code": "SGE02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 7 — Système de gestion sociale et environnementale",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP1 §7-24",
+   "libelle": "Les aspects et risques E&S de l'activité sont-ils identifiés et suivis (registre, indicateurs, revue de direction) ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place un système de gestion E&S proportionné : registre des aspects, indicateurs, revue annuelle"
+    }
+   ]
+  },
+  {
+   "code": "SGE03",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 7 — Système de gestion sociale et environnementale",
+   "categories": "A",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 4,
+   "references": "Loi 49-17 ; SFI NP1 ; Principes de l'Équateur, Principe 2",
+   "libelle": "Une étude d'impact environnemental et social (EIES) a-t-elle été réalisée par un bureau d'études qualifié, avec un plan de gestion (PGES) ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Faire réaliser une EIES et un PGES par un bureau d'études qualifié, selon le cahier des charges SGES"
+    }
+   ]
+  },
+  {
+   "code": "RES01",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 8 — Ressources en eau et énergie",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Loi 36-15 ; SFI NP3 (efficacité des ressources)",
+   "libelle": "La consommation d'eau est-elle mesurée et des mesures d'économie sont-elles mises en œuvre ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Installer des compteurs divisionnaires et suivre les consommations d'eau"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 18,
+     "libelle": "Mettre en œuvre un plan d'économie d'eau (recyclage, réutilisation des eaux épurées)"
+    }
+   ]
+  },
+  {
+   "code": "RES02",
+   "thematique": "GEST_ENV",
+   "thematiqueLib": "Gestion environnementale",
+   "bloc": "Bloc 8 — Ressources en eau et énergie",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Loi 36-15 ; Directive BAM 5/W/2021",
+   "libelle": "La ressource en eau du projet est-elle sécurisée compte tenu du stress hydrique local (autorisation de prélèvement, ressource alternative) ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "M8",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Obtenir l'autorisation de prélèvement et évaluer la disponibilité de la ressource"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 24,
+     "libelle": "Étudier une ressource alternative (dessalement, eaux non conventionnelles)"
+    }
+   ]
+  },
+  {
+   "code": "HN01",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Existence de nuisances",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 2,
+   "references": "SFI NP4",
+   "libelle": "Les riverains sont-ils exposés à des nuisances (bruit, odeurs, poussières, trafic de poids lourds) ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M7",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place des mesures de réduction des nuisances et informer les riverains"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Instaurer un mécanisme de recueil et de traitement des plaintes des riverains"
+    }
+   ]
+  },
+  {
+   "code": "HS01",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Mesures d'hygiène et de sécurité",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Code du travail, art. 281 et suivants ; SFI NP2 §23",
+   "libelle": "Une évaluation des risques professionnels est-elle réalisée et mise à jour, avec un plan de prévention ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Réaliser l'évaluation des risques professionnels et établir le plan de prévention"
+    }
+   ]
+  },
+  {
+   "code": "HS02",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Mesures d'hygiène et de sécurité",
+   "categories": "A,B,C",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Code du travail ; SFI NP2",
+   "libelle": "Les équipements de protection individuelle sont-ils fournis gratuitement et leur port est-il contrôlé ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Doter le personnel des équipements de protection adaptés et contrôler leur port"
+    }
+   ]
+  },
+  {
+   "code": "HS03",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Mesures d'hygiène et de sécurité",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Code du travail, art. 304 (médecine du travail) et 336 (comité de sécurité et d'hygiène)",
+   "libelle": "Existe-t-il un comité de sécurité et d'hygiène et un service médical du travail ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "E50",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Constituer le comité de sécurité et d'hygiène et organiser la médecine du travail"
+    }
+   ]
+  },
+  {
+   "code": "HS04",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Mesures d'hygiène et de sécurité",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Loi 18-12 (accidents du travail) ; SFI NP2",
+   "libelle": "Les accidents du travail sont-ils déclarés, enregistrés et analysés (taux de fréquence suivi) ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Tenir un registre des accidents et en analyser les causes"
+    }
+   ]
+  },
+  {
+   "code": "CT01",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Conditions de travail",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 1,
+   "references": "Code du travail ; SFI NP2",
+   "libelle": "Les installations sanitaires, l'éclairage, la ventilation et l'eau potable sont-ils adaptés aux effectifs ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre les installations sanitaires et l'ambiance de travail aux normes"
+    }
+   ]
+  },
+  {
+   "code": "CT02",
+   "thematique": "HSE",
+   "thematiqueLib": "Hygiène et sécurité",
+   "bloc": "Conditions de travail",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP2 §23",
+   "libelle": "Le personnel est-il formé à la sécurité (accueil sécurité, habilitations, conduite d'engins) ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place un plan de formation à la sécurité"
+    }
+   ]
+  },
+  {
+   "code": "RH01",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Code du travail ; dahir 1-72-184 (CNSS) ; SFI NP2",
+   "libelle": "Tous les salariés disposent-ils d'un contrat de travail et sont-ils déclarés à la sécurité sociale (CNSS) ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Régulariser la situation contractuelle et la déclaration CNSS de tous les salariés"
+    }
+   ]
+  },
+  {
+   "code": "RH02",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Code du travail (SMIG/SMAG, durée du travail) ; SFI NP2 §10",
+   "libelle": "Le salaire minimum légal, la durée du travail et la rémunération des heures supplémentaires sont-ils respectés ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Mettre la politique de rémunération et de temps de travail en conformité"
+    }
+   ]
+  },
+  {
+   "code": "RH03",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 4,
+   "references": "OIT C29, C105, C138, C182 ; Code du travail art. 143 ; SFI NP2 §21-22",
+   "libelle": "L'entreprise garantit-elle l'absence de travail des enfants et de travail forcé, y compris chez ses sous-traitants et fournisseurs principaux ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Vérifier l'âge à l'embauche et insérer une clause sociale dans les contrats de sous-traitance"
+    }
+   ]
+  },
+  {
+   "code": "RH04",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "OIT C100, C111 ; Code du travail art. 9 ; SFI NP2 §15",
+   "libelle": "Existe-t-il une politique de non-discrimination, d'égalité des chances et de prévention du harcèlement ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Formaliser une politique d'égalité des chances et de prévention du harcèlement"
+    }
+   ]
+  },
+  {
+   "code": "RH05",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 2,
+   "references": "OIT C87, C98 ; Code du travail (délégués des salariés) ; SFI NP2 §13",
+   "libelle": "La liberté d'association et la représentation du personnel (délégués des salariés) sont-elles respectées ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "E10",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Organiser l'élection des délégués des salariés"
+    }
+   ]
+  },
+  {
+   "code": "RH06",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP2 §20",
+   "libelle": "Un mécanisme de réclamation accessible aux travailleurs (confidentiel, sans représailles) existe-t-il ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place un mécanisme de réclamation des travailleurs"
+    }
+   ]
+  },
+  {
+   "code": "RH07",
+   "thematique": "RH",
+   "thematiqueLib": "Gestion des ressources humaines",
+   "bloc": "Conditions d'emploi et droits fondamentaux",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 2,
+   "references": "SFI NP2 §18-19 (licenciements, hébergement des travailleurs)",
+   "libelle": "Le projet prévoit-il des licenciements collectifs ou un recours important à de la main-d'œuvre temporaire, migrante ou hébergée sur site ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M9",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Établir un plan de gestion de la main-d'œuvre (recrutement, hébergement, licenciements) conforme à la NP2"
+    }
+   ]
+  },
+  {
+   "code": "NP01",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI NP1 §25-36 ; Principes de l'Équateur, Principes 5 et 6",
+   "libelle": "Les parties prenantes (riverains, autorités, communautés) ont-elles été consultées et un mécanisme de plaintes externe est-il en place ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Élaborer un plan d'engagement des parties prenantes"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place un mécanisme de gestion des plaintes des communautés"
+    }
+   ]
+  },
+  {
+   "code": "NP04",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI NP4 (santé, sûreté et sécurité des communautés)",
+   "libelle": "Les risques pour la santé et la sécurité des communautés (trafic, matières dangereuses, rupture d'ouvrage, agents de sécurité) sont-ils évalués et gérés ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M4",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Évaluer les risques pour les communautés et intégrer les mesures au PGES"
+    }
+   ]
+  },
+  {
+   "code": "NP05",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 4,
+   "references": "SFI NP5 (acquisition de terres et réinstallation involontaire)",
+   "libelle": "Le projet nécessite-t-il une acquisition de terres ou entraîne-t-il un déplacement physique ou économique de populations ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M4",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Élaborer un plan d'action de réinstallation (PAR) conforme à la NP5"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Indemniser et accompagner les personnes affectées avant le début des travaux"
+    }
+   ]
+  },
+  {
+   "code": "NP06",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 4,
+   "references": "SFI NP6 ; loi 22-07 relative aux aires protégées ; Convention de Ramsar",
+   "libelle": "Le site est-il situé dans ou à proximité d'une aire protégée, d'un habitat critique, d'un site Ramsar ou d'un SIBE ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M5",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Faire réaliser une évaluation de la biodiversité par un expert"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 18,
+     "libelle": "Mettre en œuvre un plan d'action biodiversité (éviter, réduire, compenser)"
+    }
+   ]
+  },
+  {
+   "code": "NP07",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 4,
+   "references": "SFI NP7 ; terres collectives (loi 62-17)",
+   "libelle": "Le projet affecte-t-il des populations autochtones ou des terres et ressources coutumières (terres collectives) ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M10",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Obtenir le consentement libre, préalable et éclairé des communautés concernées"
+    }
+   ]
+  },
+  {
+   "code": "NP08",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "oui",
+   "gravite": 3,
+   "references": "SFI NP8 ; loi 22-80 relative au patrimoine",
+   "libelle": "Le projet peut-il affecter un patrimoine culturel (sites archéologiques ou religieux, ksour, kasbahs) ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M4",
+   "pilier": "S",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Mettre en place une procédure de découverte fortuite et consulter les autorités du patrimoine"
+    }
+   ]
+  },
+  {
+   "code": "NP09",
+   "thematique": "SFI",
+   "thematiqueLib": "Conformité aux normes de performance de la SFI",
+   "bloc": "Normes de performance SFI et Principes de l'Équateur",
+   "categories": "A",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 3,
+   "references": "Principes de l'Équateur IV, Principes 7 et 8",
+   "libelle": "Le projet fait-il l'objet d'une revue E&S indépendante, d'un plan d'action (ESAP) et de clauses E&S dans la documentation de financement ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "EP",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Faire réaliser une revue E&S indépendante et intégrer un ESAP et des clauses E&S dans la documentation de financement"
+    }
+   ]
+  },
+  {
+   "code": "CL01",
+   "thematique": "CLIMAT",
+   "thematiqueLib": "Climat et énergie",
+   "bloc": "Émissions de gaz à effet de serre et énergie",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP3 §7-8 ; Principes de l'Équateur, Principe 10",
+   "libelle": "Les émissions de gaz à effet de serre du projet (scopes 1 et 2) sont-elles estimées et suivies ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "M6",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Réaliser un bilan carbone (scopes 1 et 2)"
+    },
+    {
+     "horizon": "long",
+     "delai": 36,
+     "libelle": "Définir une trajectoire de réduction des émissions"
+    }
+   ]
+  },
+  {
+   "code": "CL02",
+   "thematique": "CLIMAT",
+   "thematiqueLib": "Climat et énergie",
+   "bloc": "Émissions de gaz à effet de serre et énergie",
+   "categories": "A,B",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 1,
+   "references": "Loi 47-09 relative à l'efficacité énergétique (audit énergétique) ; SFI NP3",
+   "libelle": "Le projet intègre-t-il des mesures d'efficacité énergétique ou d'énergies renouvelables ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "M6",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Réaliser un audit énergétique (loi 47-09) et mettre en œuvre les mesures rentables"
+    }
+   ]
+  },
+  {
+   "code": "CL03",
+   "thematique": "CLIMAT",
+   "thematiqueLib": "Climat et énergie",
+   "bloc": "Émissions de gaz à effet de serre et énergie",
+   "categories": "A,B",
+   "type": "oui_non_na",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Règlement (UE) 2023/956 — mécanisme d'ajustement carbone aux frontières (CBAM)",
+   "libelle": "Si l'entreprise exporte vers l'Union européenne des produits couverts par le CBAM, est-elle en mesure de déclarer leurs émissions intégrées ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "M6",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Mettre en place la mesure et la déclaration des émissions intégrées des produits exportés (CBAM)"
+    }
+   ]
+  },
+  {
+   "code": "CL04",
+   "thematique": "CLIMAT",
+   "thematiqueLib": "Climat et énergie",
+   "bloc": "Adaptation aux risques climatiques physiques",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Directive BAM 5/W/2021 ; Principes de l'Équateur, annexe A",
+   "libelle": "Les risques climatiques physiques du site (inondation, sécheresse, chaleur extrême, submersion) ont-ils été pris en compte dans la conception du projet ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Réaliser une analyse de vulnérabilité climatique du site"
+    },
+    {
+     "horizon": "moyen",
+     "delai": 24,
+     "libelle": "Mettre en œuvre les mesures d'adaptation (protection contre les crues, sécurisation de l'eau, refroidissement)"
+    }
+   ]
+  },
+  {
+   "code": "CL05",
+   "thematique": "CLIMAT",
+   "thematiqueLib": "Climat et énergie",
+   "bloc": "Adaptation aux risques climatiques physiques",
+   "categories": "A,B,C",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 1,
+   "references": "Loi 110-14 instituant un régime de couverture des conséquences d'événements catastrophiques",
+   "libelle": "Les actifs financés sont-ils assurés contre les événements catastrophiques (inondation, séisme) ?",
+   "obligatoire": true,
+   "niveau": "reglementaire",
+   "module": "",
+   "pilier": "E",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 3,
+     "libelle": "Souscrire une couverture contre les conséquences d'événements catastrophiques"
+    }
+   ]
+  },
+  {
+   "code": "FI01",
+   "thematique": "FI_ACTIVITE",
+   "thematiqueLib": "Description de l'activité (intermédiaire financier)",
+   "bloc": "Portefeuille et politique E&S",
+   "categories": "FI",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI — exigences pour les intermédiaires financiers",
+   "libelle": "L'institution applique-t-elle à ses financements une politique E&S et la liste d'exclusion ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Adopter une politique E&S et la liste d'exclusion de la SFI"
+    }
+   ]
+  },
+  {
+   "code": "FI02",
+   "thematique": "FI_ACTIVITE",
+   "thematiqueLib": "Description de l'activité (intermédiaire financier)",
+   "bloc": "Portefeuille et politique E&S",
+   "categories": "FI",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 3,
+   "references": "SFI — catégorisation FI-1, FI-2, FI-3",
+   "libelle": "Les opérations à risque E&S élevé (catégorie A) du portefeuille sont-elles identifiées et suivies ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place une catégorisation E&S des financements et un suivi des opérations de catégorie A"
+    }
+   ]
+  },
+  {
+   "code": "FI03",
+   "thematique": "FI_ACTIVITE",
+   "thematiqueLib": "Description de l'activité (intermédiaire financier)",
+   "bloc": "Portefeuille et politique E&S",
+   "categories": "FI",
+   "type": "nombre",
+   "risque": ">30",
+   "gravite": 2,
+   "references": "SFI — intermédiaires financiers",
+   "libelle": "Part du portefeuille dans les secteurs à risque E&S élevé (%)",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Définir des limites d'exposition aux secteurs à risque E&S élevé"
+    }
+   ]
+  },
+  {
+   "code": "FI04",
+   "thematique": "FI_ENGAGEMENT",
+   "thematiqueLib": "Engagement stratégique",
+   "bloc": "Gouvernance et engagement",
+   "categories": "FI",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP1",
+   "libelle": "Un responsable E&S est-il désigné et formé ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "court",
+     "delai": 6,
+     "libelle": "Désigner et former un responsable E&S"
+    }
+   ]
+  },
+  {
+   "code": "FI05",
+   "thematique": "FI_ENGAGEMENT",
+   "thematiqueLib": "Engagement stratégique",
+   "bloc": "Gouvernance et engagement",
+   "categories": "FI",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "SFI NP1",
+   "libelle": "Un reporting E&S périodique est-il produit pour la direction et les bailleurs de fonds ?",
+   "obligatoire": true,
+   "niveau": "sfi",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 12,
+     "libelle": "Mettre en place un reporting E&S annuel (portefeuille, incidents, plans d'actions)"
+    }
+   ]
+  },
+  {
+   "code": "FI06",
+   "thematique": "FI_ENGAGEMENT",
+   "thematiqueLib": "Engagement stratégique",
+   "bloc": "Gouvernance et engagement",
+   "categories": "FI",
+   "type": "oui_non",
+   "risque": "non",
+   "gravite": 2,
+   "references": "Directive BAM 5/W/2021",
+   "libelle": "L'institution évalue-t-elle les risques climatiques de son portefeuille ?",
+   "obligatoire": true,
+   "niveau": "interne",
+   "module": "",
+   "pilier": "G",
+   "actions": [
+    {
+     "horizon": "moyen",
+     "delai": 18,
+     "libelle": "Intégrer l'évaluation des risques climatiques dans l'analyse de crédit"
+    }
+   ]
+  }
+ ],
+ "exclusion": [
+  {
+   "code": "EXC01",
+   "source": "SFI",
+   "libelle": "Production ou commerce de tout produit, bien ou activité illégal au regard de la réglementation marocaine ou internationale, ou faisant l'objet d'une interdiction internationale (certains pesticides/herbicides, médicaments, substances appauvrissant la couche d'ozone, PCB, espèces protégées CITES…)",
+   "nature": {
+    "nature": "interdiction_legale",
+    "derogeable": false
+   }
+  },
+  {
+   "code": "EXC02",
+   "source": "SFI",
+   "libelle": "Production ou commerce d'armes et de munitions",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC03",
+   "source": "SFI",
+   "libelle": "Production ou commerce de boissons alcoolisées (à l'exception de la bière et du vin)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC04",
+   "source": "SFI",
+   "libelle": "Production ou commerce du tabac",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC05",
+   "source": "SFI",
+   "libelle": "Jeux de hasard, casinos et entreprises équivalentes (si activité principale du demandeur)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC06",
+   "source": "SFI",
+   "libelle": "Production ou commerce de matériaux radioactifs (hors équipements médicaux, de contrôle de qualité et équipements dont la source radioactive est négligeable)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC07",
+   "source": "SFI",
+   "libelle": "Production ou commerce de fibres d'amiante non liées, ou de biens en contenant (hors fibrociment contenant moins de 20 % d'amiante)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC08",
+   "source": "SFI",
+   "libelle": "Pêche hauturière au filet dérivant de plus de 2,5 km de longueur",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC09",
+   "source": "SFI",
+   "libelle": "Production ou activités impliquant des formes de travail forcé ou préjudiciables, ou le travail des enfants",
+   "nature": {
+    "nature": "interdiction_legale",
+    "derogeable": false
+   }
+  },
+  {
+   "code": "EXC10",
+   "source": "SFI",
+   "libelle": "Opérations d'exploitation forestière commerciale dans la forêt tropicale humide primaire",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC11",
+   "source": "SFI",
+   "libelle": "Production ou commerce de bois ou d'autres produits forestiers ne provenant pas de forêts gérées durablement",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC12",
+   "source": "SFI",
+   "libelle": "Production, commerce, stockage ou transport de volumes importants de produits chimiques dangereux, ou utilisation à l'échelle commerciale de produits chimiques dangereux (essence, kérosène et autres produits pétroliers inclus)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC13",
+   "source": "SFI",
+   "libelle": "Production ou activités portant atteinte aux terres possédées ou revendiquées par des populations autochtones sans leur consentement préalable, libre et éclairé",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC14",
+   "source": "SFI",
+   "libelle": "Transport de pétrole ou d'autres substances dangereuses par des navires-citernes non conformes aux exigences de l'OMI (MARPOL, SOLAS, double coque)",
+   "nature": {
+    "nature": "exclusion_bailleur",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC15",
+   "source": "Groupe (option)",
+   "libelle": "Nouvelle centrale électrique au charbon ou nouvelle mine de charbon thermique (politique sectorielle climat)",
+   "nature": {
+    "nature": "politique_groupe",
+    "derogeable": true
+   }
+  },
+  {
+   "code": "EXC16",
+   "source": "Groupe (option)",
+   "libelle": "Exploration ou production de pétrole et gaz non conventionnels (sables bitumineux, gaz de schiste, Arctique)",
+   "nature": {
+    "nature": "politique_groupe",
+    "derogeable": true
+   }
+  }
+ ],
+ "categorisation": [
+  {
+   "numero": 1,
+   "categorie": "A",
+   "libelle": "Usines industrielles de grande taille (cimenterie, usine sidérurgique, métallurgique, production d'engrais, etc.)"
+  },
+  {
+   "numero": 2,
+   "categorie": "A",
+   "libelle": "Construction d'infrastructures (barrages, port, aéroport, autoroute, centrale électrique, etc.)"
+  },
+  {
+   "numero": 3,
+   "categorie": "A",
+   "libelle": "Impact sur une forêt vierge"
+  },
+  {
+   "numero": 4,
+   "categorie": "A",
+   "libelle": "Impact sur un site de patrimoine culturel (emplacements religieux ou archéologiques, par exemple)"
+  },
+  {
+   "numero": 5,
+   "categorie": "A",
+   "libelle": "Impact sur des lignes de partage des eaux par de grands programmes d'aménagement hydraulique (lutte contre les inondations, irrigation ou drainage, par exemple)"
+  },
+  {
+   "numero": 6,
+   "categorie": "A",
+   "libelle": "Déplacement involontaire de communautés ou de familles"
+  },
+  {
+   "numero": 7,
+   "categorie": "A",
+   "libelle": "Production ou utilisation commerciale de produits agrochimiques (production ou commercialisation de pesticides, engrais, fongicides)"
+  },
+  {
+   "numero": 8,
+   "categorie": "A",
+   "libelle": "Impact sur une voie maritime navigable internationale"
+  },
+  {
+   "numero": 9,
+   "categorie": "A",
+   "libelle": "Impact sur des habitats naturels protégés ou des zones à diversité biologique élevée (marécages, récifs coralliens, palétuviers, par exemple)"
+  },
+  {
+   "numero": 10,
+   "categorie": "A",
+   "libelle": "Impact sur des populations autochtones"
+  },
+  {
+   "numero": 11,
+   "categorie": "A",
+   "libelle": "Impacts irréversibles significatifs sur le milieu physique (carrières, mines, zones d'aménagement agricole, urbain, industriel ou touristique, etc.)"
+  },
+  {
+   "numero": 12,
+   "categorie": "B",
+   "libelle": "Production ou augmentation de la production de déchets liquides"
+  },
+  {
+   "numero": 13,
+   "categorie": "B",
+   "libelle": "Émission de gaz ou de particules dans l'air"
+  },
+  {
+   "numero": 14,
+   "categorie": "B",
+   "libelle": "Stockage, manipulation ou utilisation de substances toxiques (liquides, solides ou gaz)"
+  },
+  {
+   "numero": 15,
+   "categorie": "B",
+   "libelle": "Production de déchets solides dangereux ou non dangereux"
+  },
+  {
+   "numero": 16,
+   "categorie": "B",
+   "libelle": "Augmentation de la consommation d'eau"
+  },
+  {
+   "numero": 17,
+   "categorie": "B",
+   "libelle": "Augmentation de la consommation d'énergie"
+  },
+  {
+   "numero": 18,
+   "categorie": "B",
+   "libelle": "Le produit final devient un polluant une fois utilisé"
+  },
+  {
+   "numero": 19,
+   "categorie": "B",
+   "libelle": "Niveaux élevés de bruit (dans l'usine ou aux limites du site)"
+  },
+  {
+   "numero": 20,
+   "categorie": "B",
+   "libelle": "Utilisation de substances appauvrissant la couche d'ozone"
+  },
+  {
+   "numero": 21,
+   "categorie": "B",
+   "libelle": "Impact sur la santé et la sécurité sur les lieux de travail"
+  },
+  {
+   "numero": 22,
+   "categorie": "B",
+   "libelle": "Nécessité d'obtenir des permis ou autorisations environnementales pour l'exécution du projet"
+  },
+  {
+   "numero": 23,
+   "categorie": "B",
+   "libelle": "Contamination antérieure des sols"
+  },
+  {
+   "numero": 24,
+   "categorie": "C",
+   "libelle": "Société de service (impacts sociaux ou environnementaux minimes ou nuls)"
+  },
+  {
+   "numero": 25,
+   "categorie": "FI",
+   "libelle": "Intermédiaire financier (assurance, société de financement, crédit-bail, microfinance, fonds…)"
+  }
+ ],
+ "secteurs": [
+  {
+   "code": "A01",
+   "libelle": "Agriculture, élevage",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 4,
+   "facteur": 180,
+   "cbam": false
+  },
+  {
+   "code": "A02",
+   "libelle": "Sylviculture et exploitation forestière",
+   "categorie": "A",
+   "risqueTransition": 2,
+   "sensibilite": 4,
+   "facteur": 60,
+   "cbam": false
+  },
+  {
+   "code": "A03",
+   "libelle": "Pêche et aquaculture",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 120,
+   "cbam": false
+  },
+  {
+   "code": "B",
+   "libelle": "Industries extractives (mines, carrières)",
+   "categorie": "A",
+   "risqueTransition": 3,
+   "sensibilite": 3,
+   "facteur": 350,
+   "cbam": false
+  },
+  {
+   "code": "B06",
+   "libelle": "Extraction d'hydrocarbures",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 900,
+   "cbam": false
+  },
+  {
+   "code": "C10",
+   "libelle": "Industries alimentaires",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 110,
+   "cbam": false
+  },
+  {
+   "code": "C11",
+   "libelle": "Fabrication de boissons",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 90,
+   "cbam": false
+  },
+  {
+   "code": "C13",
+   "libelle": "Textile, habillement, cuir",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 2,
+   "facteur": 120,
+   "cbam": false
+  },
+  {
+   "code": "C17",
+   "libelle": "Papier et carton",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 260,
+   "cbam": false
+  },
+  {
+   "code": "C19",
+   "libelle": "Raffinage, cokéfaction",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 1100,
+   "cbam": false
+  },
+  {
+   "code": "C20",
+   "libelle": "Industrie chimique",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 420,
+   "cbam": false
+  },
+  {
+   "code": "C2012",
+   "libelle": "Engrais et produits azotés",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 3,
+   "facteur": 900,
+   "cbam": true
+  },
+  {
+   "code": "C21",
+   "libelle": "Industrie pharmaceutique",
+   "categorie": "B",
+   "risqueTransition": 1,
+   "sensibilite": 2,
+   "facteur": 70,
+   "cbam": false
+  },
+  {
+   "code": "C22",
+   "libelle": "Caoutchouc et plastique",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 220,
+   "cbam": false
+  },
+  {
+   "code": "C2394",
+   "libelle": "Ciment, chaux et plâtre",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 1500,
+   "cbam": true
+  },
+  {
+   "code": "C23",
+   "libelle": "Autres produits minéraux non métalliques",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 480,
+   "cbam": false
+  },
+  {
+   "code": "C24",
+   "libelle": "Métallurgie, sidérurgie",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 1200,
+   "cbam": true
+  },
+  {
+   "code": "C2442",
+   "libelle": "Production d'aluminium",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 1300,
+   "cbam": true
+  },
+  {
+   "code": "C25",
+   "libelle": "Produits métalliques",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 2,
+   "facteur": 150,
+   "cbam": false
+  },
+  {
+   "code": "C27",
+   "libelle": "Équipements électriques",
+   "categorie": "B",
+   "risqueTransition": 1,
+   "sensibilite": 2,
+   "facteur": 90,
+   "cbam": false
+  },
+  {
+   "code": "C29",
+   "libelle": "Industrie automobile",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 110,
+   "cbam": false
+  },
+  {
+   "code": "C30",
+   "libelle": "Aéronautique et autres matériels de transport",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 2,
+   "facteur": 80,
+   "cbam": false
+  },
+  {
+   "code": "D35",
+   "libelle": "Production d'électricité (thermique)",
+   "categorie": "A",
+   "risqueTransition": 4,
+   "sensibilite": 3,
+   "facteur": 1800,
+   "cbam": true
+  },
+  {
+   "code": "D3511R",
+   "libelle": "Énergies renouvelables (solaire, éolien, hydraulique)",
+   "categorie": "B",
+   "risqueTransition": 0,
+   "sensibilite": 3,
+   "facteur": 15,
+   "cbam": false
+  },
+  {
+   "code": "D3520H",
+   "libelle": "Hydrogène et ammoniac verts",
+   "categorie": "A",
+   "risqueTransition": 1,
+   "sensibilite": 3,
+   "facteur": 40,
+   "cbam": true
+  },
+  {
+   "code": "E36",
+   "libelle": "Captage, traitement et distribution d'eau, dessalement",
+   "categorie": "B",
+   "risqueTransition": 1,
+   "sensibilite": 4,
+   "facteur": 120,
+   "cbam": false
+  },
+  {
+   "code": "E37",
+   "libelle": "Assainissement, traitement des eaux usées",
+   "categorie": "B",
+   "risqueTransition": 1,
+   "sensibilite": 3,
+   "facteur": 80,
+   "cbam": false
+  },
+  {
+   "code": "E38",
+   "libelle": "Collecte, traitement et valorisation des déchets",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 2,
+   "facteur": 200,
+   "cbam": false
+  },
+  {
+   "code": "F41",
+   "libelle": "Construction de bâtiments, promotion immobilière",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 140,
+   "cbam": false
+  },
+  {
+   "code": "F42",
+   "libelle": "Génie civil, infrastructures (routes, ports, barrages)",
+   "categorie": "A",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 200,
+   "cbam": false
+  },
+  {
+   "code": "G",
+   "libelle": "Commerce de gros et de détail",
+   "categorie": "C",
+   "risqueTransition": 1,
+   "sensibilite": 1,
+   "facteur": 40,
+   "cbam": false
+  },
+  {
+   "code": "G4671",
+   "libelle": "Commerce de combustibles et carburants",
+   "categorie": "B",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 300,
+   "cbam": false
+  },
+  {
+   "code": "H49",
+   "libelle": "Transport terrestre et logistique",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 2,
+   "facteur": 260,
+   "cbam": false
+  },
+  {
+   "code": "H50",
+   "libelle": "Transport maritime",
+   "categorie": "B",
+   "risqueTransition": 3,
+   "sensibilite": 3,
+   "facteur": 320,
+   "cbam": false
+  },
+  {
+   "code": "H51",
+   "libelle": "Transport aérien",
+   "categorie": "B",
+   "risqueTransition": 4,
+   "sensibilite": 2,
+   "facteur": 420,
+   "cbam": false
+  },
+  {
+   "code": "I55",
+   "libelle": "Hôtellerie et tourisme",
+   "categorie": "B",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 90,
+   "cbam": false
+  },
+  {
+   "code": "J",
+   "libelle": "Information et communication, centres de données",
+   "categorie": "C",
+   "risqueTransition": 1,
+   "sensibilite": 2,
+   "facteur": 60,
+   "cbam": false
+  },
+  {
+   "code": "K",
+   "libelle": "Activités financières et d'assurance",
+   "categorie": "FI",
+   "risqueTransition": 1,
+   "sensibilite": 1,
+   "facteur": 10,
+   "cbam": false
+  },
+  {
+   "code": "L",
+   "libelle": "Activités immobilières",
+   "categorie": "C",
+   "risqueTransition": 2,
+   "sensibilite": 3,
+   "facteur": 50,
+   "cbam": false
+  },
+  {
+   "code": "M",
+   "libelle": "Activités spécialisées, scientifiques et techniques",
+   "categorie": "C",
+   "risqueTransition": 0,
+   "sensibilite": 1,
+   "facteur": 15,
+   "cbam": false
+  },
+  {
+   "code": "N",
+   "libelle": "Services administratifs et de soutien",
+   "categorie": "C",
+   "risqueTransition": 0,
+   "sensibilite": 1,
+   "facteur": 20,
+   "cbam": false
+  },
+  {
+   "code": "P",
+   "libelle": "Enseignement",
+   "categorie": "C",
+   "risqueTransition": 0,
+   "sensibilite": 2,
+   "facteur": 25,
+   "cbam": false
+  },
+  {
+   "code": "Q86",
+   "libelle": "Santé (cliniques, hôpitaux)",
+   "categorie": "B",
+   "risqueTransition": 1,
+   "sensibilite": 2,
+   "facteur": 60,
+   "cbam": false
+  },
+  {
+   "code": "R",
+   "libelle": "Arts, spectacles et loisirs",
+   "categorie": "C",
+   "risqueTransition": 0,
+   "sensibilite": 2,
+   "facteur": 30,
+   "cbam": false
+  },
+  {
+   "code": "S",
+   "libelle": "Autres services",
+   "categorie": "C",
+   "risqueTransition": 0,
+   "sensibilite": 1,
+   "facteur": 20,
+   "cbam": false
+  }
+ ],
+ "regions": [
+  {
+   "code": "MA-01",
+   "libelle": "Tanger-Tétouan-Al Hoceïma",
+   "a": [
+    2,
+    2,
+    3,
+    2,
+    2,
+    4,
+    4
+   ]
+  },
+  {
+   "code": "MA-02",
+   "libelle": "L'Oriental",
+   "a": [
+    4,
+    4,
+    2,
+    3,
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "code": "MA-03",
+   "libelle": "Fès-Meknès",
+   "a": [
+    4,
+    3,
+    2,
+    3,
+    0,
+    3,
+    2
+   ]
+  },
+  {
+   "code": "MA-04",
+   "libelle": "Rabat-Salé-Kénitra",
+   "a": [
+    3,
+    2,
+    4,
+    2,
+    2,
+    2,
+    1
+   ]
+  },
+  {
+   "code": "MA-05",
+   "libelle": "Béni Mellal-Khénifra",
+   "a": [
+    4,
+    3,
+    2,
+    4,
+    0,
+    3,
+    2
+   ]
+  },
+  {
+   "code": "MA-06",
+   "libelle": "Casablanca-Settat",
+   "a": [
+    4,
+    3,
+    3,
+    2,
+    2,
+    1,
+    1
+   ]
+  },
+  {
+   "code": "MA-07",
+   "libelle": "Marrakech-Safi",
+   "a": [
+    4,
+    4,
+    2,
+    4,
+    1,
+    2,
+    4
+   ]
+  },
+  {
+   "code": "MA-08",
+   "libelle": "Drâa-Tafilalet",
+   "a": [
+    4,
+    4,
+    3,
+    4,
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "code": "MA-09",
+   "libelle": "Souss-Massa",
+   "a": [
+    4,
+    4,
+    2,
+    4,
+    2,
+    2,
+    3
+   ]
+  },
+  {
+   "code": "MA-10",
+   "libelle": "Guelmim-Oued Noun",
+   "a": [
+    4,
+    4,
+    3,
+    3,
+    1,
+    1,
+    1
+   ]
+  },
+  {
+   "code": "MA-11",
+   "libelle": "Laâyoune-Sakia El Hamra",
+   "a": [
+    4,
+    4,
+    1,
+    3,
+    2,
+    0,
+    1
+   ]
+  },
+  {
+   "code": "MA-12",
+   "libelle": "Dakhla-Oued Ed-Dahab",
+   "a": [
+    4,
+    4,
+    1,
+    3,
+    3,
+    0,
+    0
+   ]
+  },
+  {
+   "code": "CI-AB",
+   "libelle": "Côte d'Ivoire — District d'Abidjan",
+   "a": [
+    1,
+    1,
+    4,
+    3,
+    3,
+    1,
+    0
+   ]
+  },
+  {
+   "code": "CI-NO",
+   "libelle": "Côte d'Ivoire — Nord",
+   "a": [
+    3,
+    3,
+    2,
+    4,
+    0,
+    2,
+    0
+   ]
+  },
+  {
+   "code": "SN-DK",
+   "libelle": "Sénégal — Dakar",
+   "a": [
+    3,
+    3,
+    3,
+    3,
+    4,
+    1,
+    0
+   ]
+  },
+  {
+   "code": "SN-NO",
+   "libelle": "Sénégal — Nord et vallée du fleuve",
+   "a": [
+    4,
+    4,
+    3,
+    4,
+    1,
+    2,
+    0
+   ]
+  }
+ ],
+ "listes": {
+  "type_credit": [
+   {
+    "code": "INV_GE",
+    "libelle": "Crédit d'investissement — Grande entreprise",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "INV_PME",
+    "libelle": "Crédit d'investissement — PME",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "GRANDS_PROJETS",
+    "libelle": "Financement de grands projets",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "PROJECT_FINANCE",
+    "libelle": "Financement de projet (Project finance)",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "MLT_BPR",
+    "libelle": "Crédit MLT (comité BPR)",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "LEASING",
+    "libelle": "Crédit-bail d'équipement",
+    "extra": {
+     "investissement": true
+    }
+   },
+   {
+    "code": "FONCT",
+    "libelle": "Crédit de fonctionnement (hors périmètre)",
+    "extra": {
+     "investissement": false
+    }
+   }
+  ],
+  "nature_projet": [
+   {
+    "code": "CREATION",
+    "libelle": "Création",
+    "extra": null
+   },
+   {
+    "code": "EXTENSION",
+    "libelle": "Extension",
+    "extra": null
+   },
+   {
+    "code": "MODERNISATION",
+    "libelle": "Modernisation / mise à niveau",
+    "extra": null
+   },
+   {
+    "code": "RENOUVELLEMENT",
+    "libelle": "Renouvellement d'équipements",
+    "extra": null
+   },
+   {
+    "code": "ACQUISITION",
+    "libelle": "Acquisition / reprise",
+    "extra": null
+   },
+   {
+    "code": "TRANSITION",
+    "libelle": "Transition énergétique / efficacité",
+    "extra": null
+   }
+  ],
+  "type_zone": [
+   {
+    "code": "URBAINE",
+    "libelle": "Zone urbaine",
+    "extra": null
+   },
+   {
+    "code": "PERIURBAINE",
+    "libelle": "Zone périurbaine",
+    "extra": null
+   },
+   {
+    "code": "INDUSTRIELLE",
+    "libelle": "Zone industrielle aménagée",
+    "extra": null
+   },
+   {
+    "code": "RURALE",
+    "libelle": "Zone rurale / agricole",
+    "extra": null
+   },
+   {
+    "code": "COTIERE",
+    "libelle": "Zone côtière / littoral",
+    "extra": null
+   },
+   {
+    "code": "SENSIBLE",
+    "libelle": "Zone écologiquement sensible / protégée",
+    "extra": null
+   },
+   {
+    "code": "OASIS",
+    "libelle": "Oasis / zone aride",
+    "extra": null
+   },
+   {
+    "code": "MONTAGNE",
+    "libelle": "Zone de montagne / forestière",
+    "extra": null
+   }
+  ],
+  "comite": [
+   {
+    "code": "CA",
+    "libelle": "Comité centre d'affaires",
+    "extra": null
+   },
+   {
+    "code": "BPR",
+    "libelle": "Comité de crédit BPR",
+    "extra": null
+   },
+   {
+    "code": "BCP",
+    "libelle": "Comité de crédit BCP",
+    "extra": null
+   },
+   {
+    "code": "DIRECTOIRE",
+    "libelle": "Comité de direction / engagements groupe",
+    "extra": null
+   }
+  ],
+  "motif_rejet": [
+   {
+    "code": "EXCLUSION",
+    "libelle": "Activité figurant sur la liste d'exclusion",
+    "extra": null
+   },
+   {
+    "code": "RISQUE_NON_MAITRISE",
+    "libelle": "Risques E&S élevés non maîtrisés",
+    "extra": null
+   },
+   {
+    "code": "EIE_ABSENTE",
+    "libelle": "Étude d'impact absente ou non conforme",
+    "extra": null
+   },
+   {
+    "code": "PLAN_REFUSE",
+    "libelle": "Plan d'actions refusé par le client",
+    "extra": null
+   },
+   {
+    "code": "NON_CONFORMITE",
+    "libelle": "Non-conformité réglementaire (autorisations)",
+    "extra": null
+   },
+   {
+    "code": "CLIMAT",
+    "libelle": "Risque climatique jugé excessif",
+    "extra": null
+   }
+  ],
+  "type_document": [
+   {
+    "code": "PRESENTATION",
+    "libelle": "Note de présentation du projet / étude de faisabilité",
+    "extra": null
+   },
+   {
+    "code": "EIES",
+    "libelle": "Étude d'impact environnemental et social (EIES)",
+    "extra": null
+   },
+   {
+    "code": "PGES",
+    "libelle": "Plan de gestion environnementale et sociale (PGES)",
+    "extra": null
+   },
+   {
+    "code": "ACCEPTABILITE",
+    "libelle": "Décision d'acceptabilité environnementale",
+    "extra": null
+   },
+   {
+    "code": "AUTORISATION",
+    "libelle": "Autorisation / permis",
+    "extra": null
+   },
+   {
+    "code": "PLAN_ACTION",
+    "libelle": "Plan d'actions signé",
+    "extra": null
+   },
+   {
+    "code": "ENGAGEMENT",
+    "libelle": "Lettre d'engagement de conformité E&S",
+    "extra": null
+   },
+   {
+    "code": "RAPPORT_SUIVI",
+    "libelle": "Rapport de suivi / avancement",
+    "extra": null
+   },
+   {
+    "code": "PHOTO",
+    "libelle": "Photo de visite",
+    "extra": null
+   },
+   {
+    "code": "CANEVAS",
+    "libelle": "Canevas rempli avec le client",
+    "extra": null
+   },
+   {
+    "code": "AUTRE",
+    "libelle": "Autre",
+    "extra": null
+   }
+  ],
+  "ligne_financement": [
+   {
+    "code": "SUNREF",
+    "libelle": "SUNREF Maroc (AFD) — efficacité énergétique, énergies renouvelables, environnement",
+    "extra": null
+   },
+   {
+    "code": "MORSEFF",
+    "libelle": "MorSEFF (BERD) — énergie durable des entreprises",
+    "extra": null
+   },
+   {
+    "code": "GEFF",
+    "libelle": "GEFF (BERD) — économie verte",
+    "extra": null
+   },
+   {
+    "code": "GVC",
+    "libelle": "Green Value Chain (BERD) — chaînes de valeur vertes",
+    "extra": null
+   },
+   {
+    "code": "BEI",
+    "libelle": "Ligne BEI — PME, climat et action pour le climat",
+    "extra": null
+   },
+   {
+    "code": "SFI",
+    "libelle": "Ligne SFI / IFC — financement climatique",
+    "extra": null
+   },
+   {
+    "code": "OBLIGATION_VERTE",
+    "libelle": "Obligation verte, sociale ou durable de la banque (affectation des fonds)",
+    "extra": null
+   },
+   {
+    "code": "FONDS_PROPRES",
+    "libelle": "Ressources propres de la banque",
+    "extra": null
+   }
+  ],
+  "forme_juridique": [
+   {
+    "code": "SA",
+    "libelle": "Société anonyme (SA)",
+    "extra": null
+   },
+   {
+    "code": "SARL",
+    "libelle": "SARL",
+    "extra": null
+   },
+   {
+    "code": "SARLAU",
+    "libelle": "SARL à associé unique",
+    "extra": null
+   },
+   {
+    "code": "SAS",
+    "libelle": "Société par actions simplifiée (SAS)",
+    "extra": null
+   },
+   {
+    "code": "SNC",
+    "libelle": "Société en nom collectif",
+    "extra": null
+   },
+   {
+    "code": "GIE",
+    "libelle": "Groupement d'intérêt économique",
+    "extra": null
+   },
+   {
+    "code": "COOP",
+    "libelle": "Coopérative",
+    "extra": null
+   },
+   {
+    "code": "EP",
+    "libelle": "Établissement public",
+    "extra": null
+   },
+   {
+    "code": "PP",
+    "libelle": "Personne physique / entreprise individuelle",
+    "extra": null
+   }
+  ],
+  "segment": [
+   {
+    "code": "TPE",
+    "libelle": "Très petite entreprise",
+    "extra": null
+   },
+   {
+    "code": "PME",
+    "libelle": "Petite et moyenne entreprise",
+    "extra": null
+   },
+   {
+    "code": "GE",
+    "libelle": "Grande entreprise",
+    "extra": null
+   },
+   {
+    "code": "IF",
+    "libelle": "Institution financière",
+    "extra": null
+   }
+  ],
+  "ville": [
+   {
+    "code": "CASABLANCA",
+    "libelle": "Casablanca",
+    "extra": {
+     "region": "MA-06"
+    }
+   },
+   {
+    "code": "RABAT",
+    "libelle": "Rabat",
+    "extra": {
+     "region": "MA-04"
+    }
+   },
+   {
+    "code": "SALE",
+    "libelle": "Salé",
+    "extra": {
+     "region": "MA-04"
+    }
+   },
+   {
+    "code": "KENITRA",
+    "libelle": "Kénitra",
+    "extra": {
+     "region": "MA-04"
+    }
+   },
+   {
+    "code": "TANGER",
+    "libelle": "Tanger",
+    "extra": {
+     "region": "MA-01"
+    }
+   },
+   {
+    "code": "TETOUAN",
+    "libelle": "Tétouan",
+    "extra": {
+     "region": "MA-01"
+    }
+   },
+   {
+    "code": "FES",
+    "libelle": "Fès",
+    "extra": {
+     "region": "MA-03"
+    }
+   },
+   {
+    "code": "MEKNES",
+    "libelle": "Meknès",
+    "extra": {
+     "region": "MA-03"
+    }
+   },
+   {
+    "code": "MARRAKECH",
+    "libelle": "Marrakech",
+    "extra": {
+     "region": "MA-07"
+    }
+   },
+   {
+    "code": "AGADIR",
+    "libelle": "Agadir",
+    "extra": {
+     "region": "MA-09"
+    }
+   },
+   {
+    "code": "OUJDA",
+    "libelle": "Oujda",
+    "extra": {
+     "region": "MA-02"
+    }
+   },
+   {
+    "code": "NADOR",
+    "libelle": "Nador",
+    "extra": {
+     "region": "MA-02"
+    }
+   },
+   {
+    "code": "EL_JADIDA",
+    "libelle": "El Jadida",
+    "extra": {
+     "region": "MA-06"
+    }
+   },
+   {
+    "code": "SAFI",
+    "libelle": "Safi",
+    "extra": {
+     "region": "MA-07"
+    }
+   },
+   {
+    "code": "SETTAT",
+    "libelle": "Settat",
+    "extra": {
+     "region": "MA-06"
+    }
+   },
+   {
+    "code": "BERRECHID",
+    "libelle": "Berrechid",
+    "extra": {
+     "region": "MA-06"
+    }
+   },
+   {
+    "code": "MOHAMMEDIA",
+    "libelle": "Mohammédia",
+    "extra": {
+     "region": "MA-06"
+    }
+   },
+   {
+    "code": "BENI_MELLAL",
+    "libelle": "Béni Mellal",
+    "extra": {
+     "region": "MA-05"
+    }
+   },
+   {
+    "code": "KHOURIBGA",
+    "libelle": "Khouribga",
+    "extra": {
+     "region": "MA-05"
+    }
+   },
+   {
+    "code": "TAZA",
+    "libelle": "Taza",
+    "extra": {
+     "region": "MA-03"
+    }
+   },
+   {
+    "code": "ERRACHIDIA",
+    "libelle": "Errachidia",
+    "extra": {
+     "region": "MA-08"
+    }
+   },
+   {
+    "code": "OUARZAZATE",
+    "libelle": "Ouarzazate",
+    "extra": {
+     "region": "MA-08"
+    }
+   },
+   {
+    "code": "LAAYOUNE",
+    "libelle": "Laâyoune",
+    "extra": {
+     "region": "MA-11"
+    }
+   },
+   {
+    "code": "DAKHLA",
+    "libelle": "Dakhla",
+    "extra": {
+     "region": "MA-12"
+    }
+   },
+   {
+    "code": "GUELMIM",
+    "libelle": "Guelmim",
+    "extra": {
+     "region": "MA-10"
+    }
+   },
+   {
+    "code": "ESSAOUIRA",
+    "libelle": "Essaouira",
+    "extra": {
+     "region": "MA-07"
+    }
+   },
+   {
+    "code": "SIDI_KACEM",
+    "libelle": "Sidi Kacem",
+    "extra": {
+     "region": "MA-04"
+    }
+   },
+   {
+    "code": "LARACHE",
+    "libelle": "Larache",
+    "extra": {
+     "region": "MA-01"
+    }
+   },
+   {
+    "code": "ABIDJAN",
+    "libelle": "Abidjan",
+    "extra": {
+     "region": "CI-AB"
+    }
+   },
+   {
+    "code": "DAKAR",
+    "libelle": "Dakar",
+    "extra": {
+     "region": "SN-DK"
+    }
+   }
+  ],
+  "pays": [
+   {
+    "code": "MA",
+    "libelle": "Maroc",
+    "extra": null
+   },
+   {
+    "code": "CI",
+    "libelle": "Côte d'Ivoire",
+    "extra": null
+   },
+   {
+    "code": "SN",
+    "libelle": "Sénégal",
+    "extra": null
+   },
+   {
+    "code": "ML",
+    "libelle": "Mali",
+    "extra": null
+   },
+   {
+    "code": "BF",
+    "libelle": "Burkina Faso",
+    "extra": null
+   },
+   {
+    "code": "CM",
+    "libelle": "Cameroun",
+    "extra": null
+   },
+   {
+    "code": "GN",
+    "libelle": "Guinée",
+    "extra": null
+   },
+   {
+    "code": "MR",
+    "libelle": "Mauritanie",
+    "extra": null
+   },
+   {
+    "code": "TN",
+    "libelle": "Tunisie",
+    "extra": null
+   },
+   {
+    "code": "FR",
+    "libelle": "France",
+    "extra": null
+   },
+   {
+    "code": "ES",
+    "libelle": "Espagne",
+    "extra": null
+   },
+   {
+    "code": "BE",
+    "libelle": "Belgique",
+    "extra": null
+   }
+  ],
+  "fonction_client": [
+   {
+    "code": "DG",
+    "libelle": "Direction générale",
+    "extra": null
+   },
+   {
+    "code": "HSE",
+    "libelle": "Responsable HSE / environnement",
+    "extra": null
+   },
+   {
+    "code": "DRH",
+    "libelle": "Direction des ressources humaines",
+    "extra": null
+   },
+   {
+    "code": "TECH",
+    "libelle": "Direction technique / production",
+    "extra": null
+   },
+   {
+    "code": "DAF",
+    "libelle": "Direction administrative et financière",
+    "extra": null
+   },
+   {
+    "code": "QUALITE",
+    "libelle": "Responsable qualité",
+    "extra": null
+   },
+   {
+    "code": "BET",
+    "libelle": "Bureau d'études / consultant",
+    "extra": null
+   },
+   {
+    "code": "SOUS_TRAITANT",
+    "libelle": "Sous-traitant / entreprise de travaux",
+    "extra": null
+   }
+  ],
+  "fonction_banque": [
+   {
+    "code": "CHARGE",
+    "libelle": "Chargé d'affaires",
+    "extra": null
+   },
+   {
+    "code": "ANALYSTE",
+    "libelle": "Analyste crédit",
+    "extra": null
+   },
+   {
+    "code": "DIRECTEUR_CA",
+    "libelle": "Directeur de centre d'affaires",
+    "extra": null
+   },
+   {
+    "code": "RSE",
+    "libelle": "Responsable social et environnemental",
+    "extra": null
+   },
+   {
+    "code": "RISQUES",
+    "libelle": "Analyste risques",
+    "extra": null
+   },
+   {
+    "code": "AUDIT",
+    "libelle": "Auditeur / contrôleur",
+    "extra": null
+   },
+   {
+    "code": "ADMIN",
+    "libelle": "Administrateur de l'outil",
+    "extra": null
+   }
+  ],
+  "source_emissions": [
+   {
+    "code": "BILAN_VERIFIE",
+    "libelle": "Bilan carbone vérifié par un tiers",
+    "extra": null
+   },
+   {
+    "code": "BILAN_CLIENT",
+    "libelle": "Bilan carbone établi par le client",
+    "extra": null
+   },
+   {
+    "code": "AUDIT_ENERGIE",
+    "libelle": "Audit énergétique (loi 47-09)",
+    "extra": null
+   },
+   {
+    "code": "FACTURES",
+    "libelle": "Factures d'énergie et de combustibles",
+    "extra": null
+   },
+   {
+    "code": "EIES",
+    "libelle": "Étude d'impact (EIES)",
+    "extra": null
+   },
+   {
+    "code": "FACTEUR_SECTEUR",
+    "libelle": "Facteur d'émission sectoriel (estimation)",
+    "extra": null
+   }
+  ],
+  "mesure_adaptation": [
+   {
+    "code": "RETENTION",
+    "libelle": "Bassin de rétention des eaux pluviales",
+    "extra": null
+   },
+   {
+    "code": "EAU_SECOURS",
+    "libelle": "Forage ou source d'eau de secours",
+    "extra": null
+   },
+   {
+    "code": "RECYCLAGE_EAU",
+    "libelle": "Recyclage / réutilisation des eaux",
+    "extra": null
+   },
+   {
+    "code": "ECONOMIE_EAU",
+    "libelle": "Équipements économes en eau (goutte-à-goutte…)",
+    "extra": null
+   },
+   {
+    "code": "PROTECTION_INONDATION",
+    "libelle": "Protection contre l'inondation (surélévation, digues)",
+    "extra": null
+   },
+   {
+    "code": "ISOLATION",
+    "libelle": "Isolation et toiture réfléchissante",
+    "extra": null
+   },
+   {
+    "code": "SECOURS_ELEC",
+    "libelle": "Alimentation électrique de secours",
+    "extra": null
+   },
+   {
+    "code": "ASSURANCE_CAT",
+    "libelle": "Assurance catastrophes naturelles (loi 110-14)",
+    "extra": null
+   },
+   {
+    "code": "PLAN_CONTINUITE",
+    "libelle": "Plan de continuité d'activité climatique",
+    "extra": null
+   }
+  ],
+  "motif_exclusion": [
+   {
+    "code": "ACTIVITE_PRINCIPALE",
+    "libelle": "Activité principale du client",
+    "extra": null
+   },
+   {
+    "code": "ACTIVITE_ACCESSOIRE",
+    "libelle": "Activité accessoire (au-delà du seuil de tolérance)",
+    "extra": null
+   },
+   {
+    "code": "FOURNISSEUR",
+    "libelle": "Activité d'un fournisseur ou sous-traitant principal",
+    "extra": null
+   },
+   {
+    "code": "OBJET_FINANCE",
+    "libelle": "Objet même du financement",
+    "extra": null
+   },
+   {
+    "code": "ABSENCE",
+    "libelle": "Activité absente : vérifié sur pièces et visite",
+    "extra": null
+   }
+  ],
+  "motif_reclassement": [
+   {
+    "code": "EIES_DISPONIBLE",
+    "libelle": "EIES disponible et impacts circonscrits",
+    "extra": null
+   },
+   {
+    "code": "AMPLEUR_LIMITEE",
+    "libelle": "Ampleur limitée du projet (capacité, emprise)",
+    "extra": null
+   },
+   {
+    "code": "ZONE_SENSIBLE",
+    "libelle": "Site en zone sensible ou proche de populations",
+    "extra": null
+   },
+   {
+    "code": "CUMUL_IMPACTS",
+    "libelle": "Cumul d'impacts avec des installations voisines",
+    "extra": null
+   },
+   {
+    "code": "NATURE_ACTIVITE",
+    "libelle": "Nature de l'activité mal reflétée par le formulaire",
+    "extra": null
+   },
+   {
+    "code": "AVIS_EXPERT",
+    "libelle": "Avis d'expert ou du bailleur de fonds",
+    "extra": null
+   }
+  ],
+  "reserve_comite": [
+   {
+    "code": "AUTORISATIONS",
+    "libelle": "Production des autorisations environnementales avant le premier décaissement",
+    "extra": null
+   },
+   {
+    "code": "DECISION_EIES",
+    "libelle": "Décision d'acceptabilité environnementale avant décaissement",
+    "extra": null
+   },
+   {
+    "code": "PLAN_SIGNE",
+    "libelle": "Plan d'actions E&S signé par le client",
+    "extra": null
+   },
+   {
+    "code": "DEVERSEMENT",
+    "libelle": "Autorisation de déversement de l'Agence de bassin hydraulique",
+    "extra": null
+   },
+   {
+    "code": "RAPPORT_ANNUEL",
+    "libelle": "Rapport E&S annuel transmis à la banque",
+    "extra": null
+   },
+   {
+    "code": "VISITE_6_MOIS",
+    "libelle": "Visite de suivi E&S dans les six mois",
+    "extra": null
+   },
+   {
+    "code": "ASSURANCE",
+    "libelle": "Assurance des actifs financés contre les catastrophes naturelles",
+    "extra": null
+   },
+   {
+    "code": "EMISSIONS",
+    "libelle": "Déclaration annuelle des émissions de GES",
+    "extra": null
+   }
+  ],
+  "constat_visite": [
+   {
+    "code": "REJETS_NON_TRAITES",
+    "libelle": "Rejets liquides sans traitement préalable",
+    "extra": null
+   },
+   {
+    "code": "DECHETS_STOCKAGE",
+    "libelle": "Stockage des déchets non conforme",
+    "extra": null
+   },
+   {
+    "code": "PRODUITS_RETENTION",
+    "libelle": "Produits dangereux sans bac de rétention",
+    "extra": null
+   },
+   {
+    "code": "EPI",
+    "libelle": "Équipements de protection individuelle non portés",
+    "extra": null
+   },
+   {
+    "code": "INCENDIE",
+    "libelle": "Moyens de lutte contre l'incendie insuffisants ou non vérifiés",
+    "extra": null
+   },
+   {
+    "code": "REGISTRES",
+    "libelle": "Registres (déchets, accidents, analyses) non tenus",
+    "extra": null
+   },
+   {
+    "code": "BRUIT_POUSSIERES",
+    "libelle": "Nuisances (bruit, poussières) perçues par les riverains",
+    "extra": null
+   },
+   {
+    "code": "PLAN_AVANCE",
+    "libelle": "Plan d'actions en bonne voie",
+    "extra": null
+   }
+  ],
+  "recommandation_visite": [
+   {
+    "code": "ANALYSES_REJETS",
+    "libelle": "Réaliser une campagne d'analyses des rejets par un laboratoire agréé",
+    "extra": null
+   },
+   {
+    "code": "AIRE_DECHETS",
+    "libelle": "Aménager une aire de stockage des déchets",
+    "extra": null
+   },
+   {
+    "code": "RETENTION",
+    "libelle": "Installer des bacs de rétention sous les produits dangereux",
+    "extra": null
+   },
+   {
+    "code": "FORMATION_SECURITE",
+    "libelle": "Former le personnel à la sécurité et au port des EPI",
+    "extra": null
+   },
+   {
+    "code": "VERIFICATION_INCENDIE",
+    "libelle": "Faire vérifier les moyens d'incendie par un organisme agréé",
+    "extra": null
+   },
+   {
+    "code": "REGISTRES",
+    "libelle": "Mettre en place et tenir à jour les registres",
+    "extra": null
+   },
+   {
+    "code": "RIVERAINS",
+    "libelle": "Informer les riverains et ouvrir un registre des plaintes",
+    "extra": null
+   }
+  ]
+ },
+ "modules": [
+  {
+   "code": "M1",
+   "libelle": "Rejets liquides industriels",
+   "secteurs": "A01,A03,B,C10,C11,C13,C17,C19,C20,C2012,C21,C22,C24,C2442,C25,D35,E36,E37,E38,I55"
+  },
+  {
+   "code": "M2",
+   "libelle": "Émissions atmosphériques",
+   "secteurs": "B,C10,C17,C19,C20,C2012,C23,C2394,C24,C2442,D35,E38"
+  },
+  {
+   "code": "M3",
+   "libelle": "Produits et déchets dangereux",
+   "secteurs": "A01,B,C13,C17,C19,C20,C2012,C21,C22,C24,C2442,C25,C27,C29,C30,D35,D3520H,E38,G4671,H49"
+  },
+  {
+   "code": "M4",
+   "libelle": "Communautés, foncier et patrimoine",
+   "secteurs": "A02,B,D35,D3511R,D3520H,E36,E37,E38,F41,F42,I55",
+   "natures": "CREATION,EXTENSION"
+  },
+  {
+   "code": "M5",
+   "libelle": "Biodiversité et aires protégées",
+   "secteurs": "A01,A02,A03,B,D3511R,F42,H50,I55",
+   "zones": "SENSIBLE,COTIERE,MONTAGNE,OASIS"
+  },
+  {
+   "code": "M6",
+   "libelle": "Émissions de GES et transition",
+   "secteurs": "B,C17,C19,C20,C2012,C2394,C23,C24,C2442,D35,D3520H,G4671,H49,H50,H51"
+  },
+  {
+   "code": "M7",
+   "libelle": "Nuisances pour les riverains",
+   "zones": "URBAINE,PERIURBAINE"
+  },
+  {
+   "code": "M8",
+   "libelle": "Ressource en eau",
+   "secteurs": "A01,A03,B,C10,C11,C13,C17,E36,I55",
+   "stressHydriqueMin": 3
+  },
+  {
+   "code": "M9",
+   "libelle": "Main-d'œuvre particulière",
+   "secteurs": "A01,B,F41,F42",
+   "effectifMin": 250
+  },
+  {
+   "code": "M10",
+   "libelle": "Terres collectives",
+   "zones": "RURALE,OASIS,MONTAGNE"
+  },
+  {
+   "code": "E10",
+   "libelle": "Effectif d'au moins 10 salariés",
+   "effectifMin": 10
+  },
+  {
+   "code": "E50",
+   "libelle": "Effectif d'au moins 50 salariés",
+   "effectifMin": 50
+  },
+  {
+   "code": "EP",
+   "libelle": "Principes de l'Équateur applicables",
+   "equateur": true
+  }
+ ]
+}

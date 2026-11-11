@@ -1,4 +1,4 @@
-# Diagnostic d'alignement — octobre 2026
+# ESG Climat 360 — Diagnostic d'alignement — octobre 2026
 
 Contrôle de cohérence entre base de données, API et interface, et revue du design.
 

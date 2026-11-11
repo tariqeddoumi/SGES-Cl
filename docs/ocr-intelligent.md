@@ -1,4 +1,4 @@
-# OCR intelligent — le document d'abord, la saisie en dernier recours
+# ESG Climat 360 — OCR intelligent — le document d'abord, la saisie en dernier recours
 
 Ce qu'on appelait « l'assistant IA » s'appelle maintenant **OCR intelligent**. Il lit toutes les pièces
 du dossier, y compris les **scans et les photos**, reconnaît leur type, contrôle leur complétude et

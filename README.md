@@ -1,4 +1,8 @@
-# SGES — Système de Gestion Environnementale, Sociale et Climatique
+# ESG Climat 360 — évaluation E&S, climat et ESG des crédits d'investissement
+
+> **ESG Climat 360** est le nom de l'outil (anciennement « SGES »). Les identifiants techniques gardent le
+> préfixe historique `sges` : schéma et tables de base, références de dossier (`SGES-…`), en-tête d'API
+> `X-SGES-Signature`, variables d'environnement. Le nom affiché se règle dans *Paramétrage › Habillage*.
 
 Outil web d'évaluation et de suivi des risques **environnementaux, sociaux et climatiques** des
 crédits d'investissement, pour un groupe bancaire et ses filiales. Il remplace l'application
@@ -28,7 +32,7 @@ Le parcours d'un dossier suit exactement la procédure (§3) :
 | 8. Décision du comité | Montant accordé ou motif de rejet E&S ; réserves du comité ajoutées au plan ; ajournement. |
 | 9. Suivi | Avancement des actions avec historique, **visites de sites** (constats, conformité, prochaine visite), clôture. |
 
-Et autour du dossier : tableau de bord « à traiter », **reporting SGES** par entité et période
+Et autour du dossier : tableau de bord « à traiter », **reporting ESG Climat 360** par entité et période
 (dossiers anciens sans décision, export Excel/CSV des données de la fiche), **vue portefeuille
 climat**, plans d'actions et visites du portefeuille, notifications, journal d'audit,
 cadre réglementaire, **API d'intégration** pour la plateforme d'octroi de crédit.

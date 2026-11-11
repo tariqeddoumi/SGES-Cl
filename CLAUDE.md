@@ -1,4 +1,4 @@
-# SGES — Système de Gestion Environnementale, Sociale et Climatique
+# ESG Climat 360 (anciennement SGES) — gestion environnementale, sociale et climatique
 
 Outil bancaire d'évaluation des risques E&S et climat des crédits d'investissement (groupe
 bancaire marocain et filiales). Référentiel : circulaire CFD-537/01-24, procédure
@@ -21,6 +21,7 @@ scoring PF) · Prisma 5 (schéma portable PostgreSQL / SQL Server / MySQL / SQLi
 - `prisma/donnees/` — référentiels livrés (exclusion, catégorisation, questionnaires, secteurs, régions).
 
 ## Conventions
+- Nom affiché : « ESG Climat 360 » (`lib/marque.ts`, paramètre `APP_NOM`) ; identifiants techniques en `sges`.
 - Code et interface en français ; toute chaîne affichée passe par `t("…")` et existe en fr/en/ar.
 - Schéma portable : pas d'enum, pas de Json, `@db.Text` pour les textes longs, `onUpdate: NoAction`.
 - Tout accès à un dossier passe par `dossierAutorise()` (contrôle du périmètre).

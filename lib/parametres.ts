@@ -5,6 +5,7 @@
  * neuve fonctionne sans paramétrage préalable. L'écran Paramétrage › Paramètres
  * généraux est construit à partir de ce catalogue.
  */
+import { NOM_OUTIL, SOUS_TITRE_OUTIL } from "./marque";
 
 export type TypeParametre = "texte" | "nombre" | "booleen" | "choix" | "couleur" | "liste";
 
@@ -21,8 +22,8 @@ export interface DefParametre {
 
 export const CATALOGUE_PARAMETRES: DefParametre[] = [
   // Habillage
-  { cle: "APP_NOM", groupe: "habillage", type: "texte", defaut: "SGES", public: true },
-  { cle: "APP_SOUS_TITRE", groupe: "habillage", type: "texte", defaut: "Gestion environnementale, sociale et climatique", public: true },
+  { cle: "APP_NOM", groupe: "habillage", type: "texte", defaut: NOM_OUTIL, public: true },
+  { cle: "APP_SOUS_TITRE", groupe: "habillage", type: "texte", defaut: SOUS_TITRE_OUTIL, public: true },
   { cle: "APP_LOGO_URL", groupe: "habillage", type: "texte", defaut: "", public: true },
   { cle: "COULEUR_PRIMAIRE", groupe: "habillage", type: "couleur", defaut: "", public: true },
   { cle: "THEME", groupe: "habillage", type: "choix", defaut: "clair", choix: ["clair", "sombre"], public: true },

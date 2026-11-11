@@ -1,4 +1,4 @@
-# Méthodologie du volet climat — version SGES-CLIMAT-1.1 (indicative, non calibrée)
+# ESG Climat 360 — Méthodologie du volet climat — version SGES-CLIMAT-1.1 (indicative, non calibrée)
 
 > Statut : **méthode indicative**. Les pondérations et majorations sont des hypothèses d'expert,
 > paramétrables, non encore calibrées ni validées indépendamment (constat F08 de l'audit). Le score

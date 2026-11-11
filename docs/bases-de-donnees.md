@@ -1,4 +1,4 @@
-# Bases de données
+# ESG Climat 360 — Bases de données
 
 L'outil fonctionne sur **PostgreSQL 14+** (défaut), **Microsoft SQL Server 2017+**,
 **MySQL 8 / MariaDB 10.6+** et **SQLite** (poste local, démonstration, formation).

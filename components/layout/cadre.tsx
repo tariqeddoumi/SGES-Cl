@@ -1,5 +1,6 @@
 "use client";
 
+import { initialesOutil } from "@/lib/marque";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -151,7 +152,7 @@ function MenuLateral({ ouvertMobile, onFermer }: { ouvertMobile: boolean; onFerm
             ) : (
               <>
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary text-[10.5px] font-bold text-primary-foreground">
-                  {habillage.nom.slice(0, 2).toUpperCase()}
+                  {initialesOutil(habillage.nom)}
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-[15px] font-semibold text-sidebar-accent-foreground">{habillage.nom}</span>

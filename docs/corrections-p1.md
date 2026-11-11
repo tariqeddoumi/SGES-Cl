@@ -1,4 +1,4 @@
-# Corrections des constats P1 (audit du 23/10/2026)
+# ESG Climat 360 — Corrections des constats P1 (audit du 23/10/2026)
 
 Migration d'une base existante : `prisma/sql/migrations/2026-10-25-constats-p1.sql`
 (appliquée sur Supabase, schéma `sges`, le 25/10/2026). Nouvelle installation : `prisma/sql/supabase-schema-sges.sql`.

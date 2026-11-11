@@ -1,4 +1,4 @@
-# Évolutions du 26/10/2026 — pratiques bancaires marocaines, volet climat, IA, données de démonstration
+# ESG Climat 360 — Évolutions du 26/10/2026 — pratiques bancaires marocaines, volet climat, IA, données de démonstration
 
 Migration d'une base existante : `prisma/sql/migrations/2026-10-26-pratiques-maroc-climat.sql`.
 

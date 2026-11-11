@@ -1,3 +1,4 @@
+import { NOM_OUTIL } from "@/lib/marque";
 import ExcelJS from "exceljs";
 import { ALEAS } from "@/lib/domaine/constantes";
 import type { ScenariosClimat } from "@/lib/domaine/climat";
@@ -19,7 +20,7 @@ export const GET = route(
     const t = (c: string) => traduire(dictionnaire(ctx.langue), c);
     const tous = (await dossiersPerimetre(ctx)).filter((d) => d.climat);
     const wb = new ExcelJS.Workbook();
-    wb.creator = "SGES";
+    wb.creator = NOM_OUTIL;
     wb.created = new Date();
     // Excel : nom de feuille sans * ? : \ / [ ] et limité à 31 caractères.
     const feuille = (nom: string) => nom.replace(/[*?:\\/[\]]/g, "-").slice(0, 31);
@@ -115,7 +116,7 @@ export const GET = route(
     return new Response(buf, {
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename="SGES_reporting_climat_${new Date().toISOString().slice(0, 10)}.xlsx"`,
+        "Content-Disposition": `attachment; filename="ESG-Climat-360_reporting_climat_${new Date().toISOString().slice(0, 10)}.xlsx"`,
         "Cache-Control": "no-store",
       },
     });

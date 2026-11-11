@@ -110,6 +110,17 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
     { code: "PLAN_ACTION", libelle: { fr: "Plan d'actions signé", en: "Signed action plan", ar: "خطة العمل الموقعة" } },
     { code: "ENGAGEMENT", libelle: { fr: "Lettre d'engagement de conformité E&S", en: "E&S compliance commitment letter", ar: "رسالة الالتزام بالمطابقة البيئية والاجتماعية" } },
     { code: "RAPPORT_SUIVI", libelle: { fr: "Rapport de suivi / avancement", en: "Monitoring / progress report", ar: "تقرير التتبع" } },
+    { code: "CNSS", libelle: { fr: "Déclarations CNSS / registre du personnel", en: "Social security (CNSS) returns / staff register", ar: "تصريحات الصندوق الوطني للضمان الاجتماعي / سجل المستخدمين" } },
+    { code: "RAPPORT_ANALYSES", libelle: { fr: "Rapports d'analyses et de mesures (rejets, air, bruit)", en: "Test and measurement reports (effluents, air, noise)", ar: "تقارير التحاليل والقياسات (المقذوفات، الهواء، الضجيج)" } },
+    { code: "DECHETS", libelle: { fr: "Contrats et bordereaux de collecte des déchets, registre des déchets", en: "Waste collection contracts and consignment notes, waste register", ar: "عقود ووصولات جمع النفايات وسجل النفايات" } },
+    { code: "HSE", libelle: { fr: "Documents HSE : évaluation des risques, plan de prévention, registre des accidents", en: "HSE documents: risk assessment, prevention plan, accident register", ar: "وثائق الصحة والسلامة: تقييم المخاطر، مخطط الوقاية، سجل الحوادث" } },
+    { code: "PLAN_URGENCE", libelle: { fr: "Plan d'urgence et rapports de vérification incendie", en: "Emergency plan and fire-safety inspection reports", ar: "مخطط الطوارئ وتقارير فحص معدات الحريق" } },
+    { code: "POLITIQUE_ES", libelle: { fr: "Politique E&S / système de gestion, organigramme HSE", en: "E&S policy / management system, HSE organisation chart", ar: "السياسة البيئية والاجتماعية / نظام التدبير، الهيكل التنظيمي" } },
+    { code: "RH", libelle: { fr: "Documents RH : règlement intérieur, procédure de réclamation, PV des délégués", en: "HR documents: internal rules, grievance procedure, staff delegate minutes", ar: "وثائق الموارد البشرية: النظام الداخلي، مسطرة الشكايات، محاضر المناديب" } },
+    { code: "ENERGIE", libelle: { fr: "Bilan carbone, audit énergétique, factures d'eau et d'énergie", en: "Carbon footprint, energy audit, water and energy bills", ar: "البصمة الكربونية، الافتحاص الطاقي، فواتير الماء والطاقة" } },
+    { code: "ASSURANCE", libelle: { fr: "Attestation d'assurance (dont garantie catastrophes)", en: "Insurance certificate (including catastrophe cover)", ar: "شهادة التأمين (بما فيها ضمان الوقائع الكارثية)" } },
+    { code: "CERTIFICAT", libelle: { fr: "Certificats (ISO 14001, 45001, 50001…)", en: "Certificates (ISO 14001, 45001, 50001…)", ar: "الشهادات (إيزو 14001، 45001، 50001…)" } },
+    { code: "FONCIER", libelle: { fr: "Titres fonciers, plan d'acquisition ou de réinstallation", en: "Land titles, acquisition or resettlement plan", ar: "الرسوم العقارية، مخطط الاقتناء أو إعادة التوطين" } },
     { code: "PHOTO", libelle: { fr: "Photo de visite", en: "Site visit photo", ar: "صورة الزيارة" } },
     { code: "CANEVAS", libelle: { fr: "Canevas rempli avec le client", en: "Template completed with the client", ar: "نموذج مملوء مع الزبون" } },
     { code: "AUTRE", libelle: { fr: "Autre", en: "Other", ar: "أخرى" } },
@@ -144,3 +155,6 @@ export const LISTES_VALEURS: Record<string, { code: string; libelle: L; extra?: 
   ],
   ...CATALOGUES,
 };
+
+/** Types de documents livrés (liste « type_document »). */
+export const TYPES_DOCUMENT = LISTES_VALEURS.type_document;

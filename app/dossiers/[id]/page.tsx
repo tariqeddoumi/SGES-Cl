@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use, useCallback, useState } from "react";
+import { Suspense, use, useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -10,8 +10,9 @@ import {
   FileText,
   Lock,
   RefreshCcw,
-  Sparkles,
+  ScanText,
   Trash2,
+  Upload,
 } from "lucide-react";
 import { api, ErreurApi, useDonnees } from "@/lib/client/api";
 import { TRANSITIONS, type Transition } from "@/lib/domaine/workflow";
@@ -23,7 +24,8 @@ import { ZoneTexte } from "@/components/ui/champs";
 import { Dialogue } from "@/components/ui/dialogue";
 import { Bandeau, Chargement, EnTete } from "@/components/ui/mise-en-page";
 import { Puce, PuceCategorie, PuceDecision, PuceESG, PuceNiveau, PuceStatut } from "@/components/ui/puces";
-import { ContexteDossier, type EtatDossier, type Prefill } from "@/components/dossier/contexte";
+import { ContexteDossier, type Documents, type EtatDossier, type Prefill } from "@/components/dossier/contexte";
+import { lirePropositions } from "@/lib/domaine/sources";
 import { VoletIdentification } from "@/components/dossier/volet-identification";
 import { VoletExclusion } from "@/components/dossier/volet-exclusion";
 import { VoletCategorisation } from "@/components/dossier/volet-categorisation";
@@ -66,6 +68,87 @@ function Espace({ id }: { id: string }) {
   const setPrefill = useCallback((n: Prefill) => setPrefillEtat((p) => ({ ...p, ...n })), []);
   const consommer = useCallback((k: keyof Prefill) => setPrefillEtat((p) => { const reste = { ...p }; delete reste[k]; return reste; }), []);
 
+  // ── Documents et OCR intelligent : dépôt en un geste (bouton ou glisser-déposer), lecture automatique ──
+  const ocrActif = parametres.IA_ACTIVE === "true";
+  const lectureAuto = ocrActif && parametres.OCR_LECTURE_AUTO !== "false";
+  const fichiers = useRef<HTMLInputElement>(null);
+  const typeDepot = useRef("AUTRE");
+  const [enCoursDoc, setEnCoursDoc] = useState<Documents["enCours"]>(null);
+  const [version, setVersion] = useState(0);
+  const [survol, setSurvol] = useState(false);
+
+  const lire = useCallback(async () => {
+    setEnCoursDoc("lecture");
+    try {
+      const r = await api<{ propositions: Record<string, unknown[]>; transcrites: number }>(`/api/dossiers/${id}/ia`, { body: {} });
+      const n = ["identification", "exclusion", "categorisation", "evaluation", "climat"].reduce((a, k) => a + (r.propositions[k]?.length ?? 0), 0);
+      toast(t("ocr.lu", { n }));
+      setVersion((v) => v + 1);
+      await recharger();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : String(e), "erreur");
+    } finally {
+      setEnCoursDoc(null);
+    }
+  }, [id, recharger, t, toast]);
+
+  const deposerFichiers = useCallback(
+    async (liste: File[]) => {
+      if (!liste.length) return;
+      setEnCoursDoc("depot");
+      let ok = 0;
+      for (const f of liste) {
+        if (f.size > 10 * 1024 * 1024) {
+          toast(`${f.name} : ${t("pieces.tropGros")}`, "erreur");
+          continue;
+        }
+        const fd = new FormData();
+        fd.append("fichier", f);
+        fd.append("type", typeDepot.current);
+        try {
+          const r = await api<{ erreurOCR: string | null; origineTexte: string | null }>(`/api/dossiers/${id}/documents`, { formData: fd });
+          ok++;
+          if (r.erreurOCR) toast(t("ocr.erreurTranscription", { nom: f.name, message: r.erreurOCR }), "erreur");
+        } catch (e) {
+          toast(`${f.name} : ${e instanceof Error ? e.message : String(e)}`, "erreur");
+        }
+      }
+      typeDepot.current = "AUTRE";
+      if (fichiers.current) fichiers.current.value = "";
+      setEnCoursDoc(null);
+      if (ok) {
+        toast(t("ocr.depose", { n: ok }));
+        setVersion((v) => v + 1);
+        await recharger();
+        if (lectureAuto) await lire();
+      }
+    },
+    [id, lectureAuto, lire, recharger, t, toast]
+  );
+
+  const documents = useMemo<Documents | null>(() => {
+    if (!donnees) return null;
+    const propositions = lirePropositions(donnees.dossier.propositionsOCR);
+    const lus = new Set(propositions?.documents ?? []);
+    return {
+      ocrActif,
+      propositions,
+      aLire: donnees.pieces.filter((x) => !lus.has(x.id) && x.type !== "PHOTO"),
+      typesLus: new Set(donnees.pieces.filter((x) => x.origineTexte || x.type === "CANEVAS").map((x) => x.type)),
+      deposer: (type?: string) => {
+        typeDepot.current = type ?? "AUTRE";
+        fichiers.current?.click();
+      },
+      lire,
+      ecarter: async (section, cles) => {
+        await api(`/api/dossiers/${id}/ia/ecarter`, { body: { section, cles } }).catch(() => undefined);
+        await recharger();
+      },
+      enCours: enCoursDoc,
+      version,
+    };
+  }, [donnees, ocrActif, lire, id, recharger, enCoursDoc, version]);
+
   const climatActif = parametres.VOLET_CLIMAT_ACTIF !== "false";
   const volets = VOLETS.filter((v) => climatActif || v.id !== "climat");
   const etape = sp.get("etape") ?? "identification";
@@ -73,7 +156,7 @@ function Espace({ id }: { id: string }) {
   const aller = useCallback((e: string) => router.replace(`/dossiers/${id}?etape=${e}`, { scroll: false }), [router, id]);
 
   if (erreur) return <Bandeau ton="alerte">{erreur.code === "introuvable" ? t("erreurs.introuvable") : erreur.message}</Bandeau>;
-  if (!donnees) return <Chargement lignes={8} />;
+  if (!donnees || !documents) return <Chargement lignes={8} />;
   const { dossier: d, droits, etapes } = donnees;
 
   const executer = async () => {
@@ -105,8 +188,31 @@ function Espace({ id }: { id: string }) {
   const visibles = droits.transitions.filter((x) => x !== "decider");
 
   return (
-    <ContexteDossier.Provider value={{ ...donnees, recharger, prefill, setPrefill, consommer }}>
-      <div className="space-y-4">
+    <ContexteDossier.Provider value={{ ...donnees, documents, recharger, prefill, setPrefill, consommer }}>
+      <input ref={fichiers} type="file" multiple className="hidden" aria-label={t("ocr.depot")} accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.doc,.xls,.txt" onChange={(e) => deposerFichiers(Array.from(e.target.files ?? []))} />
+      <div
+        className={cn("relative space-y-4", survol && "rounded-lg outline-dashed outline-2 outline-offset-4 outline-primary")}
+        onDragOver={(e) => {
+          if (!droits.pieces || !e.dataTransfer.types.includes("Files")) return;
+          e.preventDefault();
+          setSurvol(true);
+        }}
+        onDragLeave={(e) => {
+          if (e.currentTarget === e.target) setSurvol(false);
+        }}
+        onDrop={(e) => {
+          if (!droits.pieces) return;
+          e.preventDefault();
+          setSurvol(false);
+          typeDepot.current = "AUTRE";
+          deposerFichiers(Array.from(e.dataTransfer.files));
+        }}
+      >
+        {survol && (
+          <div className="pointer-events-none absolute inset-0 z-30 flex items-start justify-center rounded-lg bg-primary/5 pt-24">
+            <span className="rounded-md bg-surface px-4 py-2 text-[13.5px] font-medium shadow">{t("ocr.glisser")}</span>
+          </div>
+        )}
         <EnTete
           retour={{ href: "/dossiers", libelle: t("nav.dossiers") }}
           titre={
@@ -153,9 +259,14 @@ function Espace({ id }: { id: string }) {
                   <FileText /> {t("fiche.ouvrir")}
                 </Link>
               </Bouton>
-              {parametres.IA_ACTIVE === "true" && droits.pieces && (
+              {droits.pieces && (
+                <Bouton variante="contour" onClick={() => documents.deposer()} disabled={!!documents.enCours} title={t("ocr.glisser")}>
+                  <Upload /> {t("ocr.depot")}
+                </Bouton>
+              )}
+              {ocrActif && droits.pieces && (
                 <Bouton variante="contour" onClick={() => setAssistant(true)}>
-                  <Sparkles /> {t("evaluation.assistantIA")}
+                  <ScanText /> {t("evaluation.assistantIA")}
                 </Bouton>
               )}
               {visibles.map((x) => (
@@ -181,6 +292,7 @@ function Espace({ id }: { id: string }) {
         />
 
         {assistant && <AssistantIA onFermer={() => setAssistant(false)} />}
+        {documents.enCours && <Bandeau ton="info">{documents.enCours === "lecture" ? t("ocr.lectureEnCours") : t("ocr.depotEnCours")}</Bandeau>}
         {d.verrouille && <Bandeau ton="info">{t("dossier.verrouilleMessage")}</Bandeau>}
         {!droits.ecriture && <Bandeau ton="info">{t("dossier.perimetreMessage")}</Bandeau>}
 

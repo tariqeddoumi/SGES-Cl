@@ -506,6 +506,8 @@ model Dossier {
   noteESGOctroi         String?
   /// Détail de la note actualisée (piliers, composantes, plafond, couverture), JSON.
   detailESG             String? @db.Text
+  /// Dernière lecture des pièces par l'OCR intelligent (JSON, lib/domaine/sources.ts) : propositions par champ, avec document source.
+  propositionsOCR       String? @db.Text
   /// Empreinte du référentiel (questionnaire, catégorisation, exclusion, paramètres de calcul) ayant
   /// produit l'évaluation ; figée à la soumission.
   versionReferentiel    String?
@@ -772,8 +774,10 @@ model Document {
   mime        String
   taille      Int
   contenu     Bytes
-  /// Texte extrait (PDF) pour l'analyse par l'assistant.
+  /// Texte de la pièce : extrait du fichier (PDF texte, Word, Excel) ou transcrit par l'OCR intelligent (scan, photo).
   texte       String?  @db.Text
+  /// Origine du texte : extraction | ocr (null : aucun texte).
+  origineTexte String?
   /// Analyse documentaire (JSON) : type reconnu, état de chaque information attendue ; pour un canevas, les réponses saisies.
   analyse     String?  @db.Text
   deposeParId String?

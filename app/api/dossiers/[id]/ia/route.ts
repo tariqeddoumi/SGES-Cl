@@ -12,7 +12,9 @@ import { dossierAutorise, questionsApplicables, recalculer } from "@/lib/serveur
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
 import { exigerIA } from "@/lib/serveur/ia";
 import { journaliser } from "@/lib/serveur/journal";
-import { checklistDossier } from "@/lib/serveur/pieces";
+import { lisibleParOCR } from "@/lib/serveur/ocr";
+import { checklistDossier, lireEtEnregistrer, typesPieces } from "@/lib/serveur/pieces";
+import type { Proposition, PropositionsDossier } from "@/lib/domaine/sources";
 import { prisma } from "@/lib/serveur/prisma";
 
 // L'analyse de plusieurs études d'impact peut prendre plusieurs minutes.
@@ -23,7 +25,9 @@ const TOTAL = 300_000;
 
 const CHAMPS_IDENTIFICATION = ["objet", "natureProjet", "descriptionProcessus", "adresseSite", "localite", "regionCode", "typeZone", "montantInvestissement", "dureeMois", "latitude", "longitude"] as const;
 
-const Reponse = z.object({ code: z.string(), valeur: z.string(), justification: z.string(), citation: z.string().nullable() });
+const Reponse = z.object({ code: z.string(), valeur: z.string(), justification: z.string(), citation: z.string().nullable(), documentId: z.string().nullable() });
+
+const CHAMPS_CLIMAT = ["scope1", "scope2", "scope3", "sourceEmissions", "partRenouvelable", "emissionsEvitees", "expositionCBAM", "partExportUE", "mesuresAdaptation"] as const;
 
 const Sortie = z.object({
   synthese: z.string(),
@@ -35,7 +39,8 @@ const Sortie = z.object({
       champs: z.array(z.object({ code: z.string(), etat: z.enum(["present", "partiel", "absent"]), precision: z.string().nullable(), citation: z.string().nullable() })),
     })
   ),
-  identification: z.array(z.object({ champ: z.enum(CHAMPS_IDENTIFICATION), valeur: z.string(), citation: z.string().nullable() })),
+  identification: z.array(z.object({ champ: z.enum(CHAMPS_IDENTIFICATION), valeur: z.string(), citation: z.string().nullable(), documentId: z.string().nullable() })),
+  climat: z.array(z.object({ champ: z.enum(CHAMPS_CLIMAT), valeur: z.string(), citation: z.string().nullable(), documentId: z.string().nullable() })),
   exclusion: z.array(Reponse),
   categorisation: z.array(Reponse),
   evaluation: z.array(Reponse),
@@ -49,11 +54,15 @@ const SYSTEME =
   "1. Pour chaque pièce, reconnais son type parmi les codes fournis (ou null) et, pour chaque information attendue de ce type, indique si elle est " +
   "« present » (traitée de façon exploitable), « partiel » (évoquée mais incomplète ou imprécise) ou « absent ». Pour « partiel » et « absent », " +
   "la précision dit exactement ce qui manque (ex. « aucune mesure de bruit à l'état initial », « budget non chiffré »). Cite un passage pour « present » et « partiel ».\n" +
-  "2. Propose des valeurs pour les rubriques du dossier (identification, liste d'exclusion, catégorisation, questionnaire E&S, actions du PGES) " +
+  "2. Propose des valeurs pour les rubriques du dossier (identification, liste d'exclusion, catégorisation, questionnaire E&S, volet climat, actions du PGES) " +
   "UNIQUEMENT lorsque les pièces permettent d'y répondre, avec le passage qui le fonde. N'invente rien ; omets ce que les pièces ne traitent pas. " +
   "Pour la liste d'exclusion et la catégorisation, ne réponds « non » que si une pièce décrit positivement le contraire ; l'absence de mention ne vaut pas « non ». " +
   "Valeurs admises : « oui », « non », « na » (questions oui/non) ou un nombre ; pour l'identification, du texte, un nombre (montants en unités de la devise du dossier, durée en mois, coordonnées décimales), " +
-  "un code de région ou de type de zone pris dans les listes fournies.\n";
+  "un code de région ou de type de zone pris dans les listes fournies. " +
+  "Volet climat : émissions annuelles en tCO2e (scope1 directes, scope2 électricité, scope3), sourceEmissions = document et méthode (ex. « bilan carbone 2025, cabinet X »), " +
+  "partRenouvelable et partExportUE en %, emissionsEvitees en tCO2e/an, expositionCBAM « oui »/« non » (exportation vers l'UE de ciment, acier, aluminium, engrais, hydrogène, électricité), " +
+  "mesuresAdaptation : mesures prévues face aux aléas climatiques. " +
+  "Pour chaque valeur proposée, documentId est l'identifiant de la pièce qui la fonde.\n";
 
 export const POST = route(
   async (req, ctx, { id }) => {
@@ -62,9 +71,16 @@ export const POST = route(
     exigerVolet(ctx, d, "pieces");
     z.object({}).passthrough().parse((await corps(req).catch(() => ({}))) ?? {});
 
+    // Pièces jamais lues (scans, photos déposés avant l'activation de l'OCR) : transcription d'abord.
+    const nonLues = await prisma.document.findMany({ where: { dossierId: id, texte: null }, select: { id: true, dossierId: true, mime: true, nom: true, type: true, contenu: true } });
+    let transcrites = 0;
+    for (const x of nonLues.filter((n) => lisibleParOCR(n.mime))) {
+      const r = await lireEtEnregistrer(ctx, { ...x, contenu: new Uint8Array(x.contenu) });
+      if (r.origineTexte === "ocr") transcrites++;
+    }
     const docs = await prisma.document.findMany({ where: { dossierId: id }, orderBy: { createdAt: "asc" }, select: { id: true, type: true, nom: true, texte: true, analyse: true } });
     const exploitables = docs.filter((x) => (x.texte ?? "").trim().length >= 80);
-    if (!exploitables.length) throw new ErreurMetier("Aucune pièce exploitable : déposez un PDF, un document Word ou un fichier texte, ou remplissez un canevas.", 400, "texte_absent");
+    if (!exploitables.length) throw new ErreurMetier("Aucune pièce lisible : déposez un PDF, un document Word, un scan ou une photo (OCR intelligent), ou remplissez un canevas.", 400, "texte_absent");
 
     const masquer = booleen(p, "IA_ANONYMISER");
     let reste = TOTAL;
@@ -98,6 +114,7 @@ export const POST = route(
     const questions = (await questionsApplicables(d.id, d.categorie, secteur?.code ?? null)).filter((q) => q.type !== "texte");
     const listes =
       `<pieces_types>\n${defs}\n</pieces_types>\n` +
+      `<autres_types_pieces>\n${(await typesPieces()).filter((x) => !CODES_PIECES.includes(x.code)).map((x) => `${x.code} : ${x.libelle}`).join("\n")}\n</autres_types_pieces>\n` +
       `<regions>\n${regions.map((r) => `${r.code} : ${libelle(r.libelle, "fr")}`).join("\n")}\n</regions>\n` +
       `<types_zone>\n${zones.map((z) => `${z.code} : ${libelle(z.libelle, "fr")}`).join("\n")}\n</types_zone>\n` +
       `<exclusion>\n${criteres.map((c) => `${c.code} ${libelle(c.libelle, "fr")}`).join("\n")}\n</exclusion>\n` +
@@ -121,6 +138,7 @@ export const POST = route(
 
     // 1. Analyses par pièce (stockées : la check-list reste lisible sans nouvel appel).
     const maintenant = new Date().toISOString();
+    const types = new Set((await typesPieces()).map((x) => x.code));
     const parId = new Map(exploitables.map((x) => [x.id, x]));
     for (const a of sortie.documents) {
       const x = parId.get(a.documentId);
@@ -128,27 +146,29 @@ export const POST = route(
       const type = a.typeDetecte && CODES_PIECES.includes(a.typeDetecte) ? a.typeDetecte : null;
       const codes = new Set((definition(type ?? x.type)?.champs ?? []).map((ch) => ch.code));
       const analyse: AnalysePiece = { typeDetecte: type, resume: a.resume, champs: a.champs.filter((ch) => codes.has(ch.code)), analyseLe: maintenant, modele: reponse.model };
-      await prisma.document.update({ where: { id: x.id }, data: { analyse: JSON.stringify(analyse) } });
+      // Pièce déposée sans type (« Autre », glisser-déposer) : elle prend le type reconnu.
+      const reclasse = x.type === "AUTRE" && a.typeDetecte && types.has(a.typeDetecte) ? a.typeDetecte : null;
+      await prisma.document.update({ where: { id: x.id }, data: { analyse: JSON.stringify(analyse), ...(reclasse ? { type: reclasse } : {}) } });
     }
 
     // 2. Propositions de saisie, filtrées sur les référentiels (jamais enregistrées ici).
     const oui = (v: string) => ["oui", "non"].includes(v.trim().toLowerCase());
     const mapper = <T extends { code: string }>(liste: z.infer<typeof Reponse>[], ref: Map<string, T>, accepte: (r: z.infer<typeof Reponse>, o: T) => boolean) =>
       liste.filter((r) => ref.has(r.code) && accepte(r, ref.get(r.code)!)).map((r) => ({ ...r, valeur: r.valeur.trim().toLowerCase(), item: ref.get(r.code)! }));
-    const exclusion = mapper(sortie.exclusion, new Map(criteres.map((c) => [c.code, c])), (r) => oui(r.valeur)).map((r) => ({ critereId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation }));
-    const categorisation = mapper(sortie.categorisation, new Map(elements.map((q) => [q.code, q])), (r) => oui(r.valeur)).map((r) => ({ questionId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation }));
-    const evaluation = mapper(sortie.evaluation, new Map(questions.map((q) => [q.code, q])), (r, q) => (q.type === "nombre" ? Number.isFinite(Number(r.valeur.replace(",", "."))) : ["oui", "non", "na"].includes(r.valeur.trim().toLowerCase()))).map((r) => ({ questionId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation }));
+    const exclusion = mapper(sortie.exclusion, new Map(criteres.map((c) => [c.code, c])), (r) => oui(r.valeur)).map((r) => ({ critereId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation, documentId: r.documentId }));
+    const categorisation = mapper(sortie.categorisation, new Map(elements.map((q) => [q.code, q])), (r) => oui(r.valeur)).map((r) => ({ questionId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation, documentId: r.documentId }));
+    const evaluation = mapper(sortie.evaluation, new Map(questions.map((q) => [q.code, q])), (r, q) => (q.type === "nombre" ? Number.isFinite(Number(r.valeur.replace(",", "."))) : ["oui", "non", "na"].includes(r.valeur.trim().toLowerCase()))).map((r) => ({ questionId: r.item.id, code: r.code, libelle: libelle(r.item.libelle, ctx.langue), valeur: r.valeur, justification: r.justification, citation: r.citation, documentId: r.documentId }));
 
     const regionParCode = new Map(regions.map((r) => [r.code, r.id]));
     const zonesOk = new Set(zones.map((z) => z.code));
-    const identification: { champ: string; valeur: string; citation: string | null }[] = [];
+    const identification: { champ: string; valeur: string; citation: string | null; documentId: string | null }[] = [];
     for (const x of sortie.identification) {
       let v = x.valeur.trim();
       if (!v) continue;
       if (x.champ === "regionCode") {
         const rid = regionParCode.get(v);
         if (!rid) continue;
-        identification.push({ champ: "regionId", valeur: rid, citation: x.citation });
+        identification.push({ champ: "regionId", valeur: rid, citation: x.citation, documentId: x.documentId });
         continue;
       }
       if (x.champ === "typeZone" && !zonesOk.has(v)) continue;
@@ -156,17 +176,58 @@ export const POST = route(
         v = v.replace(/\s/g, "").replace(",", ".");
         if (!Number.isFinite(Number(v))) continue;
       }
-      identification.push({ champ: x.champ, valeur: v, citation: x.citation });
+      identification.push({ champ: x.champ, valeur: v, citation: x.citation, documentId: x.documentId });
     }
 
+    // Volet climat : nombres, booléen CBAM ou texte selon le champ.
+    const NUMERIQUES = new Set(["scope1", "scope2", "scope3", "partRenouvelable", "emissionsEvitees", "partExportUE"]);
+    const climat: { champ: string; valeur: string; citation: string | null; documentId: string | null }[] = [];
+    for (const x of sortie.climat) {
+      let v = x.valeur.trim();
+      if (!v) continue;
+      if (NUMERIQUES.has(x.champ)) {
+        v = v.replace(/\s/g, "").replace(",", ".");
+        const n = Number(v);
+        if (!Number.isFinite(n) || n < 0 || ((x.champ === "partRenouvelable" || x.champ === "partExportUE") && n > 100)) continue;
+      }
+      if (x.champ === "expositionCBAM") {
+        v = v.toLowerCase();
+        if (v !== "oui" && v !== "non") continue;
+      }
+      climat.push({ champ: x.champ, valeur: v, citation: x.citation, documentId: x.documentId });
+    }
+
+    // Propositions conservées sur le dossier : chaque volet les affiche à côté des champs concernés.
+    const nomDoc = new Map(docs.map((x) => [x.id, x.nom]));
+    const prop = (valeur: string, citation: string | null, documentId: string | null, justification?: string | null): Proposition => ({
+      valeur,
+      citation,
+      justification: justification ?? null,
+      documentId: documentId && nomDoc.has(documentId) ? documentId : null,
+      documentNom: documentId ? (nomDoc.get(documentId) ?? null) : null,
+    });
+    const conservees: PropositionsDossier = {
+      lueLe: new Date().toISOString(),
+      modele: reponse.model,
+      synthese: sortie.synthese,
+      documents: docs.map((x) => x.id),
+      identification: Object.fromEntries(identification.map((x) => [x.champ, prop(x.valeur, x.citation, x.documentId)])),
+      exclusion: Object.fromEntries(exclusion.map((x) => [x.critereId, prop(x.valeur, x.citation, x.documentId, x.justification)])),
+      categorisation: Object.fromEntries(categorisation.map((x) => [x.questionId, prop(x.valeur, x.citation, x.documentId, x.justification)])),
+      evaluation: Object.fromEntries(evaluation.map((x) => [x.questionId, prop(x.valeur, x.citation, x.documentId, x.justification)])),
+      climat: Object.fromEntries(climat.map((x) => [x.champ, prop(x.valeur, x.citation, x.documentId)])),
+    };
+    await prisma.dossier.update({ where: { id }, data: { propositionsOCR: JSON.stringify(conservees) } });
+
     await recalculer(id);
-    await journaliser(ctx, "analyse_ia", "dossier", id, { modele: reponse.model, pieces: exploitables.length, masquage: masquer, masques, propositions: { identification: identification.length, exclusion: exclusion.length, categorisation: categorisation.length, evaluation: evaluation.length } });
+    await journaliser(ctx, "analyse_ia", "dossier", id, { modele: reponse.model, pieces: exploitables.length, masquage: masquer, masques, transcrites, propositions: { identification: identification.length, exclusion: exclusion.length, categorisation: categorisation.length, evaluation: evaluation.length, climat: climat.length } });
     return {
       synthese: sortie.synthese,
       modele: reponse.model,
       masques,
       checklist: await checklistDossier(id),
-      propositions: { identification, exclusion, categorisation, evaluation, actionsEIE: sortie.actionsEIE },
+      transcrites,
+      propositions: { identification, exclusion, categorisation, evaluation, climat, actionsEIE: sortie.actionsEIE },
     };
   },
   { permission: "dossier:modifier" }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { ScanText } from "lucide-react";
 import { api } from "@/lib/client/api";
 import type { Checklist } from "@/lib/domaine/pieces";
 import { useApp } from "@/components/providers/application";
@@ -144,7 +144,7 @@ export function AssistantIA({ onFermer }: { onFermer: () => void }) {
       onFermer={onFermer}
       titre={
         <span className="flex items-center gap-2">
-          <Sparkles size={16} /> {t("ia.titre")}
+          <ScanText size={16} /> {t("ia.titre")}
         </span>
       }
       pied={
@@ -157,7 +157,7 @@ export function AssistantIA({ onFermer }: { onFermer: () => void }) {
           </>
         ) : (
           <Bouton onClick={analyser} disabled={enCours}>
-            {enCours ? <Sablier /> : <Sparkles />} {t("ia.lancer")}
+            {enCours ? <Sablier /> : <ScanText />} {t("ia.lancer")}
           </Bouton>
         )
       }

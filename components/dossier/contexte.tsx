@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { PropositionsDossier } from "@/lib/domaine/sources";
 import type { Transition } from "@/lib/domaine/workflow";
 
 export interface DossierComplet {
@@ -40,6 +41,7 @@ export interface DossierComplet {
   scoreESG: number | null;
   noteESG: string | null;
   scoreESGOctroi: number | null;
+  propositionsOCR: string | null;
   noteESGOctroi: string | null;
   detailESG: string | null;
   motifExclusion: string | null;
@@ -93,8 +95,19 @@ export interface Droits {
   transitions: Transition[];
 }
 
+export interface PieceDossier {
+  id: string;
+  type: string;
+  nom: string;
+  mime: string;
+  /** extraction | ocr ; null : pièce non lue (scan sans OCR). */
+  origineTexte: string | null;
+  createdAt: string;
+}
+
 export interface EtatDossier {
   dossier: DossierComplet;
+  pieces: PieceDossier[];
   droits: Droits;
   etapes: Record<string, boolean>;
   motifsBlocage: string[];
@@ -111,7 +124,28 @@ export interface Prefill {
   commentaire?: string;
 }
 
+/** Documents et OCR intelligent : dépôt en un geste, lecture, propositions conservées sur le dossier. */
+export interface Documents {
+  /** OCR intelligent utilisable (activé et autorisé dans le paramétrage). */
+  ocrActif: boolean;
+  propositions: PropositionsDossier | null;
+  /** Pièces déposées depuis la dernière lecture. */
+  aLire: PieceDossier[];
+  /** Types de pièces déposées et lisibles. */
+  typesLus: Set<string>;
+  /** Ouvre le choix de fichiers ; le type est celui de la pièce attendue (sinon reconnu à la lecture). */
+  deposer: (type?: string) => void;
+  /** Lit les pièces et met à jour les propositions. */
+  lire: () => Promise<void>;
+  /** Écarte des propositions refusées (toute la section si aucune clé). */
+  ecarter: (section: "identification" | "exclusion" | "categorisation" | "evaluation" | "climat", cles?: string[]) => Promise<void>;
+  enCours: "depot" | "lecture" | null;
+  /** Incrémenté à chaque dépôt : les listes de pièces se rechargent. */
+  version: number;
+}
+
 export type ValeurContexte = EtatDossier & {
+  documents: Documents;
   recharger: () => Promise<void>;
   prefill: Prefill;
   setPrefill: (p: Prefill) => void;

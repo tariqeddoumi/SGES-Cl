@@ -11,6 +11,9 @@ import { Bandeau, Carte, Chargement, Sablier } from "@/components/ui/mise-en-pag
 import { Puce } from "@/components/ui/puces";
 import { derogationPossible, reponseBloquante } from "@/lib/domaine/exclusion";
 import { useDossier } from "./contexte";
+import { BandeauDocuments, PropositionOCR } from "./sources";
+import { aExaminer, SOURCES_VOLETS } from "@/lib/domaine/sources";
+
 import { BarreVolet } from "./barre-volet";
 import { useLibelles } from "@/lib/client/listes";
 
@@ -25,7 +28,7 @@ interface Donnees {
 export function VoletExclusion() {
   const { t, lib, fmt } = useApp();
   const motifsTypes = useLibelles("motif_exclusion");
-  const { dossier, droits, recharger, prefill, consommer } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer, documents } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/exclusion`);
   const [reponses, setReponses] = useState<Record<string, boolean | undefined>>({});
@@ -86,8 +89,15 @@ export function VoletExclusion() {
     }
   };
 
+  const valeurDe = (id: string) => (reponses[id] === undefined ? "" : reponses[id] ? "oui" : "non");
+  const propositions = documents.propositions?.exclusion ?? {};
+  const aReprendre = droits.evaluation ? criteres.filter((c) => c.actif && aExaminer(propositions[c.id], valeurDe(c.id))) : [];
+  const reprendre = (ids: string[]) => setReponses((r) => ({ ...r, ...Object.fromEntries(ids.map((id) => [id, propositions[id]?.valeur === "oui"])) }));
+  const vides = criteres.filter((c) => c.actif && reponses[c.id] === undefined).map((c) => ({ code: c.code, sources: SOURCES_VOLETS.exclusion }));
+
   return (
     <div className="space-y-4">
+      {droits.evaluation && <BandeauDocuments vides={vides} nbPropositions={aReprendre.length} onToutReprendre={() => reprendre(aReprendre.map((c) => c.id))} />}
       <Carte
         titre={t("exclusion.titre")}
         description={t("exclusion.description")}
@@ -106,6 +116,9 @@ export function VoletExclusion() {
               <span className="w-6 shrink-0 text-[12px] font-semibold text-muted-foreground tabulaire">{i + 1}.</span>
               <div className="min-w-0 flex-1">
                 <p className="text-[13.5px] leading-relaxed">{lib(c.libelle)}</p>
+                {droits.evaluation && aExaminer(propositions[c.id], valeurDe(c.id)) && (
+                  <PropositionOCR className="mt-1.5" proposition={propositions[c.id]} rendu={<strong>{propositions[c.id].valeur === "oui" ? t("commun.oui") : t("commun.non")}</strong>} onReprendre={() => reprendre([c.id])} onEcarter={() => documents.ecarter("exclusion", [c.id])} />
+                )}
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   <Puce ton="neutre">
                     {t("exclusion.source")} : {c.source}

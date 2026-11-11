@@ -13,6 +13,8 @@ import { Bandeau, Carte, Chargement, Progression, Sablier } from "@/components/u
 import { PuceNiveau } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { BandeauDocuments, PropositionOCR } from "./sources";
+import { aExaminer, SOURCES_CLIMAT } from "@/lib/domaine/sources";
 import { useLibelles } from "@/lib/client/listes";
 
 type Region = Record<string, number> & { libelle: string };
@@ -81,7 +83,7 @@ export function VoletClimat() {
   const { t, lib, fmt, parametres } = useApp();
   const mesuresTypes = useLibelles("mesure_adaptation");
   const sourcesTypes = useLibelles("source_emissions");
-  const { dossier, droits, recharger } = useDossier();
+  const { dossier, droits, recharger, documents } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/climat`);
   const [f, setF] = useState<Formulaire | null>(null);
@@ -168,9 +170,39 @@ export function VoletClimat() {
   };
 
   const ton = (s: number) => (s >= 75 ? "alerte" : s >= 50 ? "alerte" : s >= 25 ? "vigilance" : "favorable") as "alerte" | "vigilance" | "favorable";
+  // Propositions de l'OCR intelligent (bilan carbone, audit énergétique, EIES…) et documents utiles.
+  type ChampClimat = keyof typeof SOURCES_CLIMAT;
+  const propositionsClimat = documents.propositions?.climat ?? {};
+  const champsClimat = Object.keys(SOURCES_CLIMAT) as ChampClimat[];
+  const valeurClimat = (c: ChampClimat) => (c === "expositionCBAM" ? (f.expositionCBAM ? "oui" : "non") : String(f[c as keyof Formulaire] ?? ""));
+  const aReprendreClimat = lecture ? [] : champsClimat.filter((c) => aExaminer(propositionsClimat[c], valeurClimat(c)));
+  const reprendreClimat = (cs: ChampClimat[]) =>
+    setF((x) => {
+      if (!x) return x;
+      const n = { ...x } as Formulaire;
+      for (const c of cs) {
+        const v = propositionsClimat[c]?.valeur ?? "";
+        if (c === "expositionCBAM") n.expositionCBAM = v === "oui";
+        else (n as unknown as Record<string, string>)[c] = v;
+        // Émissions tirées d'un document du client : méthode « déclarée », source renseignée.
+        if ((c === "scope1" || c === "scope2" || c === "scope3") && n.methodeEmissions === "estimee_secteur") n.methodeEmissions = "declaree";
+        if ((c === "scope1" || c === "scope2") && !n.sourceEmissions && propositionsClimat[c]?.documentNom) n.sourceEmissions = propositionsClimat[c].documentNom!;
+      }
+      return n;
+    });
+  const videsClimat = champsClimat.filter((c) => c !== "expositionCBAM" && !valeurClimat(c).trim()).map((c) => ({ code: c, sources: SOURCES_CLIMAT[c] }));
+
   return (
     <div className="space-y-4">
       <Bandeau ton="info">{t("climat.description")}</Bandeau>
+      {!lecture && (
+        <div className="space-y-2">
+          <BandeauDocuments vides={videsClimat} nbPropositions={aReprendreClimat.length} onToutReprendre={() => reprendreClimat(aReprendreClimat)} />
+          {aReprendreClimat.map((c) => (
+            <PropositionOCR key={c} proposition={propositionsClimat[c]} rendu={<><span className="text-muted-foreground">{t(`ocr.climat.${c}`)} :</span> <strong>{c === "expositionCBAM" ? t(propositionsClimat[c].valeur === "oui" ? "commun.oui" : "commun.non") : propositionsClimat[c].valeur}</strong></>} onReprendre={() => reprendreClimat([c])} onEcarter={() => documents.ecarter("climat", [c])} />
+          ))}
+        </div>
+      )}
       {!donnees.climat && <Bandeau ton="vigilance">{t("climat.nonRenseigne")}</Bandeau>}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-4">

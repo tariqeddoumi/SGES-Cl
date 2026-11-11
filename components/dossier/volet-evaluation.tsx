@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { MessageSquare, Printer, Sparkles } from "lucide-react";
+import { MessageSquare, Printer, ScanText } from "lucide-react";
 import { api, useDonnees } from "@/lib/client/api";
 import { calculerRisque, estRisque, lireSeuils } from "@/lib/domaine/risque";
 import { lireJson, cn } from "@/lib/utils";
@@ -15,6 +15,8 @@ import { Puce, PuceNiveau } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
 import { AssistantIA } from "./assistant-ia";
+import { BandeauDocuments, IndicationSources, PropositionOCR } from "./sources";
+import { aExaminer, sourcesQuestion } from "@/lib/domaine/sources";
 
 interface Question {
   id: string;
@@ -43,7 +45,7 @@ type Saisie = Record<string, { valeur: string; commentaire: string }>;
 
 export function VoletEvaluation() {
   const { t, lib, parametres } = useApp();
-  const { dossier, droits, recharger, prefill, consommer } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer, documents } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/evaluation`);
   const [saisie, setSaisie] = useState<Saisie>({});
@@ -172,12 +174,27 @@ export function VoletEvaluation() {
     return null;
   };
 
+  const propositions = documents.propositions?.evaluation ?? {};
+  const aReprendre = lecture ? [] : questions.filter((q) => aExaminer(propositions[q.id], saisie[q.id]?.valeur));
+  const reprendre = (ids: string[]) =>
+    setSaisie((s) => {
+      const n = { ...s };
+      for (const id of ids) {
+        const p = propositions[id];
+        if (p) n[id] = { valeur: p.valeur, commentaire: n[id]?.commentaire || [p.justification, p.documentNom && `(${p.documentNom})`].filter(Boolean).join(" ") };
+      }
+      return n;
+    });
+  const vides = questions.filter((q) => !(saisie[q.id]?.valeur ?? "")).map((q) => ({ code: q.code, sources: sourcesQuestion(q.code) }));
+  const libValeur = (v: string) => (v === "oui" ? t("commun.oui") : v === "non" ? t("commun.non") : v === "na" ? t("commun.na") : v);
+
   const nbRepondues = synthese.nbRepondues;
   return (
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-4">
           <Bandeau ton="info">{t("evaluation.description", { categorie: donnees.categorie })}</Bandeau>
+          {!lecture && <BandeauDocuments vides={vides} nbPropositions={aReprendre.length} onToutReprendre={() => reprendre(aReprendre.map((q) => q.id))} />}
           {(donnees.questionnaire.posees < donnees.questionnaire.total || donnees.questionnaire.complet || droits.reclasser) && (
             <div className="no-print flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-border bg-surface px-3 py-2 text-[12.5px]">
               <span>
@@ -203,7 +220,7 @@ export function VoletEvaluation() {
             <span className="ms-auto flex gap-2">
               {parametres.IA_ACTIVE === "true" && droits.evaluation && (
                 <Bouton variante="contour" taille="petite" onClick={() => setAssistant(true)}>
-                  <Sparkles /> {t("evaluation.assistantIA")}
+                  <ScanText /> {t("evaluation.assistantIA")}
                 </Bouton>
               )}
               <Bouton variante="contour" taille="petite" asChild>
@@ -268,6 +285,17 @@ export function VoletEvaluation() {
                                 )}
                               </div>
                             </div>
+                            {!lecture && aExaminer(propositions[q.id], v) ? (
+                              <PropositionOCR
+                                className="mt-2"
+                                proposition={propositions[q.id]}
+                                rendu={<strong>{libValeur(propositions[q.id].valeur)}</strong>}
+                                onReprendre={() => reprendre([q.id])}
+                                onEcarter={() => documents.ecarter("evaluation", [q.id])}
+                              />
+                            ) : (
+                              !v && !lecture && <IndicationSources className="mt-1.5" sources={sourcesQuestion(q.code)} />
+                            )}
                             {q.type === "texte" && (
                               <textarea aria-label={lib(q.libelle)} dir="auto" value={v} disabled={lecture} onChange={(e) => maj(q.id, "valeur", e.target.value)} rows={2} className={cn(CLASSE_CHAMP, "mt-2")} />
                             )}

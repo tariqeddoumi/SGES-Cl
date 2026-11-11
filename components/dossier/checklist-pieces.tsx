@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, ClipboardList, FileWarning, Sparkles, Upload } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardList, FileWarning, ScanText, Upload } from "lucide-react";
 import type { Checklist, LignePiece, StatutPiece } from "@/lib/domaine/pieces";
 import { useApp } from "@/components/providers/application";
 import { Bouton } from "@/components/ui/bouton";
@@ -92,7 +92,7 @@ export function ChecklistPieces({
         iaActive &&
         droits && (
           <Bouton variante="contour" taille="petite" onClick={onAnalyser}>
-            <Sparkles /> {t("pieces.checklist.analyser")}
+            <ScanText /> {t("pieces.checklist.analyser")}
           </Bouton>
         )
       }

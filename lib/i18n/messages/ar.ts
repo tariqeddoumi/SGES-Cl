@@ -82,7 +82,7 @@ export const ar: Messages = {
     reessayer: "إعادة المحاولة",
   },
   app: {
-    titreDefaut: "نظام التدبير البيئي والاجتماعي",
+    titreDefaut: "ESG Climat 360",
     sousTitreDefaut: "التدبير البيئي والاجتماعي والمناخي",
   },
   nav: {
@@ -98,7 +98,7 @@ export const ar: Messages = {
     clients: "الزبناء",
     plansAction: "خطط العمل",
     visites: "زيارات المواقع",
-    reporting: "تقارير النظام",
+    reporting: "التقارير",
     climat: "المناخ",
     referentiel: "الإطار التنظيمي",
     audit: "سجل التدقيق",
@@ -516,7 +516,7 @@ export const ar: Messages = {
   },
   fiche: {
     titre: "بطاقة تقييم المخاطر البيئية والاجتماعية",
-    sousTitre: "النظام — تقييم المخاطر البيئية والاجتماعية",
+    sousTitre: "ESG Climat 360 — تقييم المخاطر البيئية والاجتماعية والمناخية",
     partie1: "1. معلومات البنك / الوكالة",
     partie2: "2. معلومات الزبون والمشروع",
     partie3: "3. خلاصات التقييم البيئي والاجتماعي",
@@ -534,7 +534,7 @@ export const ar: Messages = {
     signatureCharge: "المكلف بالملف",
     signatureDirecteur: "المدير (المصادقة)",
     integration: "المعطيات المرسلة إلى منصة منح القروض",
-    integrationAide: "تسترجع منصة منح القروض هذه البطاقة عبر واجهة برمجة النظام (مرجع الملف).",
+    integrationAide: "تسترجع منصة منح القروض هذه البطاقة عبر واجهة برمجة ESG Climat 360 (مرجع الملف).",
   },
   validation: {
     titre: "المصادقة والقفل",
@@ -816,7 +816,7 @@ export const ar: Messages = {
     risqueClimatEleve: "مخاطر مناخية مرتفعة أو مرتفعة جدا",
   },
   reporting: {
-    titre: "تقارير النظام",
+    titre: "تقارير ESG Climat 360",
     description: "الملفات المعالجة خلال فترة، حسب الكيان: أساس التقرير الفصلي للجنتي المخاطر والتدقيق (المسطرة §3.10).",
     periode: "الفترة",
     trimestre: "الفصل",
@@ -853,7 +853,7 @@ export const ar: Messages = {
   },
   referentiel: {
     titre: "الإطار التنظيمي والمنهجية",
-    description: "النصوص المرجعية للنظام والقواعد التي تطبقها الأداة.",
+    description: "النصوص المرجعية والقواعد التي تطبقها ESG Climat 360.",
   },
   audit: {
     titre: "سجل التدقيق",

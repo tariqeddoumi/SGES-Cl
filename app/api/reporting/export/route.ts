@@ -1,3 +1,4 @@
+import { NOM_OUTIL } from "@/lib/marque";
 import ExcelJS from "exceljs";
 import { libelle } from "@/lib/i18n/libelle";
 import { dictionnaire, traduire } from "@/lib/i18n";
@@ -25,7 +26,7 @@ export const GET = route(
     const lv = (liste: string, code: string | null) => (code ? libelle(listes.find((l) => l.liste === liste && l.code === code)?.libelle, ctx.langue) || code : "");
 
     const wb = new ExcelJS.Workbook();
-    wb.creator = "SGES";
+    wb.creator = NOM_OUTIL;
     wb.created = new Date();
     const f1 = wb.addWorksheet(t("nav.dossiers"), { views: [{ state: "frozen", ySplit: 1, rightToLeft: ctx.langue === "ar" }] });
     f1.columns = [
@@ -121,7 +122,7 @@ export const GET = route(
     f2.getColumn("budget").numFmt = "#,##0";
 
     await journaliser(ctx, "export", "reporting", null, { lignes: dossiers.length, format: sp.get("format") ?? "xlsx" });
-    const nom = `sges-${new Date().toISOString().slice(0, 10)}`;
+    const nom = `ESG-Climat-360_reporting_${new Date().toISOString().slice(0, 10)}`;
     if (sp.get("format") === "csv") {
       const buf = await wb.csv.writeBuffer({ sheetName: t("nav.dossiers"), formatterOptions: { delimiter: ";", writeBOM: true } });
       return new Response(new Uint8Array(buf as ArrayBuffer), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${nom}.csv"` } });

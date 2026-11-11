@@ -1,4 +1,4 @@
-# Méthodologie
+# ESG Climat 360 — Méthodologie
 
 Toutes les règles ci-dessous sont dans `lib/domaine/` (fonctions pures, testées) et partagées
 par le serveur et l'interface : le calcul affiché pendant la saisie est celui qui est enregistré.

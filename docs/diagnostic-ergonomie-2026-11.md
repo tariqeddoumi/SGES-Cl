@@ -1,4 +1,4 @@
-# Diagnostic d'ergonomie et d'automatisation — 11/11/2026
+# ESG Climat 360 — Diagnostic d'ergonomie et d'automatisation — 11/11/2026
 
 Objectif : un outil plus simple, plus rapide, avec moins d'étapes, où **le document précède la saisie**.
 Méthode : relecture du parcours du chargé d'affaires (création → soumission), du code des écrans et des
@@ -62,7 +62,7 @@ Classées par gain / effort.
 | 2 | **Photos de visite** lues par l'OCR (étiquettes, extincteurs, aire de stockage) pour proposer constats et conformité | Rapport de visite plus rapide |
 | 3 | **Suivi des actions** : lecture des preuves de réalisation déposées (facture, rapport) et proposition de passage à « réalisée » | Note ESG actualisée sans saisie |
 | 3 | **Mode hors connexion** (application mobile) pour les visites, synchronisé ensuite | Zones sans réseau |
-| 3 | **Import du dossier Excel** (outil Excel SGES) dans l'outil web | Pas de double saisie après une visite |
+| 3 | **Import du dossier Excel** (outil Excel ESG Climat 360) dans l'outil web | Pas de double saisie après une visite |
 
 ## 5. Points de vigilance
 

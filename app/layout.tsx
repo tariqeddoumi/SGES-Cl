@@ -12,11 +12,12 @@ import { chargerCours } from "@/lib/serveur/devises";
 import { chargerParametres, parametresPublics } from "@/lib/serveur/parametres";
 import { chargerArbre, habillageHerite } from "@/lib/serveur/perimetre";
 import { prisma } from "@/lib/serveur/prisma";
+import { NOM_OUTIL, SOUS_TITRE_OUTIL } from "@/lib/marque";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SGES", template: "%s · SGES" },
-  description: "Système de gestion environnementale, sociale et climatique des crédits d'investissement",
+  title: { default: NOM_OUTIL, template: `%s · ${NOM_OUTIL}` },
+  description: SOUS_TITRE_OUTIL,
   robots: { index: false, follow: false },
 };
 
@@ -87,7 +88,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           parametres={parametresPublics(parametres)}
           session={session}
           habillage={{
-            nom: h.nomOutil || parametres.APP_NOM || "SGES",
+            nom: h.nomOutil || parametres.APP_NOM || NOM_OUTIL,
             sousTitre: parametres.APP_SOUS_TITRE || "",
             logoUrl: h.logoUrl || parametres.APP_LOGO_URL || "",
             couleur: couleur || "",

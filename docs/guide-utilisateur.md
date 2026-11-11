@@ -1,4 +1,4 @@
-# Guide utilisateur
+# ESG Climat 360 — Guide utilisateur
 
 ## Chargé d'affaires / clientèle / analyste
 
@@ -36,7 +36,7 @@ dossier reste verrouillé jusqu'à la décision du comité.
 - Reçoit les **notifications** réglementaires (exclusion, catégorie A, changement de catégorie,
   rejets pour motif E&S).
 - Peut **reclasser** un dossier (justification obligatoire).
-- Pilote via **Reporting SGES** (période, entité, dossiers sans décision, export Excel pour le
+- Pilote via **Reporting ESG Climat 360** (période, entité, dossiers sans décision, export Excel pour le
   reporting trimestriel aux comités Risques et Audit) et **Climat** (portefeuille).
 - Fait évoluer les référentiels : questionnaires, actions types, liste d'exclusion, secteurs,
   régions (Paramétrage).

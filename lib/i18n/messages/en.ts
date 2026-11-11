@@ -82,7 +82,7 @@ export const en: Messages = {
     reessayer: "Retry",
   },
   app: {
-    titreDefaut: "ESMS",
+    titreDefaut: "ESG Climat 360",
     sousTitreDefaut: "Environmental, social and climate management",
   },
   nav: {
@@ -98,7 +98,7 @@ export const en: Messages = {
     clients: "Clients",
     plansAction: "Action plans",
     visites: "Site visits",
-    reporting: "ESMS reporting",
+    reporting: "Reporting",
     climat: "Climate",
     referentiel: "Regulatory framework",
     audit: "Audit log",
@@ -516,7 +516,7 @@ export const en: Messages = {
   },
   fiche: {
     titre: "Environmental and social risk assessment sheet",
-    sousTitre: "ESMS — Environmental and social risk assessment",
+    sousTitre: "ESG Climat 360 — Environmental, social and climate risk assessment",
     partie1: "1. Bank / branch information",
     partie2: "2. Client and project information",
     partie3: "3. Environmental and social assessment conclusions",
@@ -534,7 +534,7 @@ export const en: Messages = {
     signatureCharge: "File manager",
     signatureDirecteur: "Director (validation)",
     integration: "Data sent to the credit origination platform",
-    integrationAide: "The credit platform retrieves this sheet through the ESMS API (file reference).",
+    integrationAide: "The credit platform retrieves this sheet through the ESG Climat 360 API (file reference).",
   },
   validation: {
     titre: "Validation and locking",
@@ -816,8 +816,8 @@ export const en: Messages = {
     risqueClimatEleve: "High or very high climate risk",
   },
   reporting: {
-    titre: "ESMS reporting",
-    description: "Files processed by the ESMS over a period, by entity: basis of the quarterly report to the Risk and Audit committees (procedure §3.10).",
+    titre: "ESG Climat 360 reporting",
+    description: "Files processed by ESG Climat 360 over a period, by entity: basis of the quarterly report to the Risk and Audit committees (procedure §3.10).",
     periode: "Period",
     trimestre: "Quarter",
     moisPrecedent: "Last month",
@@ -853,7 +853,7 @@ export const en: Messages = {
   },
   referentiel: {
     titre: "Regulatory framework and methodology",
-    description: "Reference texts of the ESMS and rules applied by the tool.",
+    description: "Reference texts and rules applied by ESG Climat 360.",
   },
   audit: {
     titre: "Audit log",

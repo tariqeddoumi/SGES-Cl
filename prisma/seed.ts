@@ -186,7 +186,7 @@ async function administrateur() {
     data: {
       email,
       nom: "Administrateur",
-      prenom: "SGES",
+      prenom: "ESG Climat 360",
       roleId: role.id,
       entiteId: null,
       motDePasseHash: await bcrypt.hash(mdp, 10),

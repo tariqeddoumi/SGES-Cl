@@ -1,4 +1,4 @@
-"""Outil Excel SGES : évaluation E&S, climat et note ESG d'un crédit d'investissement.
+"""Outil Excel ESG Climat 360 : évaluation E&S, climat et note ESG d'un crédit d'investissement.
 
 Mêmes règles que l'outil web (lib/domaine) : déclenchement, liste d'exclusion, catégorisation,
 questionnaire (niveaux et modules), risque E&S résiduel, score climat, émissions financées,
@@ -99,7 +99,7 @@ def cellule(w, ref, v=None, font=f_norm, fill_=None, align=None, fmt=None, bord=
 def saisie(w, ref, v=None, fmt=None, aide=None):
     c = cellule(w, ref, v, font=Font(name=POLICE, size=10, color="1F3864"), fill_=FILL_SAISIE, fmt=fmt)
     if aide:
-        c.comment = Comment(aide, "SGES")
+        c.comment = Comment(aide, "ESG Climat 360")
     return c
 
 
@@ -121,7 +121,7 @@ REP_ONNA = '"Oui,Non,Sans objet"'
 
 # ════════════════════════════ Paramètres ════════════════════════════════
 P = ws["Paramètres"]
-entete(P, "Paramètres du modèle", "Valeurs par défaut de l'outil web SGES — modifiables ici (cellules jaunes).")
+entete(P, "Paramètres du modèle", "Valeurs par défaut de l'outil web ESG Climat 360 — modifiables ici (cellules jaunes).")
 P.column_dimensions["A"].width, P.column_dimensions["B"].width, P.column_dimensions["C"].width = 52, 16, 70
 params = [
     ("Déclenchement", None, None, None),
@@ -167,7 +167,7 @@ for lib, val, n, note in params:
     if n == "P_RELEVER_A":
         liste(P, f"B{r}", OUINON)
     r += 1
-P.cell(r + 1, 1, "Source : paramètres par défaut de l'outil web SGES (Paramétrage › Paramètres généraux), à valider par le Responsable RSE et la Fonction Risques.").font = f_petit
+P.cell(r + 1, 1, "Source : paramètres par défaut de l'outil web ESG Climat 360 (Paramétrage › Paramètres généraux), à valider par le Responsable RSE et la Fonction Risques.").font = f_petit
 
 # ════════════════════════════ Référentiels ══════════════════════════════
 R = ws["Référentiels"]
@@ -430,7 +430,7 @@ for i, x in enumerate(D["questions"]):
     Q[f"L{rr}"].alignment = CENTRE
     if x["code"] == "SIG01":
         calc(Q, f"M{rr}", '=IF(ID_EFFECTIF="","",ID_EFFECTIF)')
-        Q[f"M{rr}"].comment = Comment("Repris de l'onglet Identification (effectif).", "SGES")
+        Q[f"M{rr}"].comment = Comment("Repris de l'onglet Identification (effectif).", "ESG Climat 360")
     else:
         saisie(Q, f"M{rr}", EXEMPLE_REP.get(x["code"]) if EXEMPLE else None)
         if x["type"] == "oui_non":
@@ -780,7 +780,7 @@ for ref in ("B33", "B34", "B35"):
 
 # ════════════════════════════ Méthode ═══════════════════════════════════
 MT = ws["Méthode"]
-entete(MT, "Méthode des scores", "Mêmes règles que l'outil web SGES (méthodes indicatives, à valider par le Responsable RSE et la Fonction Risques).", logo=False)
+entete(MT, "Méthode des scores", "Mêmes règles que l'outil web ESG Climat 360 (méthodes indicatives, à valider par le Responsable RSE et la Fonction Risques).", logo=False)
 MT.column_dimensions["A"].width, MT.column_dimensions["B"].width = 30, 120
 METHODE = [
     ("Déclenchement", "Évaluation obligatoire si le projet est de catégorie A, ou si le montant d'investissement (à défaut, le montant demandé) dépasse le seuil (10 M MAD par défaut). Crédit de fonctionnement : hors périmètre."),
@@ -805,7 +805,7 @@ A.column_dimensions["A"].width, A.column_dimensions["B"].width, A.column_dimensi
 img = XLImage(LOGO)
 img.width, img.height = 168, 80
 A.add_image(img, "B1")
-A["C6"] = "SGES — Évaluation environnementale, sociale et climatique"
+A["C6"] = "ESG Climat 360 — Évaluation environnementale, sociale et climatique"
 A["C6"].font = Font(name=POLICE, size=20, bold=True, color=ORANGE)
 A["C7"] = "Outil Excel du chargé d'affaires : liste d'exclusion, catégorisation, questionnaire guidé, climat, plan d'actions, risque E&S et note ESG."
 A["C7"].font = f_sous
@@ -849,7 +849,7 @@ A.conditional_formatting.add("D31", FormulaRule(formula=['OR(LEFT(D31,1)="D",LEF
 A["C33"] = ("Exemple fictif pré-rempli : hôtel de 320 chambres à Taghazout (catégorie B). Effacez les cellules jaunes pour un nouveau dossier, ou utilisez la version vierge."
             if EXEMPLE else "Version vierge : commencez par l'onglet Identification.")
 A["C33"].font = f_petit
-A["C34"] = "Mêmes règles que l'outil web SGES (onglet Méthode). Méthodes indicatives, à valider par le Responsable RSE et la Fonction Risques."
+A["C34"] = "Mêmes règles que l'outil web ESG Climat 360 (onglet Méthode). Méthodes indicatives, à valider par le Responsable RSE et la Fonction Risques."
 A["C34"].font = f_petit
 
 # Exemple : négociation du plan (retenue « Oui » sur les actions proposées, une écartée)
@@ -864,7 +864,7 @@ for w in wb.worksheets:
     w.page_setup.fitToWidth, w.page_setup.fitToHeight = 1, 0
     w.sheet_properties.pageSetUpPr.fitToPage = True
     w.print_options.horizontalCentered = True
-    w.oddFooter.left.text = "SGES — Banque Populaire · &A"
+    w.oddFooter.left.text = "ESG Climat 360 — Banque Populaire · &A"
     w.oddFooter.right.text = "&P / &N"
 wb.active = 0
 wb.save(SORTIE)

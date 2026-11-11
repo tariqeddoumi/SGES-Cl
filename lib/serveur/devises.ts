@@ -7,7 +7,8 @@ let cache: { cours: Cours[]; expire: number } | null = null;
 
 export async function chargerCours(): Promise<Cours[]> {
   if (cache && cache.expire > Date.now()) return cache.cours;
-  const lignes = await prisma.tauxChange.findMany({ orderBy: { date: "asc" }, select: { deviseCode: true, date: true, taux: true, source: true } });
+  // Objets simples (le client Prisma étendu ajoute des propriétés-symboles) : transmissibles aux composants client.
+  const lignes = (await prisma.tauxChange.findMany({ orderBy: { date: "asc" }, select: { deviseCode: true, date: true, taux: true, source: true } })).map((l) => ({ deviseCode: l.deviseCode, date: l.date, taux: Number(l.taux), source: l.source }));
   cache = { cours: lignes, expire: Date.now() + 60_000 };
   return lignes;
 }

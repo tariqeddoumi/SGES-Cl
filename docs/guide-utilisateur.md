@@ -11,8 +11,10 @@
 3. **Catégorisation** : répondre aux 25 éléments ; la catégorie s'affiche en direct.
 4. **Risques E&S** : remplir la check-list avec le client (« Imprimer le questionnaire » pour une
    visite) ; les réponses en rouge signalent un risque non maîtrisé. Rédiger le commentaire
-   (bouton « Insérer le canevas »). En catégorie A, joindre l'EIES dans **Pièces** ; l'assistant
-   IA peut proposer des réponses à partir de l'étude.
+   (bouton « Insérer le canevas »). Déposer les pièces du client (bouton « Déposer
+   des documents » ou glisser-déposer) : l'**OCR intelligent** les lit, y compris scans et photos, et
+   propose les réponses sous chaque question (« Reprendre » / « Écarter »). Sous une question vide,
+   « Où trouver l'information » indique le document à demander. En catégorie A, l'EIES est obligatoire.
 5. **Climat** : vérifier les aléas repris de la région, renseigner sensibilité, adaptation,
    facteurs de transition, émissions si connues.
 6. **Plan d'actions** : pour chaque action proposée, indiquer si le client la retient (sinon sa

@@ -78,6 +78,8 @@ export const CATALOGUE_PARAMETRES: DefParametre[] = [
   { cle: "IA_REFERENCE_VALIDATION", groupe: "integration", type: "texte", defaut: "" },
   { cle: "IA_ANONYMISER", groupe: "integration", type: "booleen", defaut: "true", public: true },
   { cle: "IA_MODELE", groupe: "integration", type: "texte", defaut: "claude-opus-5-5" },
+  { cle: "OCR_SCANS", groupe: "integration", type: "booleen", defaut: "true", public: true },
+  { cle: "OCR_LECTURE_AUTO", groupe: "integration", type: "booleen", defaut: "true", public: true },
 ];
 
 export type Parametres = Record<string, string>;

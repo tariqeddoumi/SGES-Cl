@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Download, Paperclip, Trash2, Upload } from "lucide-react";
+import { useState } from "react";
+import { Download, Paperclip, RotateCw, ScanText, Trash2, Upload } from "lucide-react";
 import { api, useDonnees } from "@/lib/client/api";
 import { useReferentiels } from "@/lib/client/referentiels";
 import { useApp } from "@/components/providers/application";
@@ -23,36 +23,33 @@ interface Piece {
   mime: string;
   taille: number;
   createdAt: string;
+  origineTexte: string | null;
 }
 
 export function VoletPieces() {
-  const { t, lib, fmt, parametres } = useApp();
-  const { dossier, droits, recharger } = useDossier();
+  const { t, lib, fmt } = useApp();
+  const { dossier, droits, recharger, documents } = useDossier();
   const ref = useReferentiels();
   const toast = useToast();
-  const { donnees, recharger: rechargerPieces } = useDonnees<Piece[]>(`/api/dossiers/${dossier.id}/documents`);
-  const [type, setType] = useState(dossier.categorie === "A" ? "EIES" : "AUTRE");
-  const [enCours, setEnCours] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
-  const { donnees: checklist, recharger: rechargerChecklist } = useDonnees<Checklist>(`/api/dossiers/${dossier.id}/checklist`);
+  // Les listes se rechargent après chaque dépôt ou lecture (documents.version).
+  const { donnees, recharger: rechargerPieces } = useDonnees<Piece[]>(`/api/dossiers/${dossier.id}/documents?v=${documents.version}`);
+  const [type, setType] = useState("AUTRE");
+  const [relecture, setRelecture] = useState<string | null>(null);
+  const { donnees: checklist, recharger: rechargerChecklist } = useDonnees<Checklist>(`/api/dossiers/${dossier.id}/checklist?v=${documents.version}`);
+  const enCours = !!documents.enCours;
   const [canevas, setCanevas] = useState<string | null>(null);
   const [assistant, setAssistant] = useState(false);
 
-  const deposer = async (f: File) => {
-    if (f.size > 10 * 1024 * 1024) return toast(t("pieces.tropGros"), "erreur");
-    setEnCours(true);
-    const fd = new FormData();
-    fd.append("fichier", f);
-    fd.append("type", type);
+  const relire = async (id: string) => {
+    setRelecture(id);
     try {
-      await api(`/api/dossiers/${dossier.id}/documents`, { formData: fd });
-      toast(t("commun.enregistre"));
+      const r = await api<{ origineTexte: string | null; erreurOCR: string | null }>(`/api/dossiers/${dossier.id}/documents/${id}/lecture`, { body: {} });
+      toast(r.erreurOCR ? t("ocr.erreurTranscription", { nom: "", message: r.erreurOCR }) : r.origineTexte ? t("commun.enregistre") : t("ocr.illisible"), r.erreurOCR ? "erreur" : undefined);
       await Promise.all([rechargerPieces(), rechargerChecklist(), recharger()]);
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e), "erreur");
     } finally {
-      setEnCours(false);
-      if (input.current) input.current.value = "";
+      setRelecture(null);
     }
   };
   const supprimer = async (id: string) => {
@@ -70,24 +67,21 @@ export function VoletPieces() {
           checklist={checklist}
           categorie={dossier.categorie}
           droits={droits.pieces}
-          iaActive={parametres.IA_ACTIVE === "true"}
+          iaActive={documents.ocrActif}
           libType={libType}
-          onDeposer={(code) => {
-            setType(code);
-            input.current?.click();
-          }}
+          onDeposer={(code) => documents.deposer(code)}
           onCanevas={setCanevas}
-          onAnalyser={() => setAssistant(true)}
+          onAnalyser={() => (documents.aLire.length ? documents.lire() : setAssistant(true))}
         />
       )}
       <Carte titre={t("pieces.titre")} description={t("pieces.description")} sansMarge>
         {droits.pieces && (
           <div className="flex flex-wrap items-end gap-3 border-b border-border p-4">
             <Selecteur id="type-piece" className="min-w-[260px]" libelle={t("pieces.typePiece")} valeur={type} onChange={setType} options={(ref?.listes.type_document ?? []).map((x) => ({ valeur: x.code, libelle: lib(x.libelle) }))} sansVide />
-            <input ref={input} type="file" className="hidden" aria-label={t("pieces.deposer")} accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xlsx,.doc,.xls,.txt" onChange={(e) => e.target.files?.[0] && deposer(e.target.files[0])} />
-            <Bouton onClick={() => input.current?.click()} disabled={enCours}>
+            <Bouton onClick={() => documents.deposer(type)} disabled={enCours}>
               {enCours ? <Sablier /> : <Upload />} {t("pieces.deposer")}
             </Bouton>
+            <p className="basis-full text-[12px] text-muted-foreground">{documents.ocrActif ? t("ocr.aideDepot") : t("ocr.aideDepotSansOCR")}</p>
           </div>
         )}
         {!donnees ? (
@@ -111,11 +105,25 @@ export function VoletPieces() {
               {donnees.map((p) => (
                 <Tr key={p.id}>
                   <Td>{libType(p.type)}</Td>
-                  <Td className="max-w-[320px] truncate">{p.nom}</Td>
+                  <Td className="max-w-[320px]">
+                    <span className="block truncate">{p.nom}</span>
+                    {p.origineTexte === "ocr" ? (
+                      <span className="inline-flex items-center gap-1 text-[11.5px] text-primary">
+                        <ScanText size={12} /> {t("ocr.transcrit")}
+                      </span>
+                    ) : (
+                      !p.origineTexte && p.type !== "PHOTO" && <span className="block text-[11.5px] text-warning">{t("ocr.nonLu")}</span>
+                    )}
+                  </Td>
                   <Td alignFin>{fmt.nombre(p.taille / 1024, 0)} Ko</Td>
                   <Td>{fmt.dateHeure(p.createdAt)}</Td>
                   <Td alignFin>
                     <span className="inline-flex gap-1">
+                      {documents.ocrActif && droits.pieces && /^(application\/pdf|image\/)/.test(p.mime) && (
+                        <Bouton variante="fantome" taille="iconePetite" onClick={() => relire(p.id)} disabled={!!relecture || enCours} aria-label={t("ocr.relire")} title={t("ocr.relire")}>
+                          {relecture === p.id ? <Sablier /> : <RotateCw />}
+                        </Bouton>
+                      )}
                       <Bouton variante="fantome" taille="iconePetite" asChild>
                         <a href={`/api/dossiers/${dossier.id}/documents/${p.id}`} aria-label={t("commun.telecharger")}>
                           <Download />

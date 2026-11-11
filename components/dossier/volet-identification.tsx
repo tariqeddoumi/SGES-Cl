@@ -11,10 +11,12 @@ import { Bandeau, Carte, Chargement, Ligne, Sablier } from "@/components/ui/mise
 import { FormulaireIdentification, valeursInitiales, versApi, type ValeursIdentification } from "./formulaire-identification";
 import { useDossier } from "./contexte";
 import { BarreVolet } from "./barre-volet";
+import { BandeauDocuments, PropositionOCR } from "./sources";
+import { aExaminer, SOURCES_IDENTIFICATION } from "@/lib/domaine/sources";
 
 export function VoletIdentification() {
   const { t, fmt, lib, deviseReference } = useApp();
-  const { dossier: d, droits, recharger, seuil, prefill, consommer } = useDossier();
+  const { dossier: d, droits, recharger, seuil, prefill, consommer, documents } = useDossier();
   const ref = useReferentiels();
   const toast = useToast();
   const [valeurs, setValeurs] = useState<ValeursIdentification>(valeursInitiales(d as never));
@@ -42,6 +44,16 @@ export function VoletIdentification() {
       setEnCours(false);
     }
   };
+
+  // Propositions de l'OCR intelligent pour les champs encore vides ou différents, et documents utiles.
+  type Champ = keyof ValeursIdentification;
+  const propositions = documents.propositions?.identification ?? {};
+  const champs = Object.keys(SOURCES_IDENTIFICATION) as Champ[];
+  const aReprendre = droits.evaluation ? champs.filter((c) => aExaminer(propositions[c], String(valeurs[c] ?? ""))) : [];
+  const reprendre = (cs: Champ[]) => setValeurs((v) => ({ ...v, ...Object.fromEntries(cs.map((c) => [c, propositions[c].valeur])) }));
+  const vides = champs.filter((c) => !String(valeurs[c] ?? "").trim()).map((c) => ({ code: c, sources: SOURCES_IDENTIFICATION[c] }));
+  const rendu = (c: string, v: string) =>
+    c === "regionId" ? lib(ref?.regions.find((r) => r.id === v)?.libelle) || v : c === "typeZone" ? lib(ref?.listes.type_zone?.find((z) => z.code === v)?.libelle) || v : c === "natureProjet" ? lib(ref?.listes.nature_projet?.find((z) => z.code === v)?.libelle) || v : v;
 
   const motifs = (d.motifDeclenchement ?? "").split(",").filter(Boolean);
   const c = d.client;
@@ -108,6 +120,14 @@ export function VoletIdentification() {
         ) : (
           <>
             {erreur && <Bandeau ton="alerte" className="mb-4">{erreur}</Bandeau>}
+            {droits.evaluation && (
+              <div className="mb-4 space-y-2">
+                <BandeauDocuments vides={vides} nbPropositions={aReprendre.length} onToutReprendre={() => reprendre(aReprendre)} />
+                {aReprendre.map((c) => (
+                  <PropositionOCR key={c} proposition={propositions[c]} rendu={<><span className="text-muted-foreground">{t(`ia.champ.${c}`)} :</span> <strong>{rendu(c, propositions[c].valeur)}</strong></>} onReprendre={() => reprendre([c])} onEcarter={() => documents.ecarter("identification", [c])} />
+                ))}
+              </div>
+            )}
             <FormulaireIdentification valeurs={valeurs} onChange={setValeurs} referentiels={ref} desactive={!droits.evaluation} />
           </>
         )}

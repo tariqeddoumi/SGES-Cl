@@ -55,10 +55,12 @@ const LIBELLES: Record<string, { fr: string; en: string; ar: string }> = {
   TENTATIVES_MAX: { fr: "Tentatives de connexion avant verrouillage", en: "Login attempts before lockout", ar: "محاولات الدخول قبل القفل" },
   VERROUILLAGE_MINUTES: { fr: "Durée du verrouillage (minutes)", en: "Lockout duration (minutes)", ar: "مدة القفل (دقائق)" },
   SIGNALETIQUE_MODE: { fr: "Connecteur signalétique client", en: "Customer data connector", ar: "موصل معطيات الزبناء" },
-  IA_ACTIVE: { fr: "Assistant IA d'analyse des pièces et de pré-remplissage", en: "AI document analysis and pre-fill assistant", ar: "المساعد الذكي لتحليل الوثائق والملء المسبق" },
-  IA_REFERENCE_VALIDATION: { fr: "Référence de la validation juridique, CNDP et SSI du service d'IA (obligatoire pour activer l'assistant)", en: "Reference of the legal, data-protection (CNDP) and security approval of the AI service (required to enable the assistant)", ar: "مرجع المصادقة القانونية ولجنة حماية المعطيات وأمن المعلومات (إلزامي لتفعيل المساعد)" },
-  IA_ANONYMISER: { fr: "Masquer les données personnelles avant envoi à l'IA (e-mail, téléphone, ICE, RIB, CIN)", en: "Mask personal data before sending to the AI (email, phone, ICE, bank account, ID)", ar: "إخفاء المعطيات الشخصية قبل الإرسال إلى الذكاء الاصطناعي" },
-  IA_MODELE: { fr: "Modèle d'IA", en: "AI model", ar: "نموذج الذكاء الاصطناعي" },
+  IA_ACTIVE: { fr: "OCR intelligent : lecture des pièces (dont scans et photos) et pré-remplissage", en: "Smart OCR: reading documents (including scans and photos) and pre-filling", ar: "التعرف الذكي على الوثائق: قراءة الوثائق (بما فيها الممسوحة والصور) والملء المسبق" },
+  IA_REFERENCE_VALIDATION: { fr: "Référence de la validation juridique, CNDP et SSI du service d'IA (obligatoire pour activer l'OCR intelligent)", en: "Reference of the legal, data-protection (CNDP) and security approval of the AI service (required to enable smart OCR)", ar: "مرجع المصادقة القانونية ولجنة حماية المعطيات وأمن المعلومات (إلزامي لتفعيل التعرف الذكي)" },
+  IA_ANONYMISER: { fr: "Masquer les données personnelles avant envoi à l'OCR intelligent (e-mail, téléphone, ICE, RIB, CIN)", en: "Mask personal data before sending to smart OCR (email, phone, ICE, bank account, ID)", ar: "إخفاء المعطيات الشخصية قبل الإرسال إلى الذكاء الاصطناعي" },
+  IA_MODELE: { fr: "Modèle de l'OCR intelligent", en: "Smart OCR model", ar: "نموذج التعرف الذكي" },
+  OCR_SCANS: { fr: "Transcrire les scans et photos (le fichier d'origine est transmis : pas de masquage possible)", en: "Transcribe scans and photos (the original file is sent: no masking possible)", ar: "نسخ الوثائق الممسوحة والصور (يُرسل الملف الأصلي: لا يمكن الإخفاء)" },
+  OCR_LECTURE_AUTO: { fr: "Lire automatiquement les pièces après chaque dépôt et proposer les réponses", en: "Automatically read documents after each upload and suggest answers", ar: "قراءة الوثائق تلقائيا بعد كل إيداع واقتراح الإجابات" },
 };
 
 export default function PageParametres() {

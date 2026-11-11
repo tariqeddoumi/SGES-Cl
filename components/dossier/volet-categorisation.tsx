@@ -12,6 +12,9 @@ import { ChoixSegmente, Selecteur, ZoneTexte } from "@/components/ui/champs";
 import { Bandeau, Carte, Chargement, Sablier } from "@/components/ui/mise-en-page";
 import { PuceCategorie } from "@/components/ui/puces";
 import { useDossier } from "./contexte";
+import { BandeauDocuments, PropositionOCR } from "./sources";
+import { aExaminer, SOURCES_VOLETS } from "@/lib/domaine/sources";
+
 import { BarreVolet } from "./barre-volet";
 import { useLibelles } from "@/lib/client/listes";
 
@@ -29,7 +32,7 @@ interface Donnees {
 export function VoletCategorisation() {
   const { t, lib, parametres } = useApp();
   const motifsTypes = useLibelles("motif_reclassement");
-  const { dossier, droits, recharger, prefill, consommer } = useDossier();
+  const { dossier, droits, recharger, prefill, consommer, documents } = useDossier();
   const toast = useToast();
   const { donnees, recharger: rechargerVolet } = useDonnees<Donnees>(`/api/dossiers/${dossier.id}/categorisation`);
   const [reponses, setReponses] = useState<Record<string, boolean | undefined>>({});
@@ -98,11 +101,18 @@ export function VoletCategorisation() {
 
   const groupes = CATEGORIES.map((c) => ({ c, questions: donnees.questions.filter((q) => q.categorie === c) })).filter((g) => g.questions.length);
 
+  const valeurDe = (id: string) => (reponses[id] === undefined ? "" : reponses[id] ? "oui" : "non");
+  const propositions = documents.propositions?.categorisation ?? {};
+  const aReprendre = droits.evaluation ? donnees.questions.filter((q) => aExaminer(propositions[q.id], valeurDe(q.id))) : [];
+  const reprendre = (ids: string[]) => setReponses((r) => ({ ...r, ...Object.fromEntries(ids.map((id) => [id, propositions[id]?.valeur === "oui"])) }));
+  const vides = donnees.questions.filter((q) => reponses[q.id] === undefined).map((q) => ({ code: q.code, sources: SOURCES_VOLETS.categorisation }));
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
         <div className="space-y-4">
           <Bandeau ton="info">{t("categorisation.description")}</Bandeau>
+          {droits.evaluation && <BandeauDocuments vides={vides} nbPropositions={aReprendre.length} onToutReprendre={() => reprendre(aReprendre.map((q) => q.id))} />}
           {calcul.categorie === "A" && !calcul.complet && <Bandeau ton="vigilance">{t("categorisation.provisoireA")}</Bandeau>}
           {droits.evaluation && donnees.questions.some((q) => reponses[q.id] === undefined) && (
             <div className="flex justify-end">
@@ -117,7 +127,12 @@ export function VoletCategorisation() {
                 {g.questions.map((q) => (
                   <li key={q.id} className={cn("flex flex-col gap-3 px-4 py-2.5 sm:flex-row sm:items-center", reponses[q.id] && "bg-accent/50")}>
                     <span className="w-7 shrink-0 text-[12px] font-semibold text-muted-foreground tabulaire">{q.numero}.</span>
-                    <p className="min-w-0 flex-1 text-[13.5px] leading-relaxed">{lib(q.libelle)}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] leading-relaxed">{lib(q.libelle)}</p>
+                      {droits.evaluation && aExaminer(propositions[q.id], valeurDe(q.id)) && (
+                        <PropositionOCR className="mt-1.5" proposition={propositions[q.id]} rendu={<strong>{propositions[q.id].valeur === "oui" ? t("commun.oui") : t("commun.non")}</strong>} onReprendre={() => reprendre([q.id])} onEcarter={() => documents.ecarter("categorisation", [q.id])} />
+                      )}
+                    </div>
                     <ChoixSegmente
                       nom={q.code}
                       taille="petite"

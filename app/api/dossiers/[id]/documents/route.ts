@@ -2,7 +2,7 @@ import { route } from "@/lib/serveur/api";
 import { ErreurMetier } from "@/lib/serveur/contexte";
 import { dossierAutorise, historiser, recalculer } from "@/lib/serveur/dossiers";
 import { exigerVolet } from "@/lib/serveur/etat-dossier";
-import { extraireTexte } from "@/lib/serveur/extraction";
+import { lireEtEnregistrer } from "@/lib/serveur/pieces";
 import { prisma } from "@/lib/serveur/prisma";
 
 const TAILLE_MAX = 10 * 1024 * 1024;
@@ -18,13 +18,16 @@ const TYPES_ADMIS = new Set([
   "text/plain",
 ]);
 
+// La transcription d'un scan de plusieurs pages peut prendre une à deux minutes.
+export const maxDuration = 300;
+
 export const GET = route(
   async (_req, ctx, { id }) => {
     await dossierAutorise(ctx, id);
     return prisma.document.findMany({
       where: { dossierId: id },
       orderBy: { createdAt: "desc" },
-      select: { id: true, type: true, nom: true, mime: true, taille: true, createdAt: true, deposeParId: true, texte: false },
+      select: { id: true, type: true, nom: true, mime: true, taille: true, createdAt: true, deposeParId: true, origineTexte: true },
     });
   },
   { permission: "dossier:lire" }
@@ -50,14 +53,15 @@ export const POST = route(
         mime,
         taille: fichier.size,
         contenu: Buffer.from(octets),
-        texte: await extraireTexte(mime, octets),
         deposeParId: ctx.utilisateur.id,
       },
-      select: { id: true, type: true, nom: true, mime: true, taille: true, createdAt: true },
+      select: { id: true, dossierId: true, type: true, nom: true, mime: true, taille: true, createdAt: true },
     });
-    await historiser(id, ctx, "piece", { commentaire: `${type} — ${doc.nom}` });
+    // Lecture : extraction du texte, puis OCR intelligent pour un scan ou une photo (type reconnu si « Autre »).
+    const lecture = await lireEtEnregistrer(ctx, { ...doc, contenu: octets });
+    await historiser(id, ctx, "piece", { commentaire: `${lecture.type} — ${doc.nom}` });
     await recalculer(id);
-    return doc;
+    return { ...doc, ...lecture };
   },
   { permission: "dossier:lire" }
 );

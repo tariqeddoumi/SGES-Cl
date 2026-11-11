@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardCopy, Sparkles } from "lucide-react";
+import { ClipboardCopy, ScanText } from "lucide-react";
 import { api } from "@/lib/client/api";
 import { useApp } from "@/components/providers/application";
 import { useToast } from "@/components/providers/toasts";
@@ -77,7 +77,7 @@ export function RedactionIA({ type, onFermer }: { type: TypeRedaction; onFermer:
       onFermer={onFermer}
       titre={
         <span className="flex items-center gap-2">
-          <Sparkles size={16} /> {t(`ia.mode_${type}`)}
+          <ScanText size={16} /> {t(`ia.mode_${type}`)}
         </span>
       }
       pied={

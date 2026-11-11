@@ -12,8 +12,12 @@ export const GET = route(
   async (_req, ctx, { id }) => {
     await dossierAutorise(ctx, id);
     const d = await prisma.dossier.findUniqueOrThrow({ where: { id }, include: INCLUSION_DOSSIER });
-    const { etapes, motifsBlocage, seuil } = await etatEtapes(id);
-    return { dossier: d, droits: droitsDossier(ctx, d), etapes, motifsBlocage, seuil };
+    const [{ etapes, motifsBlocage, seuil }, pieces] = await Promise.all([
+      etatEtapes(id),
+      // Pièces (sans contenu) : chaque volet indique où trouver l'information et ce qui reste à lire.
+      prisma.document.findMany({ where: { dossierId: id }, orderBy: { createdAt: "asc" }, select: { id: true, type: true, nom: true, mime: true, origineTexte: true, createdAt: true } }),
+    ]);
+    return { dossier: d, droits: droitsDossier(ctx, d), etapes, motifsBlocage, seuil, pieces };
   },
   { permission: "dossier:lire" }
 );
